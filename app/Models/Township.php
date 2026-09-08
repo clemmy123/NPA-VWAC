@@ -13,7 +13,19 @@ class Township extends Model
 
     protected $primaryKey = 'township_id';
 
-    protected $fillable = ['code', 'name', 'division_id'];
+    protected $fillable = [
+
+
+        'code',
+
+
+        'name',
+
+
+        'division_id',
+
+
+    ];
 
 
 }

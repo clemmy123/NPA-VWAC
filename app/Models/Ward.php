@@ -13,7 +13,22 @@ class Ward extends Model
 
     protected $primaryKey = 'ward_id';
 
-    protected $fillable = ['code', 'name', 'district_id', 'council_id'];
+    protected $fillable = [
+
+
+        'code',
+
+
+        'name',
+
+
+        'district_id',
+
+
+        'council_id',
+
+
+    ];
 
 
 }

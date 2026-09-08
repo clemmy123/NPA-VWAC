@@ -9,11 +9,30 @@ class ThematicAreaUser extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['thematic_area_id', 'user_id', 'role', 'is_active'];
+    protected $fillable = [
+
+
+        'thematic_area_id',
+
+
+        'user_id',
+
+
+        'role',
+
+
+        'is_active',
+
+
+    ];
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean'];
+        return [
+
+            'is_active' => 'boolean',
+
+        ];
     }
 
 

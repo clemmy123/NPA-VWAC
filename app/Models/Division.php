@@ -13,7 +13,19 @@ class Division extends Model
 
     protected $primaryKey = 'division_id';
 
-    protected $fillable = ['code', 'name', 'council_id'];
+    protected $fillable = [
+
+
+        'code',
+
+
+        'name',
+
+
+        'council_id',
+
+
+    ];
 
 
 }

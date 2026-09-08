@@ -9,11 +9,27 @@ class IndicatorDataEntryRow extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['indicator_data_entry_id', 'label', 'value'];
+    protected $fillable = [
+
+
+        'indicator_data_entry_id',
+
+
+        'label',
+
+
+        'value',
+
+
+    ];
 
     protected function casts(): array
     {
-        return ['value' => 'decimal:4'];
+        return [
+
+            'value' => 'decimal:4',
+
+        ];
     }
 
 

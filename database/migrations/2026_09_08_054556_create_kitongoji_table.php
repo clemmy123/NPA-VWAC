@@ -8,7 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('kitongoji', function (Blueprint $table) { $table->id('kitongoji_id'); $table->string('code',50)->nullable()->unique(); $table->string('name'); $table->unsignedBigInteger('village_mtaa_id')->nullable(); $table->timestamps(); $table->foreign('village_mtaa_id')->references('village_mtaa_id')->on('village_mtaa')->nullOnDelete()->cascadeOnUpdate(); $table->index(['village_mtaa_id','name']); });
+        Schema::create('kitongoji', function (Blueprint $table) { $table->id('kitongoji_id');
+        $table->string('code', 50)->nullable()->unique();
+        $table->string('name');
+        $table->unsignedBigInteger('village_mtaa_id')->nullable();
+        $table->timestamps();
+        $table->foreign('village_mtaa_id')->references('village_mtaa_id')->on('village_mtaa')->nullOnDelete()->cascadeOnUpdate();
+        $table->index(['village_mtaa_id', 'name']);
+        });
     }
 
     public function down(): void

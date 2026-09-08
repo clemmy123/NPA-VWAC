@@ -9,11 +9,27 @@ class IndicatorDataSource extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['indicator_id', 'data_source_id', 'is_primary'];
+    protected $fillable = [
+
+
+        'indicator_id',
+
+
+        'data_source_id',
+
+
+        'is_primary',
+
+
+    ];
 
     protected function casts(): array
     {
-        return ['is_primary' => 'boolean'];
+        return [
+
+            'is_primary' => 'boolean',
+
+        ];
     }
 
 

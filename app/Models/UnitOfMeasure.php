@@ -9,11 +9,32 @@ class UnitOfMeasure extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['code', 'name', 'symbol', 'is_active'];
+    protected $table = 'units_of_measure';
+
+    protected $fillable = [
+
+
+        'code',
+
+
+        'name',
+
+
+        'symbol',
+
+
+        'is_active',
+
+
+    ];
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean'];
+        return [
+
+            'is_active' => 'boolean',
+
+        ];
     }
 
 

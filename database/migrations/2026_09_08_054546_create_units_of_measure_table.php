@@ -8,7 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('units_of_measure', function (Blueprint $table) { $table->id(); $table->string('code',50)->unique(); $table->string('name'); $table->string('symbol',30)->nullable(); $table->boolean('is_active')->default(true); $table->timestamps(); });
+        Schema::create('units_of_measure', function (Blueprint $table) { $table->id();
+        $table->string('code', 50)->unique();
+        $table->string('name');
+        $table->string('symbol', 30)->nullable();
+        $table->boolean('is_active')->default(true);
+        $table->timestamps();
+        });
     }
 
     public function down(): void

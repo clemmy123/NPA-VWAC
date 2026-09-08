@@ -8,7 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('dimensions', function (Blueprint $table) { $table->id(); $table->string('code',50)->unique(); $table->string('name'); $table->boolean('is_active')->default(true); $table->timestamps(); });
+        Schema::create('dimensions', function (Blueprint $table) { $table->id();
+        $table->string('code', 50)->unique();
+        $table->string('name');
+        $table->boolean('is_active')->default(true);
+        $table->timestamps();
+        });
     }
 
     public function down(): void

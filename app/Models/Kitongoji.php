@@ -13,7 +13,19 @@ class Kitongoji extends Model
 
     protected $primaryKey = 'kitongoji_id';
 
-    protected $fillable = ['code', 'name', 'village_mtaa_id'];
+    protected $fillable = [
+
+
+        'code',
+
+
+        'name',
+
+
+        'village_mtaa_id',
+
+
+    ];
 
 
 }

@@ -13,7 +13,22 @@ class VillageMtaa extends Model
 
     protected $primaryKey = 'village_mtaa_id';
 
-    protected $fillable = ['code', 'name', 'type', 'ward_id'];
+    protected $fillable = [
+
+
+        'code',
+
+
+        'name',
+
+
+        'type',
+
+
+        'ward_id',
+
+
+    ];
 
 
 }

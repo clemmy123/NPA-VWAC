@@ -9,7 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('region', function (Blueprint $table) {
-            $table->id('region_id'); $table->string('code',50)->nullable()->unique(); $table->string('name');
+            $table->id('region_id');
+            $table->string('code', 50)->nullable()->unique();
+            $table->string('name');
             $table->timestamps();
             $table->index('name');
         });

@@ -9,7 +9,16 @@ class IndicatorDataEntryRowDimension extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['indicator_data_entry_row_id', 'dimension_option_id'];
+    protected $fillable = [
+
+
+        'indicator_data_entry_row_id',
+
+
+        'dimension_option_id',
+
+
+    ];
 
 
 }

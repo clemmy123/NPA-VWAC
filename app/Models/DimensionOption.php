@@ -9,11 +9,33 @@ class DimensionOption extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['dimension_id', 'code', 'name', 'sort_order', 'is_active'];
+    protected $fillable = [
+
+
+        'dimension_id',
+
+
+        'code',
+
+
+        'name',
+
+
+        'sort_order',
+
+
+        'is_active',
+
+
+    ];
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean'];
+        return [
+
+            'is_active' => 'boolean',
+
+        ];
     }
 
 

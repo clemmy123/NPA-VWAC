@@ -13,7 +13,19 @@ class District extends Model
 
     protected $primaryKey = 'district_id';
 
-    protected $fillable = ['code', 'name', 'region_id'];
+    protected $fillable = [
+
+
+        'code',
+
+
+        'name',
+
+
+        'region_id',
+
+
+    ];
 
 
 }

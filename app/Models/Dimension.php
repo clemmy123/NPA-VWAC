@@ -9,12 +9,37 @@ class Dimension extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['code', 'name', 'is_active'];
+    protected $fillable = [
+
+
+        'code',
+
+
+        'name',
+
+
+        'is_active',
+
+
+    ];
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean'];
+        return [
+
+            'is_active' => 'boolean',
+
+        ];
     }
 
-    public function options(){ return $this->hasMany(DimensionOption::class); }
+    public function options()
+
+
+    {
+
+
+        return $this->hasMany(DimensionOption::class);
+
+
+    }
 }

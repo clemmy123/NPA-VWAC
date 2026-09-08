@@ -13,7 +13,16 @@ class Region extends Model
 
     protected $primaryKey = 'region_id';
 
-    protected $fillable = ['code', 'name'];
+    protected $fillable = [
+
+
+        'code',
+
+
+        'name',
+
+
+    ];
 
 
 }

@@ -13,7 +13,19 @@ class Council extends Model
 
     protected $primaryKey = 'council_id';
 
-    protected $fillable = ['code', 'name', 'district_id'];
+    protected $fillable = [
+
+
+        'code',
+
+
+        'name',
+
+
+        'district_id',
+
+
+    ];
 
 
 }

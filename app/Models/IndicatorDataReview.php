@@ -9,7 +9,22 @@ class IndicatorDataReview extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['indicator_data_entry_id', 'reviewed_by', 'action', 'comment'];
+    protected $fillable = [
+
+
+        'indicator_data_entry_id',
+
+
+        'reviewed_by',
+
+
+        'action',
+
+
+        'comment',
+
+
+    ];
 
 
 }
