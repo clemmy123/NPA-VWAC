@@ -1,0 +1,19 @@
+<?php
+namespace Database\Seeders;
+use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+class RolePermissionSeeder extends Seeder
+{
+ public function run(): void
+ {
+  app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+  $permissions=['project.view','project.create','project.update','project.delete','project.assign-manager','thematic-area.view','thematic-area.create','thematic-area.update','thematic-area.delete','thematic-area.assign-manager','indicator.view','indicator.create','indicator.update','indicator.delete','indicator.configure','indicator.set-baseline','indicator.set-target','indicator.assign-user','indicator-data.view','indicator-data.create','indicator-data.update','indicator-data.submit','indicator-data.review','indicator-data.approve','indicator-data.return','report.view','report.export','user.view','user.create','user.update','user.assign-role','settings.manage'];
+  foreach($permissions as $p){ Permission::firstOrCreate(['name'=>$p,'guard_name'=>'web']); }
+  $super=Role::firstOrCreate(['name'=>'Super Admin','guard_name'=>'web']); $pm=Role::firstOrCreate(['name'=>'Project Manager','guard_name'=>'web']); $tm=Role::firstOrCreate(['name'=>'Thematic Manager','guard_name'=>'web']); $de=Role::firstOrCreate(['name'=>'Data Entry User','guard_name'=>'web']);
+  $super->syncPermissions(Permission::all());
+  $pm->syncPermissions(['project.view','project.update','project.assign-manager','thematic-area.view','thematic-area.create','thematic-area.update','thematic-area.assign-manager','indicator.view','indicator-data.view','report.view','report.export']);
+  $tm->syncPermissions(['thematic-area.view','thematic-area.update','indicator.view','indicator.create','indicator.update','indicator.configure','indicator.set-baseline','indicator.set-target','indicator.assign-user','indicator-data.view','indicator-data.review','indicator-data.approve','indicator-data.return','report.view','report.export']);
+  $de->syncPermissions(['indicator.view','indicator-data.view','indicator-data.create','indicator-data.update','indicator-data.submit']);
+ }
+}
