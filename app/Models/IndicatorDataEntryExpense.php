@@ -11,18 +11,15 @@ class IndicatorDataEntryExpense extends Model
 
     protected $fillable = [
 
-
         'indicator_data_entry_id',
-
 
         'expense_category',
 
-
         'description',
-
 
         'amount',
 
+        'currency',
 
     ];
 
@@ -35,5 +32,8 @@ class IndicatorDataEntryExpense extends Model
         ];
     }
 
-
+    public function entry()
+    {
+        return $this->belongsTo(IndicatorDataEntry::class, 'indicator_data_entry_id');
+    }
 }

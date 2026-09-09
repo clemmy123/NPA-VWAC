@@ -11,57 +11,39 @@ class Indicator extends Model
 
     protected $fillable = [
 
-
         'thematic_area_id',
-
 
         'code',
 
-
         'name',
-
 
         'description',
 
-
         'measurement_type_id',
-
 
         'unit_of_measure_id',
 
-
         'collection_mode',
-
 
         'aggregation_method',
 
-
         'reporting_frequency',
-
 
         'collection_scope',
 
-
         'requires_location',
-
 
         'reporting_location_level',
 
-
         'requires_activity',
-
 
         'has_budget_implication',
 
-
         'requires_evidence',
-
 
         'status',
 
-
         'created_by',
-
 
     ];
 
@@ -81,69 +63,79 @@ class Indicator extends Model
     }
 
     public function thematicArea()
-
-
     {
-
 
         return $this->belongsTo(ThematicArea::class);
 
-
     }
-    public function measurementType()
 
+    public function measurementType()
     {
 
         return $this->belongsTo(MeasurementType::class);
 
     }
-    public function unitOfMeasure()
 
+    public function unitOfMeasure()
     {
 
         return $this->belongsTo(UnitOfMeasure::class);
 
     }
-    public function baselines()
 
+    public function baselines()
     {
 
         return $this->hasMany(IndicatorBaseline::class);
 
     }
-    public function targets()
 
+    public function targets()
     {
 
         return $this->hasMany(IndicatorTarget::class);
 
     }
-    public function entries()
 
+    public function entries()
     {
 
         return $this->hasMany(IndicatorDataEntry::class);
 
     }
-    public function assignments()
 
+    public function assignments()
     {
 
         return $this->hasMany(IndicatorDataAssignment::class);
 
     }
-    public function dataSources()
 
+    public function dataSources()
     {
 
-        return $this->belongsToMany(DataSource::class,'indicator_data_sources')->withPivot('is_primary')->withTimestamps();
+        return $this->belongsToMany(DataSource::class, 'indicator_data_sources')->withPivot('is_primary')->withTimestamps();
 
     }
-    public function dimensions()
 
+    public function dimensions()
     {
 
-        return $this->belongsToMany(Dimension::class,'indicator_dimensions')->withPivot(['is_required','must_reconcile'])->withTimestamps();
+        return $this->belongsToMany(Dimension::class, 'indicator_dimensions')->withPivot(['is_required', 'must_reconcile'])->withTimestamps();
+
+    }
+
+    public function interventions()
+    {
+
+        return $this->belongsToMany(Intervention::class, 'indicator_interventions')->withTimestamps();
+
+    }
+
+    public function fundSources()
+    {
+
+        return $this->belongsToMany(FundSource::class, 'indicator_fund_sources')->withPivot('is_primary')->withTimestamps();
 
     }
 }

@@ -24,13 +24,16 @@ return new class extends Migration
                 ->on('indicator_data_entry_rows')
                 ->cascadeOnDelete();
 
+            // restrictOnDelete (not cascade): once a dimension_option has been used to tag real
+            // reported data, deleting it must not silently erase which category that historical
+            // number belonged to. Retire an option via dimension_options.is_active instead.
             $table->foreign(
                 'dimension_option_id',
                 'entry_row_dim_option_fk'
             )
                 ->references('id')
                 ->on('dimension_options')
-                ->cascadeOnDelete();
+                ->restrictOnDelete();
 
             $table->unique(
                 [

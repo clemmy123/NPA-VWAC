@@ -5,30 +5,28 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class DataSource extends Model
+class FundSource extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-
         'code',
-
         'name',
-
         'description',
-
-        'collection_method',
-
         'is_active',
-
     ];
 
     protected function casts(): array
     {
         return [
-
             'is_active' => 'boolean',
-
         ];
+    }
+
+    public function indicators()
+    {
+        return $this->belongsToMany(Indicator::class, 'indicator_fund_sources')
+            ->withPivot('is_primary')
+            ->withTimestamps();
     }
 }

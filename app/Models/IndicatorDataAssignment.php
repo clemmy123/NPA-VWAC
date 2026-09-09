@@ -11,45 +11,19 @@ class IndicatorDataAssignment extends Model
 
     protected $fillable = [
 
-
         'indicator_id',
-
 
         'user_id',
 
+        'location_level',
 
-        'region_id',
-
-
-        'district_id',
-
-
-        'council_id',
-
-
-        'division_id',
-
-
-        'township_id',
-
-
-        'ward_id',
-
-
-        'village_mtaa_id',
-
-
-        'kitongoji_id',
-
+        'location_id',
 
         'organization_id',
 
-
         'data_source_id',
 
-
         'is_active',
-
 
     ];
 
@@ -61,6 +35,4 @@ class IndicatorDataAssignment extends Model
 
         ];
     }
-
-
 }

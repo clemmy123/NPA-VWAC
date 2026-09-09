@@ -11,24 +11,19 @@ class IndicatorTarget extends Model
 
     protected $fillable = [
 
-
         'indicator_id',
-
 
         'financial_year_id',
 
-
         'reporting_period_id',
 
+        'dimension_option_id',
 
         'target_value',
 
-
         'remarks',
 
-
         'created_by',
-
 
     ];
 
@@ -41,5 +36,23 @@ class IndicatorTarget extends Model
         ];
     }
 
+    public function indicator()
+    {
+        return $this->belongsTo(Indicator::class);
+    }
 
+    public function financialYear()
+    {
+        return $this->belongsTo(FinancialYear::class);
+    }
+
+    public function reportingPeriod()
+    {
+        return $this->belongsTo(ReportingPeriod::class);
+    }
+
+    public function dimensionOption()
+    {
+        return $this->belongsTo(DimensionOption::class);
+    }
 }

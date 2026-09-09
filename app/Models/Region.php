@@ -15,14 +15,14 @@ class Region extends Model
 
     protected $fillable = [
 
-
         'code',
-
 
         'name',
 
-
     ];
 
-
+    public function districts()
+    {
+        return $this->hasMany(District::class, 'region_id', 'region_id');
+    }
 }

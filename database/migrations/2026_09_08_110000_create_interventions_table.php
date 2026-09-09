@@ -8,18 +8,20 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('thematic_area_users', function (Blueprint $table) {
+        Schema::create('interventions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('thematic_area_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->boolean('is_active')->default(true);
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->string('status', 30)->default('active')->index();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
-            $table->unique(['thematic_area_id', 'user_id']);
+            $table->softDeletes();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('thematic_area_users');
+        Schema::dropIfExists('interventions');
     }
 };

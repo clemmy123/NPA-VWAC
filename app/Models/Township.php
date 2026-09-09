@@ -15,17 +15,21 @@ class Township extends Model
 
     protected $fillable = [
 
-
         'code',
-
 
         'name',
 
-
         'division_id',
-
 
     ];
 
+    public function division()
+    {
+        return $this->belongsTo(Division::class, 'division_id', 'division_id');
+    }
 
+    public function wards()
+    {
+        return $this->hasMany(Ward::class, 'township_id', 'township_id');
+    }
 }

@@ -11,27 +11,19 @@ class IndicatorBaseline extends Model
 
     protected $fillable = [
 
-
         'indicator_id',
-
 
         'financial_year_id',
 
-
         'baseline_value',
-
 
         'baseline_date',
 
-
         'source',
-
 
         'remarks',
 
-
         'created_by',
-
 
     ];
 
@@ -46,5 +38,13 @@ class IndicatorBaseline extends Model
         ];
     }
 
+    public function indicator()
+    {
+        return $this->belongsTo(Indicator::class);
+    }
 
+    public function financialYear()
+    {
+        return $this->belongsTo(FinancialYear::class);
+    }
 }

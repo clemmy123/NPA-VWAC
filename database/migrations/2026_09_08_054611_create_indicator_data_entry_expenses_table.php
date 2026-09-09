@@ -8,12 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('indicator_data_entry_expenses', function (Blueprint $table) { $table->id();
-        $table->foreignId('indicator_data_entry_id')->constrained()->cascadeOnDelete();
-        $table->string('expense_category')->nullable();
-        $table->string('description');
-        $table->decimal('amount', 20, 2);
-        $table->timestamps();
+        Schema::create('indicator_data_entry_expenses', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('indicator_data_entry_id')->constrained()->cascadeOnDelete();
+            $table->string('expense_category')->nullable();
+            $table->string('description');
+            $table->decimal('amount', 20, 2);
+            $table->char('currency', 3)->default('TZS');
+            $table->timestamps();
         });
     }
 

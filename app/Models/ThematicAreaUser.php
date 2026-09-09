@@ -11,18 +11,11 @@ class ThematicAreaUser extends Model
 
     protected $fillable = [
 
-
         'thematic_area_id',
-
 
         'user_id',
 
-
-        'role',
-
-
         'is_active',
-
 
     ];
 
@@ -34,6 +27,4 @@ class ThematicAreaUser extends Model
 
         ];
     }
-
-
 }

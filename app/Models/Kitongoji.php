@@ -15,17 +15,16 @@ class Kitongoji extends Model
 
     protected $fillable = [
 
-
         'code',
-
 
         'name',
 
-
         'village_mtaa_id',
-
 
     ];
 
-
+    public function villageMtaa()
+    {
+        return $this->belongsTo(VillageMtaa::class, 'village_mtaa_id', 'village_mtaa_id');
+    }
 }

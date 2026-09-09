@@ -13,24 +13,27 @@ return new class extends Migration
             $table->string('reference_no', 80)->nullable()->unique();
             $table->foreignId('indicator_id')->constrained()->cascadeOnDelete();
             $table->foreignId('financial_year_id')->constrained()->restrictOnDelete();
-            $table->foreignId('reporting_period_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('reporting_period_id')->nullable()->constrained()->restrictOnDelete();
             $table->date('entry_date')->index();
             $table->string('activity_name')->nullable();
             $table->text('activity_description')->nullable();
-            $table->unsignedBigInteger('region_id')->nullable();
-            $table->unsignedBigInteger('district_id')->nullable();
-            $table->unsignedBigInteger('council_id')->nullable();
-            $table->unsignedBigInteger('division_id')->nullable();
-            $table->unsignedBigInteger('township_id')->nullable();
-            $table->unsignedBigInteger('ward_id')->nullable();
-            $table->unsignedBigInteger('village_mtaa_id')->nullable();
-            $table->unsignedBigInteger('kitongoji_id')->nullable();
+            // Single "most specific unit" location reference - see indicator_data_assignments
+            // migration for the reasoning (avoids duplicating all 8 admin levels per table, and
+            // avoids the inconsistency risk of storing a level's value that doesn't match its
+            // supposed ancestors).
+            $table->string('location_level', 20)->nullable();
+            $table->unsignedBigInteger('location_id')->nullable();
             $table->foreignId('organization_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('data_source_id')->nullable()->constrained()->nullOnDelete();
-            $table->decimal('actual_value', 20, 4);
+            // Nullable: a draft entry (see status below) may not have a final value yet.
+            $table->decimal('actual_value', 20, 4)->nullable();
             $table->decimal('budget_allocated', 20, 2)->nullable();
             $table->decimal('budget_used', 20, 2)->nullable();
+            $table->char('currency', 3)->default('TZS');
             $table->text('remarks')->nullable();
+            // How this entry's value arrived: a human typed it in, or it was synced from an
+            // external system via API integration.
+            $table->string('source_type', 20)->default('manual');
             $table->foreignId('entered_by')->constrained('users')->restrictOnDelete();
             $table->timestamp('submitted_at')->nullable();
             $table->timestamp('approved_at')->nullable();
@@ -38,14 +41,7 @@ return new class extends Migration
             $table->string('status', 30)->default('draft')->index();
             $table->timestamps();
             $table->softDeletes();
-            $table->foreign('region_id')->references('region_id')->on('region')->nullOnDelete();
-            $table->foreign('district_id')->references('district_id')->on('district')->nullOnDelete();
-            $table->foreign('council_id')->references('council_id')->on('council')->nullOnDelete();
-            $table->foreign('division_id')->references('division_id')->on('division')->nullOnDelete();
-            $table->foreign('township_id')->references('township_id')->on('township')->nullOnDelete();
-            $table->foreign('ward_id')->references('ward_id')->on('ward')->nullOnDelete();
-            $table->foreign('village_mtaa_id')->references('village_mtaa_id')->on('village_mtaa')->nullOnDelete();
-            $table->foreign('kitongoji_id')->references('kitongoji_id')->on('kitongoji')->nullOnDelete();
+            $table->index(['location_level', 'location_id']);
             $table->index(
                 ['indicator_id', 'financial_year_id', 'status'],
                 'indicator_entry_perf_idx'

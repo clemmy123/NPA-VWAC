@@ -15,17 +15,21 @@ class Council extends Model
 
     protected $fillable = [
 
-
         'code',
-
 
         'name',
 
-
         'district_id',
-
 
     ];
 
+    public function district()
+    {
+        return $this->belongsTo(District::class, 'district_id', 'district_id');
+    }
 
+    public function divisions()
+    {
+        return $this->hasMany(Division::class, 'council_id', 'council_id');
+    }
 }

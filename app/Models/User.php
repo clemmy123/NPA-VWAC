@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -96,12 +97,12 @@ class User extends Authenticatable
         return $this->status === 'active';
     }
 
-    public function organization(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);
     }
 
-    public function region(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function region(): BelongsTo
     {
         return $this->belongsTo(Region::class, 'region_id', 'region_id');
     }
@@ -109,36 +110,28 @@ class User extends Authenticatable
     public function projects()
     {
         return $this->belongsToMany(Project::class, 'project_users')
-            ->withPivot(['role', 'is_active'])
+            ->withPivot(['is_active'])
             ->withTimestamps();
     }
 
     public function thematicAreas()
     {
         return $this->belongsToMany(ThematicArea::class, 'thematic_area_users')
-            ->withPivot(['role', 'is_active'])
+            ->withPivot(['is_active'])
             ->withTimestamps();
     }
 
     public function indicatorAssignments()
-
-
     {
 
-
         return $this->hasMany(IndicatorDataAssignment::class);
-
 
     }
 
     public function indicatorEntries()
-
-
     {
 
-
         return $this->hasMany(IndicatorDataEntry::class, 'entered_by');
-
 
     }
 }

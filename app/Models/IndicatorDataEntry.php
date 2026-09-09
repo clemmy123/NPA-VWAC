@@ -11,84 +11,49 @@ class IndicatorDataEntry extends Model
 
     protected $fillable = [
 
-
         'reference_no',
-
 
         'indicator_id',
 
-
         'financial_year_id',
-
 
         'reporting_period_id',
 
-
         'entry_date',
-
 
         'activity_name',
 
-
         'activity_description',
 
+        'location_level',
 
-        'region_id',
-
-
-        'district_id',
-
-
-        'council_id',
-
-
-        'division_id',
-
-
-        'township_id',
-
-
-        'ward_id',
-
-
-        'village_mtaa_id',
-
-
-        'kitongoji_id',
-
+        'location_id',
 
         'organization_id',
 
-
         'data_source_id',
-
 
         'actual_value',
 
-
         'budget_allocated',
-
 
         'budget_used',
 
+        'currency',
+
+        'source_type',
 
         'remarks',
 
-
         'entered_by',
-
 
         'submitted_at',
 
-
         'approved_at',
-
 
         'approved_by',
 
-
         'status',
-
 
     ];
 
@@ -112,45 +77,41 @@ class IndicatorDataEntry extends Model
     }
 
     public function indicator()
-
-
     {
-
 
         return $this->belongsTo(Indicator::class);
 
-
     }
-    public function financialYear()
 
+    public function financialYear()
     {
 
         return $this->belongsTo(FinancialYear::class);
 
     }
-    public function reportingPeriod()
 
+    public function reportingPeriod()
     {
 
         return $this->belongsTo(ReportingPeriod::class);
 
     }
-    public function rows()
 
+    public function rows()
     {
 
         return $this->hasMany(IndicatorDataEntryRow::class);
 
     }
-    public function expenses()
 
+    public function expenses()
     {
 
         return $this->hasMany(IndicatorDataEntryExpense::class);
 
     }
-    public function reviews()
 
+    public function reviews()
     {
 
         return $this->hasMany(IndicatorDataReview::class);

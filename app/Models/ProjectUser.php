@@ -11,18 +11,11 @@ class ProjectUser extends Model
 
     protected $fillable = [
 
-
         'project_id',
-
 
         'user_id',
 
-
-        'role',
-
-
         'is_active',
-
 
     ];
 
@@ -36,17 +29,13 @@ class ProjectUser extends Model
     }
 
     public function project()
-
-
     {
-
 
         return $this->belongsTo(Project::class);
 
-
     }
-    public function user()
 
+    public function user()
     {
 
         return $this->belongsTo(User::class);

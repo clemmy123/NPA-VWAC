@@ -11,46 +11,43 @@ class ThematicArea extends Model
 
     protected $fillable = [
 
-
         'project_id',
-
 
         'name',
 
-
         'description',
-
 
         'status',
 
-
         'created_by',
-
 
     ];
 
     public function project()
-
-
     {
-
 
         return $this->belongsTo(Project::class);
 
-
     }
-    public function indicators()
 
+    public function indicators()
     {
 
         return $this->hasMany(Indicator::class);
 
     }
-    public function users()
 
+    public function interventions()
     {
 
-        return $this->belongsToMany(User::class,'thematic_area_users')->withPivot(['role','is_active'])->withTimestamps();
+        return $this->hasMany(Intervention::class);
+
+    }
+
+    public function users()
+    {
+
+        return $this->belongsToMany(User::class, 'thematic_area_users')->withPivot(['is_active'])->withTimestamps();
 
     }
 }

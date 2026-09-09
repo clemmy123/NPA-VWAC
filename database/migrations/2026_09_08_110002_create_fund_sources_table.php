@@ -8,14 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('data_sources', function (Blueprint $table) {
+        Schema::create('fund_sources', function (Blueprint $table) {
             $table->id();
             $table->string('code', 50)->unique();
             $table->string('name');
             $table->text('description')->nullable();
-            // How this source generally provides data: a person types it into a portal, or it's
-            // pulled automatically from the source institution's own system via integration.
-            $table->string('collection_method', 20)->default('manual');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
@@ -23,6 +20,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('data_sources');
+        Schema::dropIfExists('fund_sources');
     }
 };

@@ -11,15 +11,13 @@ class IndicatorDataSource extends Model
 
     protected $fillable = [
 
-
         'indicator_id',
-
 
         'data_source_id',
 
-
         'is_primary',
 
+        'collection_status',
 
     ];
 
@@ -32,5 +30,13 @@ class IndicatorDataSource extends Model
         ];
     }
 
+    public function indicator()
+    {
+        return $this->belongsTo(Indicator::class);
+    }
 
+    public function dataSource()
+    {
+        return $this->belongsTo(DataSource::class);
+    }
 }

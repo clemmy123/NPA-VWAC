@@ -12,26 +12,18 @@ return new class extends Migration
             $table->id();
             $table->foreignId('indicator_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->unsignedBigInteger('region_id')->nullable();
-            $table->unsignedBigInteger('district_id')->nullable();
-            $table->unsignedBigInteger('council_id')->nullable();
-            $table->unsignedBigInteger('division_id')->nullable();
-            $table->unsignedBigInteger('township_id')->nullable();
-            $table->unsignedBigInteger('ward_id')->nullable();
-            $table->unsignedBigInteger('village_mtaa_id')->nullable();
-            $table->unsignedBigInteger('kitongoji_id')->nullable();
+            // Single "most specific unit" location reference instead of one nullable FK per
+            // admin level. location_level says which table location_id points into; ancestors
+            // are derived by joining up the chain (region -> ... -> kitongoji), never stored
+            // redundantly here. No DB-level FK is possible since the target table varies by
+            // level - validate location_id exists in the level's table at the application layer.
+            $table->string('location_level', 20)->nullable();
+            $table->unsignedBigInteger('location_id')->nullable();
             $table->foreignId('organization_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('data_source_id')->nullable()->constrained()->nullOnDelete();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            $table->foreign('region_id')->references('region_id')->on('region')->nullOnDelete();
-            $table->foreign('district_id')->references('district_id')->on('district')->nullOnDelete();
-            $table->foreign('council_id')->references('council_id')->on('council')->nullOnDelete();
-            $table->foreign('division_id')->references('division_id')->on('division')->nullOnDelete();
-            $table->foreign('township_id')->references('township_id')->on('township')->nullOnDelete();
-            $table->foreign('ward_id')->references('ward_id')->on('ward')->nullOnDelete();
-            $table->foreign('village_mtaa_id')->references('village_mtaa_id')->on('village_mtaa')->nullOnDelete();
-            $table->foreign('kitongoji_id')->references('kitongoji_id')->on('kitongoji')->nullOnDelete();
+            $table->index(['location_level', 'location_id']);
             $table->index(['indicator_id', 'user_id', 'is_active']);
         });
     }

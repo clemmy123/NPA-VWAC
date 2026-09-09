@@ -15,20 +15,23 @@ class VillageMtaa extends Model
 
     protected $fillable = [
 
-
         'code',
-
 
         'name',
 
-
         'type',
-
 
         'ward_id',
 
-
     ];
 
+    public function ward()
+    {
+        return $this->belongsTo(Ward::class, 'ward_id', 'ward_id');
+    }
 
+    public function kitongojis()
+    {
+        return $this->hasMany(Kitongoji::class, 'village_mtaa_id', 'village_mtaa_id');
+    }
 }

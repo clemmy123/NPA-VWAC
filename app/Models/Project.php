@@ -11,27 +11,19 @@ class Project extends Model
 
     protected $fillable = [
 
-
         'code',
-
 
         'name',
 
-
         'description',
-
 
         'start_date',
 
-
         'end_date',
-
 
         'status',
 
-
         'created_by',
-
 
     ];
 
@@ -47,27 +39,23 @@ class Project extends Model
     }
 
     public function thematicAreas()
-
-
     {
-
 
         return $this->hasMany(ThematicArea::class);
 
-
     }
+
     public function users()
-
     {
 
-        return $this->belongsToMany(User::class,'project_users')->withPivot(['role','is_active'])->withTimestamps();
+        return $this->belongsToMany(User::class, 'project_users')->withPivot(['is_active'])->withTimestamps();
 
     }
-    public function creator()
 
+    public function creator()
     {
 
-        return $this->belongsTo(User::class,'created_by');
+        return $this->belongsTo(User::class, 'created_by');
 
     }
 }
