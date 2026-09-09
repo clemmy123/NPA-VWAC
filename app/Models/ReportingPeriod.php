@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ReportingPeriod extends Model
 {
@@ -11,30 +12,21 @@ class ReportingPeriod extends Model
 
     protected $fillable = [
 
-
         'financial_year_id',
-
 
         'code',
 
-
         'name',
-
 
         'period_type',
 
-
         'sequence',
-
 
         'start_date',
 
-
         'end_date',
 
-
         'is_active',
-
 
     ];
 
@@ -51,5 +43,8 @@ class ReportingPeriod extends Model
         ];
     }
 
-
+    public function financialYear(): BelongsTo
+    {
+        return $this->belongsTo(FinancialYear::class);
+    }
 }
