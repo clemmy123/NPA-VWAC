@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\IndicatorBaselineController;
 use App\Http\Controllers\IndicatorController;
+use App\Http\Controllers\IndicatorTargetController;
 use App\Http\Controllers\InterventionController;
 use App\Http\Controllers\JumuishiSsoController;
 use App\Http\Controllers\ProjectController;
@@ -56,4 +58,18 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
         ->middlewareFor('store', 'can:intervention.create')
         ->middlewareFor('update', 'can:intervention.update')
         ->middlewareFor('destroy', 'can:intervention.delete');
+
+    Route::apiResource('indicator-baselines', IndicatorBaselineController::class)
+        ->middlewareFor('index', 'can:indicator.view')
+        ->middlewareFor('show', 'can:indicator.view')
+        ->middlewareFor('store', 'can:indicator.set-baseline')
+        ->middlewareFor('update', 'can:indicator.set-baseline')
+        ->middlewareFor('destroy', 'can:indicator.set-baseline');
+
+    Route::apiResource('indicator-targets', IndicatorTargetController::class)
+        ->middlewareFor('index', 'can:indicator.view')
+        ->middlewareFor('show', 'can:indicator.view')
+        ->middlewareFor('store', 'can:indicator.set-target')
+        ->middlewareFor('update', 'can:indicator.set-target')
+        ->middlewareFor('destroy', 'can:indicator.set-target');
 });
