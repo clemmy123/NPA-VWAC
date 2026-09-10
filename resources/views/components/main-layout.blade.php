@@ -39,6 +39,8 @@
 </head>
 
 <body>
+    <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
     <div id="wrapper">
 
         @include('components.top-bar')
@@ -47,32 +49,6 @@
 
         <div class="content-page">
             <div class="content">
-
-                @if (session('success'))
-                <div class="alert alert-success alert-dismissible mb-4" role="alert">
-                    <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-                    <button type="button" class="btn-close ms-2" data-bs-dismiss="alert"></button>
-                </div>
-                @endif
-
-                @if (session('warning'))
-                <div class="alert alert-warning alert-dismissible mb-4" role="alert">
-                    <i class="fas fa-exclamation-triangle me-2"></i>{{ session('warning') }}
-                    <button type="button" class="btn-close ms-2" data-bs-dismiss="alert"></button>
-                </div>
-                @endif
-
-                @if ($errors->any())
-                <div class="alert alert-danger alert-dismissible mb-4" role="alert">
-                    <i class="fas fa-exclamation-circle me-2"></i>
-                    <ul class="mb-0 ps-3">
-                        @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                    <button type="button" class="btn-close ms-2" data-bs-dismiss="alert"></button>
-                </div>
-                @endif
 
                 @yield('content')
             </div>
@@ -104,6 +80,53 @@
 
     <script src="{{ asset('app-assets/js/pages/sweetalerts.init.js') }}"></script>
     <script src="{{ asset('app-assets/select2/js/select2Init.js') }}"></script>
+
+    @php
+        $flashToasts = [];
+
+        if (session('success')) {
+            $flashToasts[] = ['type' => 'success', 'message' => session('success')];
+        }
+
+        if (session('warning')) {
+            $flashToasts[] = ['type' => 'warning', 'message' => session('warning')];
+        }
+
+        foreach ($errors->all() as $error) {
+            $flashToasts[] = ['type' => 'danger', 'message' => $error];
+        }
+    @endphp
+    <script>
+        window.showToast = function (type, message, duration) {
+            duration = duration || 10000;
+            var icons = { success: 'mdi-check-circle', warning: 'mdi-alert', danger: 'mdi-alert-circle' };
+            var container = document.getElementById('toast-container');
+            if (!container) return;
+
+            var toast = document.createElement('div');
+            toast.className = 'toast-item toast-' + type;
+            toast.innerHTML =
+                '<i class="mdi ' + (icons[type] || 'mdi-information') + ' toast-icon"></i>' +
+                '<span class="toast-message"></span>' +
+                '<button type="button" class="toast-close" aria-label="Dismiss">&times;</button>';
+            toast.querySelector('.toast-message').textContent = message;
+            container.appendChild(toast);
+
+            var timer = setTimeout(function () { dismiss(); }, duration);
+
+            function dismiss() {
+                clearTimeout(timer);
+                toast.classList.add('toast-leaving');
+                toast.addEventListener('animationend', function () { toast.remove(); }, { once: true });
+            }
+
+            toast.querySelector('.toast-close').addEventListener('click', dismiss);
+        };
+
+        @foreach ($flashToasts as $toast)
+        window.showToast(@json($toast['type']), @json($toast['message']));
+        @endforeach
+    </script>
     @stack('scripts')
 
     <script>

@@ -8,6 +8,7 @@
 @import './app/topbar.css';
 @import './app/content.css';
 @import './app/alerts.css';
+@import './app/toasts.css';
 @import './app/cards.css';
 @import './app/tables.css';
 @import './app/mobile-cards.css';
