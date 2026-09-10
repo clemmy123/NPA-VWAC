@@ -73,3 +73,21 @@ body.sidebar-collapsed .content-page {
     margin-left: 0 !important;
   }
 }
+
+/* Form action row (Save/Cancel buttons) and inline checkbox groups.
+   Not Bootstrap gap-N or me-N utilities: this vendor build is trimmed down
+   to only the classes GDIS's own views use, and doesn't ship spacing
+   utilities beyond a handful of mb-N/mt-N, so spacing here is hand-rolled. */
+.form-actions > * + * {
+  margin-left: 10px;
+}
+
+.check-row {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.check-row .form-check {
+  margin-right: 24px;
+  margin-bottom: 8px;
+}

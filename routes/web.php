@@ -75,6 +75,11 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
         ->middlewareFor('update', 'can:project.update')
         ->middlewareFor('destroy', 'can:project.delete');
 
+    Route::get('thematic-areas/create', [ThematicAreaController::class, 'create'])
+        ->middleware('can:thematic-area.create')->name('thematic-areas.create');
+    Route::get('thematic-areas/{thematic_area}/edit', [ThematicAreaController::class, 'edit'])
+        ->middleware('can:thematic-area.update')->name('thematic-areas.edit');
+
     Route::apiResource('thematic-areas', ThematicAreaController::class)
         ->middlewareFor('index', 'can:thematic-area.view')
         ->middlewareFor('show', 'can:thematic-area.view')
@@ -82,12 +87,22 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
         ->middlewareFor('update', 'can:thematic-area.update')
         ->middlewareFor('destroy', 'can:thematic-area.delete');
 
+    Route::get('indicators/create', [IndicatorController::class, 'create'])
+        ->middleware('can:indicator.create')->name('indicators.create');
+    Route::get('indicators/{indicator}/edit', [IndicatorController::class, 'edit'])
+        ->middleware('can:indicator.update')->name('indicators.edit');
+
     Route::apiResource('indicators', IndicatorController::class)
         ->middlewareFor('index', 'can:indicator.view')
         ->middlewareFor('show', 'can:indicator.view')
         ->middlewareFor('store', 'can:indicator.create')
         ->middlewareFor('update', 'can:indicator.update')
         ->middlewareFor('destroy', 'can:indicator.delete');
+
+    Route::get('interventions/create', [InterventionController::class, 'create'])
+        ->middleware('can:intervention.create')->name('interventions.create');
+    Route::get('interventions/{intervention}/edit', [InterventionController::class, 'edit'])
+        ->middleware('can:intervention.update')->name('interventions.edit');
 
     Route::apiResource('interventions', InterventionController::class)
         ->middlewareFor('index', 'can:intervention.view')

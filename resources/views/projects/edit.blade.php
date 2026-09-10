@@ -21,7 +21,7 @@
         @method('PUT')
         @include('projects.form', ['project' => $project, 'statusOptions' => $statusOptions])
 
-        <div class="d-flex gap-2">
+        <div class="d-flex form-actions">
             <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> Save Changes</button>
             <a href="{{ route('projects.index') }}" class="btn btn-outline-secondary">Cancel</a>
         </div>
