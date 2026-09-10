@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class IndicatorDataEntry extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
 
@@ -116,5 +118,25 @@ class IndicatorDataEntry extends Model
 
         return $this->hasMany(IndicatorDataReview::class);
 
+    }
+
+    public function organization()
+    {
+        return $this->belongsTo(Organization::class);
+    }
+
+    public function dataSource()
+    {
+        return $this->belongsTo(DataSource::class);
+    }
+
+    public function enteredBy()
+    {
+        return $this->belongsTo(User::class, 'entered_by');
+    }
+
+    public function approvedBy()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 }

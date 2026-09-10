@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\IndicatorBaselineController;
 use App\Http\Controllers\IndicatorController;
+use App\Http\Controllers\IndicatorDataEntryController;
 use App\Http\Controllers\IndicatorTargetController;
 use App\Http\Controllers\InterventionController;
 use App\Http\Controllers\JumuishiSsoController;
@@ -72,4 +73,23 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
         ->middlewareFor('store', 'can:indicator.set-target')
         ->middlewareFor('update', 'can:indicator.set-target')
         ->middlewareFor('destroy', 'can:indicator.set-target');
+
+    Route::apiResource('indicator-data-entries', IndicatorDataEntryController::class)
+        ->only(['index', 'store', 'show', 'update'])
+        ->middlewareFor('index', 'can:indicator-data.view')
+        ->middlewareFor('show', 'can:indicator-data.view')
+        ->middlewareFor('store', 'can:indicator-data.create')
+        ->middlewareFor('update', 'can:indicator-data.update');
+
+    Route::post('indicator-data-entries/{indicator_data_entry}/submit', [IndicatorDataEntryController::class, 'submit'])
+        ->middleware('can:indicator-data.submit')
+        ->name('indicator-data-entries.submit');
+
+    Route::post('indicator-data-entries/{indicator_data_entry}/approve', [IndicatorDataEntryController::class, 'approve'])
+        ->middleware('can:indicator-data.approve')
+        ->name('indicator-data-entries.approve');
+
+    Route::post('indicator-data-entries/{indicator_data_entry}/return', [IndicatorDataEntryController::class, 'returnEntry'])
+        ->middleware('can:indicator-data.return')
+        ->name('indicator-data-entries.return');
 });
