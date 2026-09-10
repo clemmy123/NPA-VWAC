@@ -1,0 +1,54 @@
+/* ==========================================================================
+   Generic card surfaces — Bootstrap .card/.card-box, chart cards, and modal
+   chrome. Ported from GDIS_WEB.
+   ========================================================================== */
+
+.card,
+.card-box {
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow-sm) !important;
+  border: 1px solid var(--border-soft) !important;
+}
+
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 20px 20px 16px;
+  margin-bottom: 20px;
+}
+
+.chart-card-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--heading-dark);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.modal-card {
+  border: none !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-modal) !important;
+}
+
+.modal-card .modal-header {
+  border-bottom: 1px solid var(--divider-faint);
+  padding: 18px 24px;
+}
+
+.modal-card .modal-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--heading-dark);
+}
+
+.modal-card .modal-body {
+  padding: 20px 24px;
+}
+
+.modal-card .modal-footer {
+  border-top: 1px solid var(--divider-faint);
+  padding: 14px 24px;
+}

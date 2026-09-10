@@ -8,10 +8,41 @@ use App\Http\Controllers\InterventionController;
 use App\Http\Controllers\JumuishiSsoController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ThematicAreaController;
+use App\Models\User;
 use App\Services\JumuishiUrl;
+use Database\Seeders\RolePermissionSeeder;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Spatie\Permission\Models\Role;
 
-Route::get('/', fn () => view('welcome'));
+Route::redirect('/', '/dashboard');
+
+if (app()->environment('local')) {
+    // Local-only convenience: Jumuishi SSO can't be exercised against a local
+    // instance (there's no central hub to redirect to), so this logs in the
+    // first Super Admin (creating one via RolePermissionSeeder's roles if
+    // needed) to let the shell be reviewed in a browser without real SSO.
+    Route::get('/dev-login', function () {
+        if (! Role::where('name', 'Super Admin')->exists()) {
+            Artisan::call('db:seed', [
+                '--class' => RolePermissionSeeder::class,
+                '--force' => true,
+            ]);
+        }
+
+        $user = User::query()->whereHas('roles', fn ($query) => $query->where('name', 'Super Admin'))->first();
+
+        if (! $user) {
+            $user = User::factory()->create();
+            $user->assignRole('Super Admin');
+        }
+
+        Auth::login($user);
+
+        return redirect('/dashboard');
+    })->name('dev-login');
+}
 
 Route::get('/login', [JumuishiSsoController::class, 'login'])->name('login');
 Route::get('/jumuishi/sso/consume', [JumuishiSsoController::class, 'consume'])

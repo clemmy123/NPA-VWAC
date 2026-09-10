@@ -1,0 +1,83 @@
+/* ==========================================================================
+   Mobile card fallback for table-card (< md breakpoint), and the shared
+   empty-state used by both the desktop table and the mobile card list.
+   Ported from GDIS_WEB.
+   ========================================================================== */
+
+.mob-card {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  transition: box-shadow 0.15s;
+}
+
+.mob-card:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.mob-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mob-card-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--heading-dark);
+}
+
+.mob-card-body {
+  font-size: 0.81rem;
+  color: var(--muted-mid);
+  margin-bottom: 8px;
+  line-height: 1.45;
+}
+
+.mob-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.74rem;
+  color: var(--muted-soft);
+}
+
+.mob-card-meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mob-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--divider-faint);
+  flex-wrap: wrap;
+}
+
+/* Shared empty state (desktop table cell + mobile list) */
+.tbl-empty {
+  padding: 50px 20px;
+  text-align: center;
+}
+
+.tbl-empty i {
+  font-size: 2rem;
+  color: var(--muted-faint);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.tbl-empty p {
+  font-size: 0.84rem;
+  color: var(--muted-soft);
+  margin: 0;
+}

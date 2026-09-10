@@ -1,0 +1,62 @@
+/* ==========================================================================
+   Collapsible filter card sitting above a table-card. Ported from GDIS_WEB.
+   ========================================================================== */
+
+.filter-card {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 14px 20px;
+  margin-bottom: 20px;
+}
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 20px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.filter-toggle h6 {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted-mid);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.filter-body {
+  padding: 4px 20px 20px;
+  border-top: 1px solid var(--divider-faint);
+}
+
+.filter-body label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.filter-body .form-control {
+  font-size: 0.82rem;
+  border-color: var(--border-soft);
+  border-radius: 6px;
+  height: 36px;
+  color: var(--input-text);
+}
+
+.filter-badge {
+  background: var(--accent-bg);
+  color: var(--accent-text);
+  border-radius: var(--radius-pill);
+  padding: 2px 9px;
+  font-size: 0.68rem;
+  font-weight: 700;
+}

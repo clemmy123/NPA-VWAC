@@ -1,0 +1,83 @@
+/* ==========================================================================
+   Design tokens — the only file allowed a literal color/shadow value.
+   Ported 1:1 from GDIS_WEB's shell (components/main-layout.blade.php inline
+   <style>) so the two sibling systems share one visual language. Every other
+   resources/css/app/*.css file references a custom property from here.
+   ========================================================================== */
+
+:root {
+  /* Layout dimensions */
+  --sidebar-w: 250px;
+  --sidebar-w-collapsed: 70px;
+  --topbar-h: 62px;
+  --radius: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-pill: 999px;
+
+  /* Surfaces */
+  --body-bg: #f0f4f8;
+  --surface: #ffffff;
+  --surface-muted: #f9fafb;
+  --surface-faint: #f8fafc;
+
+  /* Borders */
+  --border: #e5e7eb;
+  --border-soft: #e2e8f0;
+  --border-strong: #d1d5db;
+  --divider-faint: #f1f5f9;
+
+  /* Text */
+  --text-body: #2d3a4a;
+  --heading: #111827;
+  --heading-dark: #1e293b;
+  --nav-text: #374151;
+  --nav-hover: #111827;
+  --muted: #6b7280;
+  --muted-mid: #64748b;
+  --muted-soft: #94a3b8;
+  --muted-icon: #9ca3af;
+  --muted-faint: #cbd5e1;
+  --hover-bg: #f3f4f6;
+
+  /* Brand / accent — GDIS uses two blues: --accent for the sidebar-token
+     system (chat FAB, focus rings) and --brand-blue for active nav/link/badge
+     states. Kept distinct to match the source exactly rather than merging. */
+  --accent: #3b82f6;
+  --accent-rgb: 59, 130, 246;
+  --brand-blue: #188ae2;
+  --brand-blue-hover: #1278c8;
+  --nav-active-bg: #eff6ff;
+  --nav-active-accent: #3b82f6;
+
+  /* Status colors */
+  --success-bg: #f0fdf4;
+  --success-text: #15803d;
+  --success-border: #22c55e;
+  --status-active-text: #16a34a;
+  --danger-bg: #fef2f2;
+  --danger-text: #b91c1c;
+  --danger-border: #f87171;
+  --danger-border-hover: #fecaca;
+  --status-inactive-text: #dc2626;
+  --warning-bg: #fffbeb;
+  --warning-text: #d97706;
+  --accent-bg: #eff6ff;
+  --accent-text: #3b82f6;
+  --accent-border-hover: #bfdbfe;
+  --default-bg: #f8fafc;
+  --default-text: #64748b;
+  --dropdown-item-text: #334155;
+  --dropdown-item-hover-text: #0f172a;
+  --input-text: #344767;
+
+  /* Shadows / overlays */
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 4px 14px rgba(0, 0, 0, 0.07);
+  --shadow-dropdown: 0 8px 30px rgba(0, 0, 0, 0.1);
+  --shadow-sidebar-hover: 4px 0 20px rgba(0, 0, 0, 0.12);
+  --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.15);
+  --shadow-fab: 0 4px 16px rgba(var(--accent-rgb), 0.4);
+  --shadow-fab-hover: 0 8px 24px rgba(var(--accent-rgb), 0.5);
+  --scrim: rgba(0, 0, 0, 0.45);
+}

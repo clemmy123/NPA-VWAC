@@ -1,9 +1,16 @@
-@import 'tailwindcss';
-
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
-}
+/* Entry point for the authenticated app shell (dashboard and everything
+   behind it). One file per concern, pure @import list so load order stays
+   explicit — see _docs/04-frontend-phases.md. theme-tokens.css is the only
+   file allowed a literal color/size value; everything else references it. */
+@import './app/theme-tokens.css';
+@import './app/reset.css';
+@import './app/sidebar.css';
+@import './app/topbar.css';
+@import './app/content.css';
+@import './app/alerts.css';
+@import './app/cards.css';
+@import './app/tables.css';
+@import './app/mobile-cards.css';
+@import './app/badges.css';
+@import './app/filters.css';
+@import './app/chat-fab.css';

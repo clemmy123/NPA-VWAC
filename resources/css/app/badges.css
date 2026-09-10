@@ -1,0 +1,43 @@
+/* ==========================================================================
+   Status pill badges (s-badge + variants). Ported from GDIS_WEB. Variant
+   names are generic (received/investigation/reported/active/invalid/
+   inactive/default) so they cover both systems' status vocabularies.
+   ========================================================================== */
+
+.s-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+
+.s-received {
+  background: var(--accent-bg);
+  color: var(--accent-text);
+}
+
+.s-investigation {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+.s-reported,
+.s-active {
+  background: var(--success-bg);
+  color: var(--status-active-text);
+}
+
+.s-invalid,
+.s-inactive {
+  background: var(--danger-bg);
+  color: var(--status-inactive-text);
+}
+
+.s-default {
+  background: var(--default-bg);
+  color: var(--default-text);
+}

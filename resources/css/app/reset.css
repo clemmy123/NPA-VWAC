@@ -1,0 +1,23 @@
+/* ==========================================================================
+   Base reset + body — cross-cutting primitive, applies to the whole app shell.
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--body-bg);
+  color: var(--text-body);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+#wrapper {
+  flex: 1;
+}

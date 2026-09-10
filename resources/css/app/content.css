@@ -1,0 +1,75 @@
+/* ==========================================================================
+   Main content area (offset for sidebar + topbar) and the page-header
+   pattern (title/breadcrumb + primary action) used at the top of every
+   screen. Ported from GDIS_WEB's shell.
+   ========================================================================== */
+
+.content-page {
+  margin-left: var(--sidebar-w) !important;
+  margin-top: var(--topbar-h) !important;
+  min-height: calc(100vh - var(--topbar-h)) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  transition: margin-left 0.25s ease;
+}
+
+.content {
+  padding: 24px 28px;
+  flex: 1;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.page-header h4,
+.page-header .page-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--heading-dark);
+  margin: 0 0 2px;
+}
+
+.page-header .breadcrumb {
+  background: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.76rem;
+}
+
+.page-header .breadcrumb-item + .breadcrumb-item::before {
+  color: var(--muted-soft);
+}
+
+.page-header .breadcrumb-item a {
+  color: var(--muted-mid);
+  text-decoration: none;
+}
+
+.page-header .breadcrumb-item.active {
+  color: var(--muted-soft);
+}
+
+/* DESKTOP COLLAPSED */
+body.sidebar-collapsed .content-page {
+  margin-left: 0 !important;
+}
+
+/* TABLET — content follows the collapsed icon-rail width */
+@media (min-width: 768px) and (max-width: 991px) {
+  .content-page {
+    margin-left: var(--sidebar-w-collapsed) !important;
+  }
+}
+
+/* MOBILE — sidebar is off-canvas, content spans full width */
+@media (max-width: 767px) {
+  .content-page {
+    margin-left: 0 !important;
+  }
+}

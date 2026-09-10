@@ -1,0 +1,133 @@
+/* ==========================================================================
+   Fixed topbar — sits to the right of the sidebar, collapses to full width
+   when the sidebar is hidden/collapsed. Ported from GDIS_WEB's shell.
+   ========================================================================== */
+
+.navbar-custom {
+  position: fixed !important;
+  top: 0 !important;
+  left: var(--sidebar-w) !important;
+  right: 0 !important;
+  height: var(--topbar-h) !important;
+  background: var(--surface) !important;
+  border-bottom: 1px solid var(--border-soft) !important;
+  box-shadow: var(--shadow-sm) !important;
+  z-index: 1030 !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 20px !important;
+  transition: left 0.25s ease;
+}
+
+.navbar-custom .logo-box {
+  display: none !important;
+}
+
+.navbar-custom .button-menu-mobile {
+  background: transparent !important;
+  border: none !important;
+  color: var(--muted-mid) !important;
+  font-size: 1.35rem !important;
+  padding: 0 !important;
+  margin-right: 8px !important;
+  line-height: 1 !important;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.navbar-custom .button-menu-mobile:hover {
+  color: var(--heading-dark) !important;
+}
+
+.topnav-menu-left {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.topnav-menu.float-right {
+  margin-left: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  height: var(--topbar-h) !important;
+}
+
+.navbar-custom .nav-link {
+  color: var(--muted-mid) !important;
+  font-size: 0.82rem !important;
+  font-weight: 500 !important;
+  padding: 0 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  height: var(--topbar-h) !important;
+}
+
+.navbar-custom .nav-link:hover {
+  color: var(--heading-dark) !important;
+}
+
+.navbar-custom .dropdown-menu {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-dropdown);
+  font-size: 0.82rem;
+  padding: 6px 0;
+  margin-top: 4px;
+}
+
+.navbar-custom .dropdown-item {
+  color: var(--dropdown-item-text);
+  padding: 8px 16px;
+}
+
+.navbar-custom .dropdown-item:hover {
+  background: var(--surface-faint);
+  color: var(--dropdown-item-hover-text);
+}
+
+.navbar-custom .dropdown-item.active {
+  background: var(--accent);
+  color: var(--surface);
+}
+
+.navbar-custom .dropdown-divider {
+  border-color: var(--divider-faint);
+  margin: 4px 0;
+}
+
+.topbar-logo-sm {
+  display: none;
+}
+
+body.sidebar-collapsed .topbar-logo-sm {
+  display: flex !important;
+}
+
+/* TABLET — topbar follows the collapsed icon-rail width */
+@media (min-width: 768px) and (max-width: 991px) {
+  .navbar-custom {
+    left: var(--sidebar-w-collapsed) !important;
+  }
+}
+
+/* MOBILE — topbar spans full width, sidebar is off-canvas */
+@media (max-width: 767px) {
+  .navbar-custom {
+    left: 0 !important;
+  }
+
+  .topbar-logo-sm {
+    display: flex !important;
+  }
+
+  body.sidebar-open .topbar-logo-sm {
+    display: none !important;
+  }
+}
+
+/* DESKTOP COLLAPSED */
+body.sidebar-collapsed .navbar-custom {
+  left: 0 !important;
+}

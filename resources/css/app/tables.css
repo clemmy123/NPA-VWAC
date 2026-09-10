@@ -1,0 +1,129 @@
+/* ==========================================================================
+   Desktop data table ("table-card") — the primary list-screen pattern.
+   Pairs with mobile-cards.css for the < md breakpoint. Ported class-for-
+   class from GDIS_WEB so both systems' tables look and behave identically.
+   ========================================================================== */
+
+.table-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  /* NO overflow:hidden — it clips action dropdowns */
+  margin-bottom: 20px;
+}
+
+/* Clip only the top corners via the header row */
+.table-card .table thead tr:first-child th:first-child {
+  border-top-left-radius: var(--radius-lg);
+}
+.table-card .table thead tr:first-child th:last-child {
+  border-top-right-radius: var(--radius-lg);
+}
+
+.table-card .table {
+  margin-bottom: 0 !important;
+  table-layout: fixed !important;
+  width: 100% !important;
+}
+
+.table-card .table thead th {
+  background: var(--surface-muted) !important;
+  border-bottom: 1px solid var(--border) !important;
+  border-top: none !important;
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  color: var(--muted-icon) !important;
+  padding: 11px 16px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.table-card .table tbody tr {
+  border-bottom: 1px solid var(--divider-faint) !important;
+  transition: background 0.1s;
+}
+
+.table-card .table tbody tr:last-child {
+  border-bottom: none !important;
+}
+
+.table-card .table tbody tr:hover {
+  background: var(--surface-muted) !important;
+}
+
+.table-card .table tbody td,
+.table-card .table tbody th {
+  padding: 13px 16px !important;
+  font-size: 0.82rem !important;
+  color: var(--nav-text) !important;
+  vertical-align: middle !important;
+  border: none !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Action column — visible overflow for dropdown, tighter padding so icons fit */
+.table-card .table tbody td:last-child {
+  overflow: visible !important;
+  padding: 8px 10px !important;
+  white-space: nowrap !important;
+}
+
+/* Truncating cells — tooltip target */
+.td-ellipsis {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  max-width: 0;
+  cursor: default;
+}
+
+/* Ensure action dropdowns always clear the card boundary */
+.table-card .dropdown-menu {
+  z-index: 1055;
+}
+
+/* Reference-number pill (monospace code chip) */
+.ref-pill {
+  font-family: 'Courier New', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: var(--divider-faint);
+  color: var(--muted-mid);
+  border-radius: 5px;
+  padding: 3px 8px;
+  display: inline-block;
+}
+
+/* Icon-only row action buttons */
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-soft);
+  background: var(--surface);
+  color: var(--muted-mid);
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: background 0.14s, color 0.14s, border-color 0.14s;
+  cursor: pointer;
+}
+
+.btn-icon:hover {
+  background: var(--accent-bg);
+  border-color: var(--accent-border-hover);
+  color: var(--accent-text);
+}
+
+.btn-icon.danger:hover {
+  background: var(--danger-bg);
+  border-color: var(--danger-border-hover);
+  color: var(--status-inactive-text);
+}

@@ -1,0 +1,338 @@
+/* ==========================================================================
+   Admin sidebar — persistent on desktop (>= 992px), icon rail on tablet with
+   hover-expand, off-canvas drawer on mobile. Ported from GDIS_WEB's shell.
+   ========================================================================== */
+
+.left-side-menu {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  width: var(--sidebar-w) !important;
+  padding: 0 !important;
+  background: var(--surface) !important;
+  border-right: 1px solid var(--border) !important;
+  box-shadow: none !important;
+  z-index: 1040 !important;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease, width 0.25s ease;
+}
+
+.left-side-menu::-webkit-scrollbar {
+  width: 3px;
+}
+
+.left-side-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.left-side-menu::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+
+/* BRAND */
+.sidebar-brand {
+  height: var(--topbar-h) !important;
+  min-height: var(--topbar-h) !important;
+  max-height: var(--topbar-h) !important;
+  padding: 0 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  border-bottom: 1px solid var(--border) !important;
+  flex-shrink: 0 !important;
+  overflow: hidden !important;
+}
+
+.sidebar-brand .brand-logo-sm {
+  display: block !important;
+  max-width: 72px;
+  object-fit: contain;
+  height: 36px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.sidebar-brand-link,
+.sidebar-brand a {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  text-decoration: none !important;
+}
+
+.sidebar-brand .brand-text {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--heading);
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.sidebar-brand .brand-sub {
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+
+/* NAV */
+.slimscroll-menu {
+  flex: 1;
+  padding: 8px 0 20px;
+}
+
+#sidebar-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#sidebar-menu .menu-title {
+  font-size: 0.64rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  color: var(--muted-icon) !important;
+  padding: 18px 20px 5px !important;
+  margin: 0 !important;
+}
+
+#sidebar-menu ul li > a {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 9px 14px !important;
+  margin: 1px 10px !important;
+  border-radius: 7px !important;
+  font-size: 0.9rem !important;
+  font-weight: 500 !important;
+  color: var(--nav-text) !important;
+  text-decoration: none !important;
+  border-left: 3px solid transparent !important;
+  transition: background 0.15s, color 0.15s, border-color 0.15s !important;
+  white-space: nowrap;
+}
+
+#sidebar-menu ul li > a:hover {
+  background: var(--hover-bg) !important;
+  color: var(--nav-hover) !important;
+}
+
+/* Standalone active link — light blue highlight */
+#sidebar-menu ul li.active > a:not([href="javascript: void(0);"]) {
+  background: var(--nav-active-bg) !important;
+  color: var(--brand-blue) !important;
+  font-weight: 600 !important;
+  border-left-color: transparent !important;
+}
+
+#sidebar-menu ul li > a i {
+  font-size: 1.05rem !important;
+  width: 18px !important;
+  text-align: center !important;
+  flex-shrink: 0 !important;
+  color: var(--muted-icon);
+  transition: color 0.15s;
+}
+
+#sidebar-menu ul li > a:hover i {
+  color: var(--nav-text);
+}
+
+#sidebar-menu ul li.active > a:not([href="javascript: void(0);"]) i {
+  color: var(--brand-blue) !important;
+}
+
+#sidebar-menu ul li.active > a[href="javascript: void(0);"] i {
+  color: var(--muted-soft) !important;
+}
+
+.menu-arrow {
+  margin-left: auto !important;
+  font-size: 0.7rem !important;
+  opacity: 0.65;
+}
+
+/* SUBMENU — single vertical line, Cloudflare style */
+#sidebar-menu .nav-second-level {
+  margin: 2px 0 4px 30px !important;
+  padding: 2px 0 2px 12px !important;
+  border-left: 2px solid var(--border) !important;
+  background: transparent !important;
+  list-style: none !important;
+}
+
+#sidebar-menu .nav-second-level li {
+  position: static;
+}
+
+#sidebar-menu .nav-second-level li::after {
+  display: none !important;
+}
+
+#sidebar-menu .nav-second-level li > a {
+  position: relative;
+  padding: 6px 10px !important;
+  margin: 0 10px 0 0 !important;
+  border-radius: 6px !important;
+  color: var(--muted-mid) !important;
+  font-size: 0.83rem !important;
+  font-weight: 500 !important;
+  border-left: 0 !important;
+  background: transparent !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  display: block !important;
+}
+
+#sidebar-menu .nav-second-level li > a::before {
+  display: none !important;
+}
+
+#sidebar-menu .nav-second-level li.active > a {
+  background: var(--nav-active-bg) !important;
+  color: var(--brand-blue) !important;
+  font-weight: 600 !important;
+}
+
+#sidebar-menu .nav-second-level li > a:hover {
+  background: var(--hover-bg) !important;
+  color: var(--nav-hover) !important;
+}
+
+/* DESKTOP COLLAPSED */
+body.sidebar-collapsed .left-side-menu {
+  transform: translateX(-250px);
+}
+
+/* TABLET — icon rail with hover-expand */
+@media (min-width: 768px) and (max-width: 991px) {
+  .left-side-menu {
+    width: var(--sidebar-w-collapsed) !important;
+  }
+
+  .sidebar-brand {
+    justify-content: center !important;
+    padding: 0 !important;
+  }
+
+  .sidebar-brand .brand-text {
+    display: none !important;
+  }
+
+  #sidebar-menu .menu-title {
+    display: none !important;
+  }
+
+  #sidebar-menu ul li > a > span:not(.menu-arrow),
+  #sidebar-menu ul li > a > .menu-arrow {
+    display: none !important;
+  }
+
+  #sidebar-menu ul li > a {
+    justify-content: center !important;
+    padding: 10px 0 !important;
+    margin: 2px 8px !important;
+    border-left: none !important;
+    border-radius: 8px !important;
+  }
+
+  #sidebar-menu ul li.active > a {
+    border-left: none !important;
+    background: var(--nav-active-bg) !important;
+    color: var(--nav-text) !important;
+  }
+
+  #sidebar-menu ul li > a i {
+    width: auto !important;
+    font-size: 1.2rem !important;
+    opacity: 0.95;
+  }
+
+  #sidebar-menu .nav-second-level {
+    display: none !important;
+  }
+
+  body.sidebar-collapsed .left-side-menu {
+    transform: translateX(-70px);
+  }
+
+  .left-side-menu.sidebar-hovered {
+    width: var(--sidebar-w) !important;
+    z-index: 1040;
+    box-shadow: var(--shadow-sidebar-hover);
+  }
+
+  .left-side-menu.sidebar-hovered .sidebar-brand {
+    justify-content: flex-start !important;
+    padding: 0 16px !important;
+  }
+
+  .left-side-menu.sidebar-hovered .sidebar-brand .brand-text {
+    display: inline-block !important;
+  }
+
+  .left-side-menu.sidebar-hovered #sidebar-menu .menu-title {
+    display: block !important;
+  }
+
+  .left-side-menu.sidebar-hovered #sidebar-menu ul li > a > span:not(.menu-arrow) {
+    display: inline !important;
+  }
+
+  .left-side-menu.sidebar-hovered #sidebar-menu ul li > a > .menu-arrow {
+    display: inline-block !important;
+  }
+
+  .left-side-menu.sidebar-hovered #sidebar-menu ul li > a {
+    justify-content: flex-start !important;
+    padding: 10px 20px !important;
+    margin: 2px 8px !important;
+    border-radius: 8px !important;
+  }
+
+  .left-side-menu.sidebar-hovered #sidebar-menu .nav-second-level {
+    display: block !important;
+    margin: 2px 0 6px 36px !important;
+    padding: 4px 0 4px 16px !important;
+    border-left: 2px solid var(--border) !important;
+  }
+}
+
+/* MOBILE — off-canvas drawer */
+@media (max-width: 767px) {
+  .left-side-menu {
+    transform: translateX(-250px) !important;
+    width: var(--sidebar-w) !important;
+    z-index: 1050 !important;
+  }
+
+  body.sidebar-open .left-side-menu {
+    transform: translateX(0) !important;
+    box-shadow: var(--shadow-sidebar-hover) !important;
+  }
+
+  .sidebar-brand .brand-text {
+    display: inline-block !important;
+  }
+
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--scrim);
+    z-index: 1045;
+    cursor: pointer;
+  }
+
+  body.sidebar-open .sidebar-backdrop {
+    display: block;
+  }
+}
