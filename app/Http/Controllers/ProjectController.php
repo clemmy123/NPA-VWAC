@@ -7,22 +7,40 @@ use App\Http\Requests\UpdateProjectRequest;
 use App\Http\Resources\ProjectResource;
 use App\Models\Project;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class ProjectController extends Controller
 {
-    public function index(Request $request): JsonResponse
-    {
-        $projects = Project::query()->paginate($request->integer('per_page', 15));
+    /** @var array<int, string> */
+    public const STATUS_OPTIONS = ['draft', 'active', 'completed', 'closed'];
 
-        return response()->json(ProjectResource::collection($projects)->response()->getData(true));
+    public function index(Request $request): JsonResponse|View
+    {
+        $projects = Project::query()->latest('id')->paginate($request->integer('per_page', 15));
+
+        if ($request->wantsJson()) {
+            return response()->json(ProjectResource::collection($projects)->response()->getData(true));
+        }
+
+        return view('projects.index', compact('projects'));
     }
 
-    public function store(StoreProjectRequest $request): JsonResponse
+    public function create(): View
+    {
+        return view('projects.create', ['statusOptions' => self::STATUS_OPTIONS]);
+    }
+
+    public function store(StoreProjectRequest $request): JsonResponse|RedirectResponse
     {
         $project = Project::create($request->validated() + ['created_by' => $request->user()->id]);
 
-        return (new ProjectResource($project))->response()->setStatusCode(201);
+        if ($request->wantsJson()) {
+            return (new ProjectResource($project))->response()->setStatusCode(201);
+        }
+
+        return redirect()->route('projects.index')->with('success', "Project \"{$project->name}\" created.");
     }
 
     public function show(Project $project): ProjectResource
@@ -30,17 +48,30 @@ class ProjectController extends Controller
         return new ProjectResource($project);
     }
 
-    public function update(UpdateProjectRequest $request, Project $project): ProjectResource
+    public function edit(Project $project): View
+    {
+        return view('projects.edit', ['project' => $project, 'statusOptions' => self::STATUS_OPTIONS]);
+    }
+
+    public function update(UpdateProjectRequest $request, Project $project): JsonResponse|RedirectResponse|ProjectResource
     {
         $project->update($request->validated());
 
-        return new ProjectResource($project);
+        if ($request->wantsJson()) {
+            return new ProjectResource($project);
+        }
+
+        return redirect()->route('projects.index')->with('success', "Project \"{$project->name}\" updated.");
     }
 
-    public function destroy(Project $project): JsonResponse
+    public function destroy(Request $request, Project $project): JsonResponse|RedirectResponse
     {
         $project->delete();
 
-        return response()->json(null, 204);
+        if ($request->wantsJson()) {
+            return response()->json(null, 204);
+        }
+
+        return redirect()->route('projects.index')->with('success', "Project \"{$project->name}\" deleted.");
     }
 }

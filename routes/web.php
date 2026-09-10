@@ -63,6 +63,11 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
     Route::match(['get', 'put'], '/password', fn () => redirect()->away(JumuishiUrl::central(config('jumuishi.password_path'))))
         ->name('password.update');
 
+    Route::get('projects/create', [ProjectController::class, 'create'])
+        ->middleware('can:project.create')->name('projects.create');
+    Route::get('projects/{project}/edit', [ProjectController::class, 'edit'])
+        ->middleware('can:project.update')->name('projects.edit');
+
     Route::apiResource('projects', ProjectController::class)
         ->middlewareFor('index', 'can:project.view')
         ->middlewareFor('show', 'can:project.view')
