@@ -111,12 +111,22 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
         ->middlewareFor('update', 'can:intervention.update')
         ->middlewareFor('destroy', 'can:intervention.delete');
 
+    Route::get('indicator-baselines/create', [IndicatorBaselineController::class, 'create'])
+        ->middleware('can:indicator.set-baseline')->name('indicator-baselines.create');
+    Route::get('indicator-baselines/{indicator_baseline}/edit', [IndicatorBaselineController::class, 'edit'])
+        ->middleware('can:indicator.set-baseline')->name('indicator-baselines.edit');
+
     Route::apiResource('indicator-baselines', IndicatorBaselineController::class)
         ->middlewareFor('index', 'can:indicator.view')
         ->middlewareFor('show', 'can:indicator.view')
         ->middlewareFor('store', 'can:indicator.set-baseline')
         ->middlewareFor('update', 'can:indicator.set-baseline')
         ->middlewareFor('destroy', 'can:indicator.set-baseline');
+
+    Route::get('indicator-targets/create', [IndicatorTargetController::class, 'create'])
+        ->middleware('can:indicator.set-target')->name('indicator-targets.create');
+    Route::get('indicator-targets/{indicator_target}/edit', [IndicatorTargetController::class, 'edit'])
+        ->middleware('can:indicator.set-target')->name('indicator-targets.edit');
 
     Route::apiResource('indicator-targets', IndicatorTargetController::class)
         ->middlewareFor('index', 'can:indicator.view')
