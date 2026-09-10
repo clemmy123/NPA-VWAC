@@ -107,7 +107,7 @@ class JumuishiSsoController extends Controller
 
     private function issue(string $message, int $status): Response
     {
-        return response()->view('auth.sso-issue', compact('message'), $status)
+        return response()->view('auth.sso-issue', compact('message', 'status'), $status)
             ->header('Cache-Control', 'no-store')
             ->header('Referrer-Policy', 'no-referrer');
     }

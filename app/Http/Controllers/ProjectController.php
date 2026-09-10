@@ -13,8 +13,7 @@ use Illuminate\View\View;
 
 class ProjectController extends Controller
 {
-    /** @var array<int, string> */
-    public const STATUS_OPTIONS = ['draft', 'active', 'completed', 'closed'];
+    public const array STATUS_OPTIONS = ['draft', 'active', 'completed', 'closed'];
 
     public function index(Request $request): JsonResponse|View
     {

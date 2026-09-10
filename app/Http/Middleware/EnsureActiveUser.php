@@ -20,7 +20,7 @@ class EnsureActiveUser
                 return response()->json(['message' => 'Your module account is inactive.'], 403);
             }
 
-            return response()->view('auth.sso-issue', ['message' => 'Your module account is inactive.'], 403);
+            return response()->view('auth.sso-issue', ['message' => 'Your module account is inactive.', 'status' => 403], 403);
         }
 
         return $next($request);
