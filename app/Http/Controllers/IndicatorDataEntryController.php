@@ -5,32 +5,50 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreIndicatorDataEntryRequest;
 use App\Http\Requests\UpdateIndicatorDataEntryRequest;
 use App\Http\Resources\IndicatorDataEntryResource;
+use App\Models\DataSource;
+use App\Models\FinancialYear;
+use App\Models\Indicator;
 use App\Models\IndicatorDataAssignment;
 use App\Models\IndicatorDataEntry;
+use App\Models\Organization;
+use App\Models\ReportingPeriod;
 use App\Models\User;
+use App\Support\AdminLocationLevel;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 
 class IndicatorDataEntryController extends Controller
 {
     private const RELATIONS = ['rows.dimensionOptions', 'expenses', 'reviews'];
 
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): JsonResponse|View
     {
         $entries = IndicatorDataEntry::query()
-            ->with(self::RELATIONS)
+            ->with(['indicator', 'financialYear', 'reportingPeriod', 'enteredBy'])
             ->when($request->integer('indicator_id'), fn ($query, $indicatorId) => $query->where('indicator_id', $indicatorId))
             ->when($request->string('status')->toString(), fn ($query, $status) => $query->where('status', $status))
             ->when($request->integer('entered_by'), fn ($query, $enteredBy) => $query->where('entered_by', $enteredBy))
+            ->latest('id')
             ->paginate($request->integer('per_page', 15));
 
-        return response()->json(IndicatorDataEntryResource::collection($entries)->response()->getData(true));
+        if ($request->wantsJson()) {
+            return response()->json(IndicatorDataEntryResource::collection($entries)->response()->getData(true));
+        }
+
+        return view('indicator-data-entries.index', ['entries' => $entries]);
     }
 
-    public function store(StoreIndicatorDataEntryRequest $request): JsonResponse
+    public function create(): View
+    {
+        return view('indicator-data-entries.create', $this->formData());
+    }
+
+    public function store(StoreIndicatorDataEntryRequest $request): JsonResponse|RedirectResponse
     {
         $data = $request->validated();
         $rows = $data['rows'] ?? [];
@@ -51,7 +69,11 @@ class IndicatorDataEntryController extends Controller
             return $entry;
         });
 
-        return (new IndicatorDataEntryResource($entry->load(self::RELATIONS)))->response()->setStatusCode(201);
+        if ($request->wantsJson()) {
+            return (new IndicatorDataEntryResource($entry->load(self::RELATIONS)))->response()->setStatusCode(201);
+        }
+
+        return redirect()->route('indicator-data-entries.index')->with('success', 'Data entry created as a draft.');
     }
 
     public function show(IndicatorDataEntry $indicatorDataEntry): IndicatorDataEntryResource
@@ -59,7 +81,14 @@ class IndicatorDataEntryController extends Controller
         return new IndicatorDataEntryResource($indicatorDataEntry->load(self::RELATIONS));
     }
 
-    public function update(UpdateIndicatorDataEntryRequest $request, IndicatorDataEntry $indicatorDataEntry): IndicatorDataEntryResource
+    public function edit(IndicatorDataEntry $indicatorDataEntry): View
+    {
+        return view('indicator-data-entries.edit', [
+            'entry' => $indicatorDataEntry->load(self::RELATIONS),
+        ] + $this->formData());
+    }
+
+    public function update(UpdateIndicatorDataEntryRequest $request, IndicatorDataEntry $indicatorDataEntry): JsonResponse|RedirectResponse|IndicatorDataEntryResource
     {
         if (! in_array($indicatorDataEntry->status, ['draft', 'rejected'], true)) {
             throw new AuthorizationException('Only draft or rejected entries can be edited.');
@@ -88,10 +117,14 @@ class IndicatorDataEntryController extends Controller
             }
         });
 
-        return new IndicatorDataEntryResource($indicatorDataEntry->fresh(self::RELATIONS));
+        if ($request->wantsJson()) {
+            return new IndicatorDataEntryResource($indicatorDataEntry->fresh(self::RELATIONS));
+        }
+
+        return redirect()->route('indicator-data-entries.index')->with('success', 'Data entry updated.');
     }
 
-    public function submit(Request $request, IndicatorDataEntry $indicatorDataEntry): IndicatorDataEntryResource
+    public function submit(Request $request, IndicatorDataEntry $indicatorDataEntry): JsonResponse|RedirectResponse|IndicatorDataEntryResource
     {
         if (! in_array($indicatorDataEntry->status, ['draft', 'rejected'], true)) {
             throw ValidationException::withMessages(['status' => 'Only draft or rejected entries can be submitted.']);
@@ -105,10 +138,14 @@ class IndicatorDataEntryController extends Controller
 
         $indicatorDataEntry->update(['status' => 'submitted', 'submitted_at' => now()]);
 
-        return new IndicatorDataEntryResource($indicatorDataEntry->fresh(self::RELATIONS));
+        if ($request->wantsJson()) {
+            return new IndicatorDataEntryResource($indicatorDataEntry->fresh(self::RELATIONS));
+        }
+
+        return redirect()->route('indicator-data-entries.index')->with('success', 'Data entry submitted for review.');
     }
 
-    public function approve(Request $request, IndicatorDataEntry $indicatorDataEntry): IndicatorDataEntryResource
+    public function approve(Request $request, IndicatorDataEntry $indicatorDataEntry): JsonResponse|RedirectResponse|IndicatorDataEntryResource
     {
         if ($indicatorDataEntry->status !== 'submitted') {
             throw ValidationException::withMessages(['status' => 'Only submitted entries can be approved.']);
@@ -128,10 +165,14 @@ class IndicatorDataEntryController extends Controller
             ]);
         });
 
-        return new IndicatorDataEntryResource($indicatorDataEntry->fresh(self::RELATIONS));
+        if ($request->wantsJson()) {
+            return new IndicatorDataEntryResource($indicatorDataEntry->fresh(self::RELATIONS));
+        }
+
+        return redirect()->route('indicator-data-entries.index')->with('success', 'Data entry approved.');
     }
 
-    public function returnEntry(Request $request, IndicatorDataEntry $indicatorDataEntry): IndicatorDataEntryResource
+    public function returnEntry(Request $request, IndicatorDataEntry $indicatorDataEntry): JsonResponse|RedirectResponse|IndicatorDataEntryResource
     {
         if ($indicatorDataEntry->status !== 'submitted') {
             throw ValidationException::withMessages(['status' => 'Only submitted entries can be returned.']);
@@ -147,7 +188,11 @@ class IndicatorDataEntryController extends Controller
             ]);
         });
 
-        return new IndicatorDataEntryResource($indicatorDataEntry->fresh(self::RELATIONS));
+        if ($request->wantsJson()) {
+            return new IndicatorDataEntryResource($indicatorDataEntry->fresh(self::RELATIONS));
+        }
+
+        return redirect()->route('indicator-data-entries.index')->with('success', 'Data entry returned to the submitter.');
     }
 
     private function assertAssignmentScope(User $user, int $indicatorId, ?string $locationLevel, ?int $locationId): void
@@ -223,5 +268,18 @@ class IndicatorDataEntryController extends Controller
         foreach ($expenses as $expenseData) {
             $entry->expenses()->create($expenseData);
         }
+    }
+
+    /** @return array<string, mixed> */
+    private function formData(): array
+    {
+        return [
+            'indicators' => Indicator::query()->orderBy('name')->get(),
+            'financialYears' => FinancialYear::query()->orderBy('name')->get(),
+            'reportingPeriods' => ReportingPeriod::query()->orderBy('sequence')->get(),
+            'organizations' => Organization::query()->orderBy('name')->get(),
+            'dataSources' => DataSource::query()->orderBy('name')->get(),
+            'locationLevels' => AdminLocationLevel::levels(),
+        ];
     }
 }

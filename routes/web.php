@@ -135,6 +135,11 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
         ->middlewareFor('update', 'can:indicator.set-target')
         ->middlewareFor('destroy', 'can:indicator.set-target');
 
+    Route::get('indicator-data-entries/create', [IndicatorDataEntryController::class, 'create'])
+        ->middleware('can:indicator-data.create')->name('indicator-data-entries.create');
+    Route::get('indicator-data-entries/{indicator_data_entry}/edit', [IndicatorDataEntryController::class, 'edit'])
+        ->middleware('can:indicator-data.update')->name('indicator-data-entries.edit');
+
     Route::apiResource('indicator-data-entries', IndicatorDataEntryController::class)
         ->only(['index', 'store', 'show', 'update'])
         ->middlewareFor('index', 'can:indicator-data.view')
