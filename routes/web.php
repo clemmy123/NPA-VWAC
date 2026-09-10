@@ -1,13 +1,25 @@
 <?php
 
+use App\Http\Controllers\DataSourceController;
+use App\Http\Controllers\DimensionController;
+use App\Http\Controllers\DimensionOptionController;
+use App\Http\Controllers\FinancialYearController;
 use App\Http\Controllers\IndicatorBaselineController;
 use App\Http\Controllers\IndicatorController;
+use App\Http\Controllers\IndicatorDataAssignmentController;
 use App\Http\Controllers\IndicatorDataEntryController;
 use App\Http\Controllers\IndicatorTargetController;
 use App\Http\Controllers\InterventionController;
 use App\Http\Controllers\JumuishiSsoController;
+use App\Http\Controllers\LocalAuthController;
+use App\Http\Controllers\MeasurementTypeController;
+use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\OrganizationTypeController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ReportingPeriodController;
 use App\Http\Controllers\ThematicAreaController;
+use App\Http\Controllers\UnitOfMeasureController;
+use App\Http\Controllers\UserController;
 use App\Models\User;
 use App\Services\JumuishiUrl;
 use Database\Seeders\RolePermissionSeeder;
@@ -48,6 +60,20 @@ Route::get('/login', [JumuishiSsoController::class, 'login'])->name('login');
 Route::get('/jumuishi/sso/consume', [JumuishiSsoController::class, 'consume'])
     ->middleware('throttle:30,1')->name('jumuishi.sso.consume');
 Route::post('/logout', [JumuishiSsoController::class, 'logout'])->name('logout');
+
+// Local email/password login for non-SSO organization users (e.g. banks reporting
+// data directly) — kept entirely separate from the Jumuishi SSO flow above, which
+// is for government-staff single sign-on only.
+Route::get('/local-login', [LocalAuthController::class, 'create'])
+    ->middleware('guest')->name('local-login');
+Route::post('/local-login', [LocalAuthController::class, 'store'])
+    ->middleware(['guest', 'throttle:10,1'])->name('local-login.store');
+Route::post('/local-logout', [LocalAuthController::class, 'destroy'])
+    ->middleware('auth')->name('local-logout');
+Route::get('/local-password', [LocalAuthController::class, 'editPassword'])
+    ->middleware(['auth', 'auth.session'])->name('local-password.edit');
+Route::put('/local-password', [LocalAuthController::class, 'updatePassword'])
+    ->middleware(['auth', 'auth.session'])->name('local-password.update');
 
 Route::get('/forgot-password', fn () => redirect()->away(JumuishiUrl::central('/forgot-password')))
     ->name('password.request');
@@ -158,4 +184,54 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
     Route::post('indicator-data-entries/{indicator_data_entry}/return', [IndicatorDataEntryController::class, 'returnEntry'])
         ->middleware('can:indicator-data.return')
         ->name('indicator-data-entries.return');
+
+    // Settings: lookup/reference data management (organizations, financial years,
+    // data sources, measurement types, units, disaggregation dimensions). All
+    // gated by the single 'settings.manage' permission — these are low-traffic
+    // admin screens, not a per-entity permission matrix.
+    Route::middleware('can:settings.manage')->group(function (): void {
+        Route::get('settings', fn () => view('settings.index'))->name('settings.index');
+
+        Route::resource('organization-types', OrganizationTypeController::class)->except(['show']);
+        Route::resource('organizations', OrganizationController::class)->except(['show']);
+        Route::resource('financial-years', FinancialYearController::class)->except(['show']);
+        Route::resource('reporting-periods', ReportingPeriodController::class)->except(['show']);
+        Route::resource('data-sources', DataSourceController::class)->except(['show']);
+        Route::resource('measurement-types', MeasurementTypeController::class)->except(['show']);
+        Route::resource('units-of-measure', UnitOfMeasureController::class)
+            ->parameters(['units-of-measure' => 'unit_of_measure'])
+            ->except(['show']);
+        Route::resource('dimensions', DimensionController::class)->except(['show']);
+
+        Route::get('dimensions/{dimension}/options/create', [DimensionOptionController::class, 'create'])->name('dimensions.options.create');
+        Route::post('dimensions/{dimension}/options', [DimensionOptionController::class, 'store'])->name('dimensions.options.store');
+        Route::get('dimensions/{dimension}/options/{dimension_option}/edit', [DimensionOptionController::class, 'edit'])->name('dimensions.options.edit');
+        Route::put('dimensions/{dimension}/options/{dimension_option}', [DimensionOptionController::class, 'update'])->name('dimensions.options.update');
+        Route::delete('dimensions/{dimension}/options/{dimension_option}', [DimensionOptionController::class, 'destroy'])->name('dimensions.options.destroy');
+    });
+
+    // Users & role assignment.
+    Route::get('users/create', [UserController::class, 'create'])
+        ->middleware('can:user.create')->name('users.create');
+    Route::get('users/{user}/edit', [UserController::class, 'edit'])
+        ->middleware('can:user.update')->name('users.edit');
+
+    Route::resource('users', UserController::class)
+        ->except(['create', 'edit', 'show'])
+        ->middlewareFor('index', 'can:user.view')
+        ->middlewareFor('store', 'can:user.create')
+        ->middlewareFor('update', 'can:user.update')
+        ->middlewareFor('destroy', 'can:user.update');
+
+    // Indicator data assignments: who (which user/organization) reports on which
+    // indicator, optionally scoped to a location — this is what lets an
+    // organization's own user key in data for only the indicators they own.
+    Route::get('indicator-data-assignments/create', [IndicatorDataAssignmentController::class, 'create'])
+        ->middleware('can:indicator.assign-user')->name('indicator-data-assignments.create');
+    Route::get('indicator-data-assignments/{indicator_data_assignment}/edit', [IndicatorDataAssignmentController::class, 'edit'])
+        ->middleware('can:indicator.assign-user')->name('indicator-data-assignments.edit');
+
+    Route::resource('indicator-data-assignments', IndicatorDataAssignmentController::class)
+        ->except(['create', 'edit', 'show'])
+        ->middleware('can:indicator.assign-user');
 });

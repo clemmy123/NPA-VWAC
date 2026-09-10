@@ -100,6 +100,36 @@
                 </li>
                 @endcan
 
+                {{-- Indicator data assignments --}}
+                @can('indicator.assign-user')
+                <li class="{{ request()->routeIs('indicator-data-assignments.*') ? 'active' : '' }}">
+                    <a href="{{ route('indicator-data-assignments.index') }}">
+                        <i class="mdi mdi-account-arrow-right-outline"></i>
+                        <span>Data Assignments</span>
+                    </a>
+                </li>
+                @endcan
+
+                {{-- Users --}}
+                @can('user.view')
+                <li class="{{ request()->routeIs('users.*') ? 'active' : '' }}">
+                    <a href="{{ route('users.index') }}">
+                        <i class="mdi mdi-account-group-outline"></i>
+                        <span>Users</span>
+                    </a>
+                </li>
+                @endcan
+
+                {{-- Settings --}}
+                @can('settings.manage')
+                <li class="{{ request()->routeIs('settings.*', 'organizations.*', 'organization-types.*', 'financial-years.*', 'reporting-periods.*', 'data-sources.*', 'measurement-types.*', 'units-of-measure.*', 'dimensions.*') ? 'active' : '' }}">
+                    <a href="{{ route('settings.index') }}">
+                        <i class="mdi mdi-cog-outline"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+                @endcan
+
             </ul>
         </div>
     </div>
