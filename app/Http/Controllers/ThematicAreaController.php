@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreThematicAreaRequest;
 use App\Http\Requests\UpdateThematicAreaRequest;
 use App\Http\Resources\ThematicAreaResource;
+use App\Models\Indicator;
+use App\Models\MeasurementType;
 use App\Models\Project;
 use App\Models\ThematicArea;
+use App\Models\UnitOfMeasure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -47,12 +50,27 @@ class ThematicAreaController extends Controller
             return (new ThematicAreaResource($thematicArea))->response()->setStatusCode(201);
         }
 
-        return redirect()->route('thematic-areas.index')->with('success', "Thematic area \"{$thematicArea->name}\" created.");
+        return $this->redirectBackOrTo($request, 'thematic-areas.index')->with('success', "Thematic area \"{$thematicArea->name}\" created.");
     }
 
-    public function show(ThematicArea $thematicArea): ThematicAreaResource
+    public function show(Request $request, ThematicArea $thematicArea): JsonResponse|View|ThematicAreaResource
     {
-        return new ThematicAreaResource($thematicArea);
+        if ($request->wantsJson()) {
+            return new ThematicAreaResource($thematicArea);
+        }
+
+        $thematicArea->load('project');
+
+        return view('thematic-areas.show', [
+            'thematicArea' => $thematicArea,
+            'indicators' => $thematicArea->indicators()->latest('id')->get(),
+            'interventions' => $thematicArea->interventions()->with('indicators')->latest('id')->get(),
+            'indicatorStatusOptions' => IndicatorController::STATUS_OPTIONS,
+            'interventionStatusOptions' => self::STATUS_OPTIONS,
+            'measurementTypes' => MeasurementType::query()->orderBy('name')->get(),
+            'unitsOfMeasure' => UnitOfMeasure::query()->orderBy('name')->get(),
+            'allIndicators' => Indicator::query()->orderBy('name')->get(),
+        ]);
     }
 
     public function edit(ThematicArea $thematicArea): View
@@ -72,7 +90,7 @@ class ThematicAreaController extends Controller
             return new ThematicAreaResource($thematicArea);
         }
 
-        return redirect()->route('thematic-areas.index')->with('success', "Thematic area \"{$thematicArea->name}\" updated.");
+        return $this->redirectBackOrTo($request, 'thematic-areas.index')->with('success', "Thematic area \"{$thematicArea->name}\" updated.");
     }
 
     public function destroy(Request $request, ThematicArea $thematicArea): JsonResponse|RedirectResponse
@@ -83,6 +101,6 @@ class ThematicAreaController extends Controller
             return response()->json(null, 204);
         }
 
-        return redirect()->route('thematic-areas.index')->with('success', "Thematic area \"{$thematicArea->name}\" deleted.");
+        return $this->redirectBackOrTo($request, 'thematic-areas.index')->with('success', "Thematic area \"{$thematicArea->name}\" deleted.");
     }
 }

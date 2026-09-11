@@ -36,7 +36,7 @@
             <tr>
                 <td>{{ ($indicators->firstItem() ?? 1) + $loop->index }}</td>
                 <td><span class="ref-pill">{{ $indicator->code }}</span></td>
-                <td>{{ $indicator->name }}</td>
+                <td><a href="{{ route('indicators.show', $indicator) }}">{{ $indicator->name }}</a></td>
                 <td>{{ $indicator->thematicArea?->name ?? '—' }}</td>
                 <td>{{ $indicator->reporting_frequency ? ucfirst($indicator->reporting_frequency) : '—' }}</td>
                 <td>
@@ -48,6 +48,7 @@
                     } }}">{{ ucfirst($indicator->status) }}</span>
                 </td>
                 <td>
+                    <a href="{{ route('indicators.show', $indicator) }}" class="btn-icon" title="View"><i class="mdi mdi-eye-outline"></i></a>
                     @can('indicator.update')
                     <a href="{{ route('indicators.edit', $indicator) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
                     @endcan
@@ -85,7 +86,7 @@
     @forelse ($indicators as $indicator)
     <div class="mob-card">
         <div class="mob-card-top">
-            <span class="fw-600">{{ $indicator->name }}</span>
+            <a href="{{ route('indicators.show', $indicator) }}" class="fw-600">{{ $indicator->name }}</a>
             <span class="s-badge {{ match ($indicator->status) {
                 'active' => 's-active',
                 'completed' => 's-received',
@@ -101,6 +102,7 @@
             <span><i class="mdi mdi-calendar-refresh"></i> {{ $indicator->reporting_frequency ? ucfirst($indicator->reporting_frequency) : '—' }}</span>
         </div>
         <div class="mob-card-footer">
+            <a href="{{ route('indicators.show', $indicator) }}" class="btn-icon" title="View"><i class="mdi mdi-eye-outline"></i></a>
             @can('indicator.update')
             <a href="{{ route('indicators.edit', $indicator) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
             @endcan

@@ -45,7 +45,7 @@ class IndicatorTargetController extends Controller
             return (new IndicatorTargetResource($target))->response()->setStatusCode(201);
         }
 
-        return redirect()->route('indicator-targets.index')->with('success', 'Target created.');
+        return $this->redirectBackOrTo($request, 'indicator-targets.index')->with('success', 'Target created.');
     }
 
     public function show(IndicatorTarget $indicatorTarget): IndicatorTargetResource
@@ -66,7 +66,7 @@ class IndicatorTargetController extends Controller
             return new IndicatorTargetResource($indicatorTarget);
         }
 
-        return redirect()->route('indicator-targets.index')->with('success', 'Target updated.');
+        return $this->redirectBackOrTo($request, 'indicator-targets.index')->with('success', 'Target updated.');
     }
 
     public function destroy(Request $request, IndicatorTarget $indicatorTarget): JsonResponse|RedirectResponse
@@ -77,7 +77,7 @@ class IndicatorTargetController extends Controller
             return response()->json(null, 204);
         }
 
-        return redirect()->route('indicator-targets.index')->with('success', 'Target deleted.');
+        return $this->redirectBackOrTo($request, 'indicator-targets.index')->with('success', 'Target deleted.');
     }
 
     /** @return array<string, mixed> */

@@ -41,6 +41,25 @@
 <body>
     <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
+    {{-- Shared "quick add / quick edit" modal shell. A page defines one or more
+         <template data-quick-add-template="..."> blocks holding a normal form
+         (same partials as the resource's own create/edit page); a trigger with
+         data-quick-add="<template id>" clones that template's content into this
+         single modal instead of navigating away. Only one clone is ever live in
+         the DOM at a time, so field ids never collide even when a page defines
+         several templates (e.g. "Add Indicator" + "Add Intervention"). --}}
+    <div class="modal fade" id="quickAddModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body"></div>
+            </div>
+        </div>
+    </div>
+
     <div id="wrapper">
 
         @include('components.top-bar')
@@ -126,6 +145,37 @@
         @foreach ($flashToasts as $toast)
         window.showToast(@json($toast['type']), @json($toast['message']));
         @endforeach
+    </script>
+
+    <script>
+        document.addEventListener('click', function (e) {
+            var trigger = e.target.closest('[data-quick-add]');
+            if (!trigger) return;
+
+            var template = document.getElementById(trigger.getAttribute('data-quick-add'));
+            var modalEl = document.getElementById('quickAddModal');
+            if (!template || !modalEl) return;
+
+            var body = modalEl.querySelector('.modal-body');
+            body.innerHTML = '';
+            body.appendChild(template.content.cloneNode(true));
+            modalEl.querySelector('.modal-title').textContent = trigger.getAttribute('data-quick-add-title') || 'Add';
+
+            // Select2 multi-selects (e.g. Intervention's Linked Indicators) only
+            // exist in the DOM from this point on, since they were inert inside
+            // a <template> until just now — init here rather than relying on
+            // the form partial's own @push('scripts'), which already fired
+            // (and no-opped) at initial page load.
+            if (window.jQuery) {
+                jQuery(body).find('.select2-multi').select2({
+                    placeholder: 'Select indicators…',
+                    width: '100%',
+                    dropdownParent: jQuery(modalEl),
+                });
+            }
+
+            bootstrap.Modal.getOrCreateInstance(modalEl).show();
+        });
     </script>
     @stack('scripts')
 

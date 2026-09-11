@@ -5,10 +5,17 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreIndicatorRequest;
 use App\Http\Requests\UpdateIndicatorRequest;
 use App\Http\Resources\IndicatorResource;
+use App\Models\DataSource;
+use App\Models\DimensionOption;
+use App\Models\FinancialYear;
 use App\Models\Indicator;
 use App\Models\MeasurementType;
+use App\Models\Organization;
+use App\Models\ReportingPeriod;
 use App\Models\ThematicArea;
 use App\Models\UnitOfMeasure;
+use App\Models\User;
+use App\Support\AdminLocationLevel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -57,12 +64,31 @@ class IndicatorController extends Controller
             return (new IndicatorResource($indicator))->response()->setStatusCode(201);
         }
 
-        return redirect()->route('indicators.index')->with('success', "Indicator \"{$indicator->name}\" created.");
+        return $this->redirectBackOrTo($request, 'indicators.index')->with('success', "Indicator \"{$indicator->name}\" created.");
     }
 
-    public function show(Indicator $indicator): IndicatorResource
+    public function show(Request $request, Indicator $indicator): JsonResponse|View|IndicatorResource
     {
-        return new IndicatorResource($indicator->load('interventions'));
+        if ($request->wantsJson()) {
+            return new IndicatorResource($indicator->load('interventions'));
+        }
+
+        $indicator->load('thematicArea', 'measurementType', 'unitOfMeasure');
+
+        return view('indicators.show', [
+            'indicator' => $indicator,
+            'baselines' => $indicator->baselines()->with('financialYear')->latest('id')->get(),
+            'targets' => $indicator->targets()->with(['financialYear', 'reportingPeriod', 'dimensionOption'])->latest('id')->get(),
+            'assignments' => $indicator->assignments()->with(['user', 'organization', 'dataSource'])->latest('id')->get(),
+            'allIndicators' => Indicator::query()->orderBy('name')->get(),
+            'financialYears' => FinancialYear::query()->orderBy('name')->get(),
+            'reportingPeriods' => ReportingPeriod::query()->orderBy('sequence')->get(),
+            'dimensionOptions' => DimensionOption::query()->orderBy('name')->get(),
+            'users' => User::query()->orderBy('name')->get(),
+            'organizations' => Organization::query()->orderBy('name')->get(),
+            'dataSources' => DataSource::query()->orderBy('name')->get(),
+            'locationLevels' => AdminLocationLevel::levels(),
+        ]);
     }
 
     public function edit(Indicator $indicator): View
@@ -78,7 +104,7 @@ class IndicatorController extends Controller
             return new IndicatorResource($indicator);
         }
 
-        return redirect()->route('indicators.index')->with('success', "Indicator \"{$indicator->name}\" updated.");
+        return $this->redirectBackOrTo($request, 'indicators.index')->with('success', "Indicator \"{$indicator->name}\" updated.");
     }
 
     public function destroy(Request $request, Indicator $indicator): JsonResponse|RedirectResponse
@@ -89,7 +115,7 @@ class IndicatorController extends Controller
             return response()->json(null, 204);
         }
 
-        return redirect()->route('indicators.index')->with('success', "Indicator \"{$indicator->name}\" deleted.");
+        return $this->redirectBackOrTo($request, 'indicators.index')->with('success', "Indicator \"{$indicator->name}\" deleted.");
     }
 
     /**

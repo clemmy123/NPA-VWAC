@@ -37,7 +37,7 @@ class IndicatorDataAssignmentController extends Controller
 
         IndicatorDataAssignment::create($data);
 
-        return redirect()->route('indicator-data-assignments.index')->with('success', 'Assignment created.');
+        return $this->redirectBackOrTo($request, 'indicator-data-assignments.index')->with('success', 'Assignment created.');
     }
 
     public function edit(IndicatorDataAssignment $indicatorDataAssignment): View
@@ -51,14 +51,14 @@ class IndicatorDataAssignmentController extends Controller
 
         $indicatorDataAssignment->update($data);
 
-        return redirect()->route('indicator-data-assignments.index')->with('success', 'Assignment updated.');
+        return $this->redirectBackOrTo($request, 'indicator-data-assignments.index')->with('success', 'Assignment updated.');
     }
 
-    public function destroy(IndicatorDataAssignment $indicatorDataAssignment): RedirectResponse
+    public function destroy(Request $request, IndicatorDataAssignment $indicatorDataAssignment): RedirectResponse
     {
         $indicatorDataAssignment->delete();
 
-        return redirect()->route('indicator-data-assignments.index')->with('success', 'Assignment deleted.');
+        return $this->redirectBackOrTo($request, 'indicator-data-assignments.index')->with('success', 'Assignment deleted.');
     }
 
     /** @return array<string, mixed> */

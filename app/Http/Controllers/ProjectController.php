@@ -42,9 +42,18 @@ class ProjectController extends Controller
         return redirect()->route('projects.index')->with('success', "Project \"{$project->name}\" created.");
     }
 
-    public function show(Project $project): ProjectResource
+    public function show(Request $request, Project $project): JsonResponse|View|ProjectResource
     {
-        return new ProjectResource($project);
+        if ($request->wantsJson()) {
+            return new ProjectResource($project);
+        }
+
+        return view('projects.show', [
+            'project' => $project,
+            'thematicAreas' => $project->thematicAreas()->latest('id')->get(),
+            'thematicAreaStatusOptions' => ThematicAreaController::STATUS_OPTIONS,
+            'thematicAreaProjects' => collect([$project]),
+        ]);
     }
 
     public function edit(Project $project): View

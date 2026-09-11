@@ -36,7 +36,7 @@
             <tr>
                 <td>{{ ($projects->firstItem() ?? 1) + $loop->index }}</td>
                 <td><span class="ref-pill">{{ $project->code }}</span></td>
-                <td>{{ $project->name }}</td>
+                <td><a href="{{ route('projects.show', $project) }}">{{ $project->name }}</a></td>
                 <td>{{ $project->start_date?->format('d M Y') ?? '—' }}</td>
                 <td>{{ $project->end_date?->format('d M Y') ?? '—' }}</td>
                 <td>
@@ -48,6 +48,7 @@
                     } }}">{{ ucfirst($project->status) }}</span>
                 </td>
                 <td>
+                    <a href="{{ route('projects.show', $project) }}" class="btn-icon" title="View"><i class="mdi mdi-eye-outline"></i></a>
                     @can('project.update')
                     <a href="{{ route('projects.edit', $project) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
                     @endcan
@@ -85,7 +86,7 @@
     @forelse ($projects as $project)
     <div class="mob-card">
         <div class="mob-card-top">
-            <span class="fw-600">{{ $project->name }}</span>
+            <a href="{{ route('projects.show', $project) }}" class="fw-600">{{ $project->name }}</a>
             <span class="s-badge {{ match ($project->status) {
                 'active' => 's-active',
                 'completed' => 's-received',
@@ -101,6 +102,9 @@
             <span><i class="mdi mdi-calendar-end"></i> {{ $project->end_date?->format('d M Y') ?? '—' }}</span>
         </div>
         <div class="mob-card-footer">
+            <a href="{{ route('projects.show', $project) }}" class="btn-icon" title="View">
+                <i class="mdi mdi-eye-outline"></i>
+            </a>
             @can('project.update')
             <a href="{{ route('projects.edit', $project) }}" class="btn-icon" title="Edit">
                 <i class="mdi mdi-pencil-outline"></i>
