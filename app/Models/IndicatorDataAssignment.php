@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\AdminLocationLevel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -55,5 +56,14 @@ class IndicatorDataAssignment extends Model
     public function dataSource(): BelongsTo
     {
         return $this->belongsTo(DataSource::class);
+    }
+
+    public function locationName(): ?string
+    {
+        if ($this->location_level === null || $this->location_id === null) {
+            return null;
+        }
+
+        return AdminLocationLevel::name($this->location_level, (int) $this->location_id);
     }
 }

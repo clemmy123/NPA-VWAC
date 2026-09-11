@@ -6,6 +6,8 @@ use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Http\Resources\ProjectResource;
 use App\Models\Project;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,7 +19,7 @@ class ProjectController extends Controller
 
     public function index(Request $request): JsonResponse|View
     {
-        $projects = Project::query()->latest('id')->paginate($request->integer('per_page', 15));
+        $projects = $this->scopedProjects($request)->latest('id')->paginate($request->integer('per_page', 15));
 
         if ($request->wantsJson()) {
             return response()->json(ProjectResource::collection($projects)->response()->getData(true));
@@ -44,6 +46,8 @@ class ProjectController extends Controller
 
     public function show(Request $request, Project $project): JsonResponse|View|ProjectResource
     {
+        $this->authorizeProjectAccess($request, $project);
+
         if ($request->wantsJson()) {
             return new ProjectResource($project);
         }
@@ -53,16 +57,22 @@ class ProjectController extends Controller
             'thematicAreas' => $project->thematicAreas()->latest('id')->get(),
             'thematicAreaStatusOptions' => ThematicAreaController::STATUS_OPTIONS,
             'thematicAreaProjects' => collect([$project]),
+            'managers' => $project->users()->orderBy('name')->get(),
+            'assignableManagers' => User::role('Project Manager')->orderBy('name')->get(),
         ]);
     }
 
-    public function edit(Project $project): View
+    public function edit(Request $request, Project $project): View
     {
+        $this->authorizeProjectAccess($request, $project);
+
         return view('projects.edit', ['project' => $project, 'statusOptions' => self::STATUS_OPTIONS]);
     }
 
     public function update(UpdateProjectRequest $request, Project $project): JsonResponse|RedirectResponse|ProjectResource
     {
+        $this->authorizeProjectAccess($request, $project);
+
         $project->update($request->validated());
 
         if ($request->wantsJson()) {
@@ -74,6 +84,8 @@ class ProjectController extends Controller
 
     public function destroy(Request $request, Project $project): JsonResponse|RedirectResponse
     {
+        $this->authorizeProjectAccess($request, $project);
+
         $project->delete();
 
         if ($request->wantsJson()) {
@@ -81,5 +93,25 @@ class ProjectController extends Controller
         }
 
         return redirect()->route('projects.index')->with('success', "Project \"{$project->name}\" deleted.");
+    }
+
+    private function scopedProjects(Request $request): Builder
+    {
+        $query = Project::query();
+
+        if (! $request->user()->hasRole('Super Admin')) {
+            $query->whereIn('id', $request->user()->assignedProjectIds());
+        }
+
+        return $query;
+    }
+
+    private function authorizeProjectAccess(Request $request, Project $project): void
+    {
+        if ($request->user()->hasRole('Super Admin')) {
+            return;
+        }
+
+        abort_unless(in_array($project->id, $request->user()->assignedProjectIds(), true), 403);
     }
 }

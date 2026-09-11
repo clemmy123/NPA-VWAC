@@ -5,11 +5,31 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class IndicatorDataEntry extends Model
+class IndicatorDataEntry extends Model implements HasMedia
 {
     use HasFactory;
+    use InteractsWithMedia;
     use SoftDeletes;
+
+    private const EVIDENCE_MIME_TYPES = [
+        'application/pdf',
+        'image/jpeg',
+        'image/png',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ];
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('evidence')
+            ->useDisk('local')
+            ->acceptsMimeTypes(self::EVIDENCE_MIME_TYPES);
+    }
 
     protected $fillable = [
 

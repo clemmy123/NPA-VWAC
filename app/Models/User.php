@@ -134,4 +134,29 @@ class User extends Authenticatable
         return $this->hasMany(IndicatorDataEntry::class, 'entered_by');
 
     }
+
+    /** @return list<int> */
+    public function assignedProjectIds(): array
+    {
+        return $this->projects()->wherePivot('is_active', true)->pluck('projects.id')->all();
+    }
+
+    /** @return list<int> */
+    public function assignedThematicAreaIds(): array
+    {
+        return $this->thematicAreas()->wherePivot('is_active', true)->pluck('thematic_areas.id')->all();
+    }
+
+    /**
+     * Thematic areas this user may manage: those under a project they're assigned
+     * to, plus any assigned to them directly as a thematic manager.
+     *
+     * @return list<int>
+     */
+    public function visibleThematicAreaIds(): array
+    {
+        $viaProjects = ThematicArea::query()->whereIn('project_id', $this->assignedProjectIds())->pluck('id')->all();
+
+        return array_values(array_unique([...$viaProjects, ...$this->assignedThematicAreaIds()]));
+    }
 }

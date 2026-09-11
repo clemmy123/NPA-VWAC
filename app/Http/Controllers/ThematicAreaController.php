@@ -10,6 +10,9 @@ use App\Models\MeasurementType;
 use App\Models\Project;
 use App\Models\ThematicArea;
 use App\Models\UnitOfMeasure;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,7 +24,7 @@ class ThematicAreaController extends Controller
 
     public function index(Request $request): JsonResponse|View
     {
-        $thematicAreas = ThematicArea::query()
+        $thematicAreas = $this->scopedThematicAreas($request)
             ->with('project')
             ->when($request->integer('project_id'), fn ($query, $projectId) => $query->where('project_id', $projectId))
             ->latest('id')
@@ -34,16 +37,18 @@ class ThematicAreaController extends Controller
         return view('thematic-areas.index', ['thematicAreas' => $thematicAreas]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         return view('thematic-areas.create', [
             'statusOptions' => self::STATUS_OPTIONS,
-            'projects' => Project::query()->orderBy('name')->get(),
+            'projects' => $this->assignableProjects($request),
         ]);
     }
 
     public function store(StoreThematicAreaRequest $request): JsonResponse|RedirectResponse
     {
+        $this->authorizeProjectScope($request, (int) $request->validated('project_id'));
+
         $thematicArea = ThematicArea::create($request->validated() + ['created_by' => $request->user()->id]);
 
         if ($request->wantsJson()) {
@@ -55,6 +60,8 @@ class ThematicAreaController extends Controller
 
     public function show(Request $request, ThematicArea $thematicArea): JsonResponse|View|ThematicAreaResource
     {
+        $this->authorizeThematicAreaAccess($request, $thematicArea);
+
         if ($request->wantsJson()) {
             return new ThematicAreaResource($thematicArea);
         }
@@ -70,20 +77,30 @@ class ThematicAreaController extends Controller
             'measurementTypes' => MeasurementType::query()->orderBy('name')->get(),
             'unitsOfMeasure' => UnitOfMeasure::query()->orderBy('name')->get(),
             'allIndicators' => Indicator::query()->orderBy('name')->get(),
+            'managers' => $thematicArea->users()->orderBy('name')->get(),
+            'assignableManagers' => User::role('Thematic Manager')->orderBy('name')->get(),
         ]);
     }
 
-    public function edit(ThematicArea $thematicArea): View
+    public function edit(Request $request, ThematicArea $thematicArea): View
     {
+        $this->authorizeThematicAreaAccess($request, $thematicArea);
+
         return view('thematic-areas.edit', [
             'thematicArea' => $thematicArea,
             'statusOptions' => self::STATUS_OPTIONS,
-            'projects' => Project::query()->orderBy('name')->get(),
+            'projects' => $this->assignableProjects($request),
         ]);
     }
 
     public function update(UpdateThematicAreaRequest $request, ThematicArea $thematicArea): JsonResponse|RedirectResponse|ThematicAreaResource
     {
+        $this->authorizeThematicAreaAccess($request, $thematicArea);
+
+        if ($request->validated('project_id')) {
+            $this->authorizeProjectScope($request, (int) $request->validated('project_id'));
+        }
+
         $thematicArea->update($request->validated());
 
         if ($request->wantsJson()) {
@@ -95,6 +112,8 @@ class ThematicAreaController extends Controller
 
     public function destroy(Request $request, ThematicArea $thematicArea): JsonResponse|RedirectResponse
     {
+        $this->authorizeThematicAreaAccess($request, $thematicArea);
+
         $thematicArea->delete();
 
         if ($request->wantsJson()) {
@@ -102,5 +121,44 @@ class ThematicAreaController extends Controller
         }
 
         return $this->redirectBackOrTo($request, 'thematic-areas.index')->with('success', "Thematic area \"{$thematicArea->name}\" deleted.");
+    }
+
+    private function scopedThematicAreas(Request $request): Builder
+    {
+        $query = ThematicArea::query();
+
+        if (! $request->user()->hasRole('Super Admin')) {
+            $query->whereIn('id', $request->user()->visibleThematicAreaIds());
+        }
+
+        return $query;
+    }
+
+    private function authorizeThematicAreaAccess(Request $request, ThematicArea $thematicArea): void
+    {
+        if ($request->user()->hasRole('Super Admin')) {
+            return;
+        }
+
+        abort_unless(in_array($thematicArea->id, $request->user()->visibleThematicAreaIds(), true), 403);
+    }
+
+    private function authorizeProjectScope(Request $request, int $projectId): void
+    {
+        if ($request->user()->hasRole('Super Admin')) {
+            return;
+        }
+
+        abort_unless(in_array($projectId, $request->user()->assignedProjectIds(), true), 403);
+    }
+
+    /** @return Collection<int, Project> */
+    private function assignableProjects(Request $request)
+    {
+        if ($request->user()->hasRole('Super Admin')) {
+            return Project::query()->orderBy('name')->get();
+        }
+
+        return Project::query()->whereIn('id', $request->user()->assignedProjectIds())->orderBy('name')->get();
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Indicator;
 use App\Support\AdminLocationLevel;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -44,6 +45,9 @@ class StoreIndicatorDataEntryRequest extends FormRequest
             'expenses.*.description' => ['required', 'string'],
             'expenses.*.amount' => ['required', 'numeric'],
             'expenses.*.currency' => ['nullable', 'string', 'size:3'],
+
+            'evidence' => ['nullable', 'array'],
+            'evidence.*' => ['file', 'max:10240', 'mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx'],
         ];
     }
 
@@ -56,6 +60,33 @@ class StoreIndicatorDataEntryRequest extends FormRequest
             if ($level && $id && ! $validator->errors()->has('location_level') && ! AdminLocationLevel::exists($level, (int) $id)) {
                 $validator->errors()->add('location_id', 'The selected location does not exist at the given level.');
             }
+
+            if (! $validator->errors()->has('indicator_id')) {
+                $this->applyIndicatorConfigRules($validator, Indicator::find($this->input('indicator_id')));
+            }
         });
+    }
+
+    private function applyIndicatorConfigRules(Validator $validator, ?Indicator $indicator): void
+    {
+        if (! $indicator) {
+            return;
+        }
+
+        if ($indicator->requires_location && ! $this->filled('location_level')) {
+            $validator->errors()->add('location_level', 'This indicator requires a reporting location.');
+        }
+
+        if ($indicator->requires_activity && ! $this->filled('activity_name')) {
+            $validator->errors()->add('activity_name', 'This indicator requires an activity name.');
+        }
+
+        if ($indicator->has_budget_implication && ! $this->filled('budget_allocated')) {
+            $validator->errors()->add('budget_allocated', 'This indicator requires a budget allocated amount.');
+        }
+
+        if ($indicator->requires_evidence && ! $this->hasFile('evidence')) {
+            $validator->errors()->add('evidence', 'This indicator requires supporting evidence to be attached.');
+        }
     }
 }

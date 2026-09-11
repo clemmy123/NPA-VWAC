@@ -27,4 +27,18 @@ class ThematicAreaUser extends Model
 
         ];
     }
+
+    public function thematicArea()
+    {
+
+        return $this->belongsTo(ThematicArea::class);
+
+    }
+
+    public function user()
+    {
+
+        return $this->belongsTo(User::class);
+
+    }
 }

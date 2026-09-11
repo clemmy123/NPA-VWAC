@@ -78,6 +78,10 @@ body.sidebar-collapsed .content-page {
    Not Bootstrap gap-N or me-N utilities: this vendor build is trimmed down
    to only the classes GDIS's own views use, and doesn't ship spacing
    utilities beyond a handful of mb-N/mt-N, so spacing here is hand-rolled. */
+.form-actions {
+  justify-content: flex-end;
+}
+
 .form-actions > * + * {
   margin-left: 10px;
 }

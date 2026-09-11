@@ -42,7 +42,13 @@ class IndicatorDataAssignmentController extends Controller
 
     public function edit(IndicatorDataAssignment $indicatorDataAssignment): View
     {
-        return view('indicator-data-assignments.edit', ['assignment' => $indicatorDataAssignment] + $this->formData());
+        return view('indicator-data-assignments.edit', [
+            'assignment' => $indicatorDataAssignment,
+            'locationAncestorChain' => $this->locationAncestorChain(
+                $indicatorDataAssignment->location_level,
+                $indicatorDataAssignment->location_id ? (int) $indicatorDataAssignment->location_id : null,
+            ),
+        ] + $this->formData());
     }
 
     public function update(Request $request, IndicatorDataAssignment $indicatorDataAssignment): RedirectResponse

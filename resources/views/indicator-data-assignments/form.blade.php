@@ -57,11 +57,13 @@
     </div>
 
     <div class="col-md-6 mb-3">
-        <label for="location_id" class="form-label">Location ID</label>
-        <input type="number" name="location_id" id="location_id" class="form-control @error('location_id') is-invalid @enderror"
-               value="{{ old('location_id', $assignment?->location_id) }}">
-        @error('location_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-        <small class="text-muted">Leave Location Level and Location ID both blank for an unrestricted (all-locations) assignment.</small>
+        <label class="form-label">Location</label>
+        @include('components.location-cascade', [
+            'currentId' => old('location_id', $assignment?->location_id),
+            'ancestorChain' => $locationAncestorChain ?? [],
+        ])
+        @error('location_id')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+        <small class="text-muted">Leave Location Level and Location both blank for an unrestricted (all-locations) assignment.</small>
     </div>
 
     <div class="col-12 mb-3">

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\AdminLocationLevel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -23,5 +24,21 @@ abstract class Controller
         }
 
         return redirect()->route($fallbackRoute, $fallbackParams);
+    }
+
+    /**
+     * Resolves the chain of ancestor locations for a stored `location_level`/
+     * `location_id` pair, used to prefill the cascading location picker on an edit
+     * form. Empty when either half is unset.
+     *
+     * @return array<string, array{id: int, name: string}>
+     */
+    protected function locationAncestorChain(?string $level, ?int $id): array
+    {
+        if ($level === null || $id === null) {
+            return [];
+        }
+
+        return AdminLocationLevel::ancestorChain($level, $id);
     }
 }

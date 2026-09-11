@@ -17,10 +17,16 @@
         <select name="indicator_id" id="indicator_id" class="form-control @error('indicator_id') is-invalid @enderror" required>
             <option value="">Select an indicator…</option>
             @foreach ($indicators as $indicator)
-            <option value="{{ $indicator->id }}" @selected((int) old('indicator_id', $entry?->indicator_id) === $indicator->id)>{{ $indicator->name }}</option>
+            <option value="{{ $indicator->id }}"
+                    data-requires-location="{{ $indicator->requires_location ? '1' : '0' }}"
+                    data-requires-activity="{{ $indicator->requires_activity ? '1' : '0' }}"
+                    data-has-budget-implication="{{ $indicator->has_budget_implication ? '1' : '0' }}"
+                    data-requires-evidence="{{ $indicator->requires_evidence ? '1' : '0' }}"
+                    @selected((int) old('indicator_id', $entry?->indicator_id) === $indicator->id)>{{ $indicator->name }}</option>
             @endforeach
         </select>
         @error('indicator_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        <p class="text-muted small mb-0 mt-1" id="indicator-config-hint"></p>
     </div>
 
     <div class="col-md-6 mb-3">
@@ -53,7 +59,7 @@
     </div>
 
     <div class="col-md-6 mb-3">
-        <label for="activity_name" class="form-label">Activity Name</label>
+        <label for="activity_name" class="form-label">Activity Name <span class="text-danger d-none js-activity-required-mark">*</span></label>
         <input type="text" name="activity_name" id="activity_name" class="form-control @error('activity_name') is-invalid @enderror"
                value="{{ old('activity_name', $entry?->activity_name) }}" maxlength="255">
         @error('activity_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -78,7 +84,7 @@
     </div>
 
     <div class="col-md-3 mb-3">
-        <label for="location_level" class="form-label">Location Level</label>
+        <label for="location_level" class="form-label">Location Level <span class="text-danger d-none js-location-required-mark">*</span></label>
         <select name="location_level" id="location_level" class="form-control @error('location_level') is-invalid @enderror">
             <option value="">—</option>
             @foreach ($locationLevels as $level)
@@ -88,11 +94,14 @@
         @error('location_level')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
-    <div class="col-md-3 mb-3">
-        <label for="location_id" class="form-label">Location ID</label>
-        <input type="number" name="location_id" id="location_id" class="form-control @error('location_id') is-invalid @enderror"
-               value="{{ old('location_id', $entry?->location_id) }}">
-        @error('location_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+    <div class="col-md-5 mb-3">
+        <label class="form-label">Location</label>
+        @include('components.location-cascade', [
+            'currentId' => old('location_id', $entry?->location_id),
+            'ancestorChain' => $locationAncestorChain ?? [],
+        ])
+        @error('location_id')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+        <p class="text-muted small mb-0 mt-1">Pick a Location Level above, then narrow down to the exact place.</p>
     </div>
 
     <div class="col-md-6 mb-3">
@@ -114,7 +123,7 @@
     </div>
 
     <div class="col-md-4 mb-3">
-        <label for="budget_allocated" class="form-label">Budget Allocated</label>
+        <label for="budget_allocated" class="form-label">Budget Allocated <span class="text-danger d-none js-budget-required-mark">*</span></label>
         <input type="number" step="0.01" name="budget_allocated" id="budget_allocated" class="form-control @error('budget_allocated') is-invalid @enderror"
                value="{{ old('budget_allocated', $entry?->budget_allocated) }}">
         @error('budget_allocated')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -172,6 +181,50 @@
     <p class="text-muted small mb-0" id="expenses-empty-hint">No expenses recorded for this entry.</p>
 </div>
 
+@php
+    $canEditEvidence = ! $entry || in_array($entry->status, ['draft', 'rejected'], true);
+    $existingEvidence = $entry?->getMedia('evidence') ?? collect();
+@endphp
+
+{{-- Evidence --}}
+<div class="mb-4">
+    <label class="form-label">Evidence <span class="text-danger d-none js-evidence-required-mark">*</span></label>
+
+    @if ($existingEvidence->isNotEmpty())
+    <table class="table table-sm mb-2">
+        <thead>
+            <tr><th>File</th><th>Size</th><th class="text-end">Actions</th></tr>
+        </thead>
+        <tbody>
+            @foreach ($existingEvidence as $media)
+            <tr>
+                <td>{{ $media->file_name }}</td>
+                <td>{{ number_format($media->size / 1024, 1) }} KB</td>
+                <td class="text-end">
+                    <a href="{{ route('indicator-data-entries.evidence.download', [$entry, $media]) }}" class="btn-icon" title="Download"><i class="mdi mdi-download-outline"></i></a>
+                    @if ($canEditEvidence)
+                    <form action="{{ route('indicator-data-entries.evidence.destroy', [$entry, $media]) }}" method="POST" class="d-inline"
+                          onsubmit="return confirm('Remove this evidence file?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn-icon danger" title="Remove"><i class="mdi mdi-trash-can-outline"></i></button>
+                    </form>
+                    @endif
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    @endif
+
+    @if ($canEditEvidence)
+    <input type="file" name="evidence[]" id="evidence" class="form-control @error('evidence') is-invalid @enderror" multiple
+           accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx">
+    @error('evidence')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+    <p class="text-muted small mb-0 mt-1">PDF, image, Word, or Excel files, up to 10MB each. Adds to whatever's already attached.</p>
+    @endif
+</div>
+
 @push('scripts')
 <script>
 (function () {
@@ -179,6 +232,37 @@
     var initialExpenses = @json($existingExpenses);
     var rowIndex = 0;
     var expenseIndex = 0;
+
+    function applyIndicatorConfig() {
+        var select = document.getElementById('indicator_id');
+        var option = select.options[select.selectedIndex];
+        var hint = document.getElementById('indicator-config-hint');
+
+        var requiresLocation = option && option.dataset.requiresLocation === '1';
+        var requiresActivity = option && option.dataset.requiresActivity === '1';
+        var hasBudgetImplication = option && option.dataset.hasBudgetImplication === '1';
+        var requiresEvidence = option && option.dataset.requiresEvidence === '1';
+
+        document.querySelectorAll('.js-location-required-mark').forEach(function (el) { el.classList.toggle('d-none', ! requiresLocation); });
+        document.querySelectorAll('.js-activity-required-mark').forEach(function (el) { el.classList.toggle('d-none', ! requiresActivity); });
+        document.querySelectorAll('.js-budget-required-mark').forEach(function (el) { el.classList.toggle('d-none', ! hasBudgetImplication); });
+        document.querySelectorAll('.js-evidence-required-mark').forEach(function (el) { el.classList.toggle('d-none', ! requiresEvidence); });
+
+        document.getElementById('location_level').required = requiresLocation;
+        document.getElementById('activity_name').required = requiresActivity;
+        document.getElementById('budget_allocated').required = hasBudgetImplication;
+
+        var notes = [];
+        if (requiresLocation) { notes.push('reporting location'); }
+        if (requiresActivity) { notes.push('activity name'); }
+        if (hasBudgetImplication) { notes.push('budget allocated'); }
+        if (requiresEvidence) { notes.push('supporting evidence'); }
+
+        hint.textContent = notes.length ? ('This indicator requires: ' + notes.join(', ') + '.') : '';
+    }
+
+    document.getElementById('indicator_id').addEventListener('change', applyIndicatorConfig);
+    applyIndicatorConfig();
 
     function toggleHint(tbodyId, hintId) {
         var tbody = document.getElementById(tbodyId);

@@ -90,6 +90,7 @@ class PlanHierarchyControllersTest extends TestCase
     {
         $user = $this->userWithRole('Project Manager');
         $project = Project::factory()->create();
+        $project->users()->attach($user->id, ['is_active' => true]);
 
         $response = $this->actingAs($user)->postJson('/thematic-areas', [
             'project_id' => $project->id,

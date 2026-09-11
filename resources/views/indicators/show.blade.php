@@ -183,7 +183,8 @@
                 <td>{{ $assignment->organization?->name ?? '—' }}</td>
                 <td>
                     @if ($assignment->location_level)
-                        {{ ucfirst(str_replace('_', ' ', $assignment->location_level)) }} #{{ $assignment->location_id }}
+                        {{ ucfirst(str_replace('_', ' ', $assignment->location_level)) }}:
+                        {{ $assignment->locationName() ?? '#'.$assignment->location_id }}
                     @else
                         <span class="text-muted">All locations</span>
                     @endif

@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Indicator;
+use App\Models\IndicatorDataEntry;
 use App\Support\AdminLocationLevel;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -44,6 +46,9 @@ class UpdateIndicatorDataEntryRequest extends FormRequest
             'expenses.*.description' => ['required', 'string'],
             'expenses.*.amount' => ['required', 'numeric'],
             'expenses.*.currency' => ['nullable', 'string', 'size:3'],
+
+            'evidence' => ['nullable', 'array'],
+            'evidence.*' => ['file', 'max:10240', 'mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx'],
         ];
     }
 
@@ -56,6 +61,43 @@ class UpdateIndicatorDataEntryRequest extends FormRequest
             if ($level && $id && ! $validator->errors()->has('location_level') && ! AdminLocationLevel::exists($level, (int) $id)) {
                 $validator->errors()->add('location_id', 'The selected location does not exist at the given level.');
             }
+
+            if (! $validator->errors()->has('indicator_id')) {
+                $this->applyIndicatorConfigRules($validator);
+            }
         });
+    }
+
+    private function applyIndicatorConfigRules(Validator $validator): void
+    {
+        /** @var IndicatorDataEntry $entry */
+        $entry = $this->route('indicator_data_entry');
+
+        $indicatorId = $this->has('indicator_id') ? $this->input('indicator_id') : $entry->indicator_id;
+        $indicator = Indicator::find($indicatorId);
+
+        if (! $indicator) {
+            return;
+        }
+
+        $locationLevel = $this->has('location_level') ? $this->input('location_level') : $entry->location_level;
+        $activityName = $this->has('activity_name') ? $this->input('activity_name') : $entry->activity_name;
+        $budgetAllocated = $this->has('budget_allocated') ? $this->input('budget_allocated') : $entry->budget_allocated;
+
+        if ($indicator->requires_location && ! filled($locationLevel)) {
+            $validator->errors()->add('location_level', 'This indicator requires a reporting location.');
+        }
+
+        if ($indicator->requires_activity && ! filled($activityName)) {
+            $validator->errors()->add('activity_name', 'This indicator requires an activity name.');
+        }
+
+        if ($indicator->has_budget_implication && ! filled($budgetAllocated)) {
+            $validator->errors()->add('budget_allocated', 'This indicator requires a budget allocated amount.');
+        }
+
+        if ($indicator->requires_evidence && ! $this->hasFile('evidence') && $entry->getMedia('evidence')->isEmpty()) {
+            $validator->errors()->add('evidence', 'This indicator requires supporting evidence to be attached.');
+        }
     }
 }

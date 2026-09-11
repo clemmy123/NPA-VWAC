@@ -16,7 +16,7 @@
 </div>
 
 <div class="chart-card">
-    <form action="{{ route('indicator-data-entries.update', $entry) }}" method="POST">
+    <form action="{{ route('indicator-data-entries.update', $entry) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         @include('indicator-data-entries.form', [

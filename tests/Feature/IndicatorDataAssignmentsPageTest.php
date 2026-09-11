@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Indicator;
 use App\Models\IndicatorDataAssignment;
+use App\Models\Region;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -69,5 +70,18 @@ class IndicatorDataAssignmentsPageTest extends TestCase
         $this->actingAs($manager)->delete(route('indicator-data-assignments.destroy', $assignment))
             ->assertRedirect(route('indicator-data-assignments.index'));
         $this->assertDatabaseMissing('indicator_data_assignments', ['id' => $assignment->id]);
+    }
+
+    public function test_the_index_page_shows_the_resolved_location_name_not_a_raw_id(): void
+    {
+        $manager = $this->userWithRole('Thematic Manager');
+        $region = Region::factory()->create(['name' => 'Kigoma']);
+        IndicatorDataAssignment::factory()->create(['location_level' => 'region', 'location_id' => $region->region_id]);
+
+        $response = $this->actingAs($manager)->get(route('indicator-data-assignments.index'));
+
+        $response->assertOk();
+        $response->assertSee('Kigoma');
+        $response->assertDontSee('#'.$region->region_id);
     }
 }

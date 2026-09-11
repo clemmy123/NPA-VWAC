@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AdminLocationController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DataSourceController;
 use App\Http\Controllers\DimensionController;
 use App\Http\Controllers\DimensionOptionController;
@@ -16,8 +18,10 @@ use App\Http\Controllers\MeasurementTypeController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationTypeController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProjectUserController;
 use App\Http\Controllers\ReportingPeriodController;
 use App\Http\Controllers\ThematicAreaController;
+use App\Http\Controllers\ThematicAreaUserController;
 use App\Http\Controllers\UnitOfMeasureController;
 use App\Http\Controllers\UserController;
 use App\Models\User;
@@ -83,7 +87,10 @@ Route::get('/reset-password/{token}', fn (string $token) => redirect()->away(
 ))->name('password.reset');
 
 Route::middleware(['auth', 'auth.session'])->group(function (): void {
-    Route::view('/dashboard', 'dashboard')->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('admin-locations/{level}', [AdminLocationController::class, 'options'])
+        ->name('admin-locations.options');
     Route::get('/profile', fn () => redirect()->away(JumuishiUrl::central(config('jumuishi.password_path'))))
         ->name('profile.edit');
     Route::match(['get', 'put'], '/password', fn () => redirect()->away(JumuishiUrl::central(config('jumuishi.password_path'))))
@@ -101,6 +108,11 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
         ->middlewareFor('update', 'can:project.update')
         ->middlewareFor('destroy', 'can:project.delete');
 
+    Route::post('projects/{project}/managers', [ProjectUserController::class, 'store'])
+        ->middleware('can:project.assign-manager')->name('projects.managers.store');
+    Route::delete('projects/{project}/managers/{user}', [ProjectUserController::class, 'destroy'])
+        ->middleware('can:project.assign-manager')->name('projects.managers.destroy');
+
     Route::get('thematic-areas/create', [ThematicAreaController::class, 'create'])
         ->middleware('can:thematic-area.create')->name('thematic-areas.create');
     Route::get('thematic-areas/{thematic_area}/edit', [ThematicAreaController::class, 'edit'])
@@ -112,6 +124,11 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
         ->middlewareFor('store', 'can:thematic-area.create')
         ->middlewareFor('update', 'can:thematic-area.update')
         ->middlewareFor('destroy', 'can:thematic-area.delete');
+
+    Route::post('thematic-areas/{thematic_area}/managers', [ThematicAreaUserController::class, 'store'])
+        ->middleware('can:thematic-area.assign-manager')->name('thematic-areas.managers.store');
+    Route::delete('thematic-areas/{thematic_area}/managers/{user}', [ThematicAreaUserController::class, 'destroy'])
+        ->middleware('can:thematic-area.assign-manager')->name('thematic-areas.managers.destroy');
 
     Route::get('indicators/create', [IndicatorController::class, 'create'])
         ->middleware('can:indicator.create')->name('indicators.create');
@@ -184,6 +201,14 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
     Route::post('indicator-data-entries/{indicator_data_entry}/return', [IndicatorDataEntryController::class, 'returnEntry'])
         ->middleware('can:indicator-data.return')
         ->name('indicator-data-entries.return');
+
+    Route::get('indicator-data-entries/{indicator_data_entry}/evidence/{media}', [IndicatorDataEntryController::class, 'downloadEvidence'])
+        ->middleware('can:indicator-data.view')
+        ->name('indicator-data-entries.evidence.download');
+
+    Route::delete('indicator-data-entries/{indicator_data_entry}/evidence/{media}', [IndicatorDataEntryController::class, 'destroyEvidence'])
+        ->middleware('can:indicator-data.update')
+        ->name('indicator-data-entries.evidence.destroy');
 
     // Settings: lookup/reference data management (organizations, financial years,
     // data sources, measurement types, units, disaggregation dimensions). All

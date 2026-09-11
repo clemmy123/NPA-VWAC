@@ -16,7 +16,7 @@
 </div>
 
 <div class="chart-card">
-    <form action="{{ route('indicator-data-entries.store') }}" method="POST">
+    <form action="{{ route('indicator-data-entries.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         @include('indicator-data-entries.form', [
             'indicators' => $indicators,

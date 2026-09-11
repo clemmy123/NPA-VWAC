@@ -34,6 +34,61 @@
     </div>
 </div>
 
+@can('project.assign-manager')
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <h5 class="mb-0">Project Managers</h5>
+    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-manager" data-quick-add-title="Assign Project Manager to &quot;{{ $project->name }}&quot;">
+        <i class="mdi mdi-plus"></i> Assign Manager
+    </button>
+</div>
+
+<div class="table-card mb-4">
+    <table class="table mb-0">
+        <thead><tr><th>Name</th><th>Email</th><th>Actions</th></tr></thead>
+        <tbody>
+            @forelse ($managers as $manager)
+            <tr>
+                <td>{{ $manager->name }}</td>
+                <td>{{ $manager->email }}</td>
+                <td>
+                    <form action="{{ route('projects.managers.destroy', [$project, $manager]) }}" method="POST" class="d-inline"
+                          onsubmit="return confirm('Remove &quot;{{ $manager->name }}&quot; as a manager of this project?');">
+                        @csrf
+                        @method('DELETE')
+                        <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
+                        <button type="submit" class="btn-icon danger" title="Remove"><i class="mdi mdi-close"></i></button>
+                    </form>
+                </td>
+            </tr>
+            @empty
+            <tr><td colspan="3"><div class="tbl-empty"><i class="mdi mdi-account-outline"></i><p>No project managers assigned yet.</p></div></td></tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
+
+<template id="tpl-add-manager">
+    <form method="POST" action="{{ route('projects.managers.store', $project) }}">
+        @csrf
+        <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
+        <div class="mb-3">
+            <label for="user_id" class="form-label">User</label>
+            <select name="user_id" id="user_id" class="form-control" required>
+                <option value="">Select a Project Manager…</option>
+                @foreach ($assignableManagers as $user)
+                <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
+                @endforeach
+            </select>
+            <div class="form-text">Only users with the "Project Manager" role are listed. Assign the role first under Users if it's missing.</div>
+        </div>
+        <div class="d-flex form-actions">
+            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> Assign</button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+    </form>
+</template>
+@endcan
+
 <div class="d-flex justify-content-between align-items-center mb-2">
     <h5 class="mb-0">Thematic Areas</h5>
     @can('thematic-area.create')

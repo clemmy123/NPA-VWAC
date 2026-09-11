@@ -55,6 +55,14 @@ class IndicatorDataEntryResource extends JsonResource
                 'comment' => $review->comment,
                 'created_at' => $review->created_at,
             ])),
+            'evidence' => $this->whenLoaded('media', fn () => $this->getMedia('evidence')->map(fn ($media) => [
+                'id' => $media->id,
+                'file_name' => $media->file_name,
+                'size' => $media->size,
+                'mime_type' => $media->mime_type,
+                'download_url' => route('indicator-data-entries.evidence.download', [$this->resource, $media]),
+                'created_at' => $media->created_at,
+            ])),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
