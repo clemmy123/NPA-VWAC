@@ -21,7 +21,7 @@
         @method('PUT')
         @include('indicator-data-assignments.form', [
             'assignment' => $assignment, 'indicators' => $indicators, 'users' => $users, 'organizations' => $organizations,
-            'dataSources' => $dataSources, 'locationLevels' => $locationLevels,
+            'locationLevels' => $locationLevels,
         ])
 
         <div class="d-flex form-actions">

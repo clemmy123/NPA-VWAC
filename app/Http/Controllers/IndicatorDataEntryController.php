@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreIndicatorDataEntryRequest;
 use App\Http\Requests\UpdateIndicatorDataEntryRequest;
 use App\Http\Resources\IndicatorDataEntryResource;
-use App\Models\DataSource;
 use App\Models\FinancialYear;
 use App\Models\Indicator;
 use App\Models\IndicatorDataEntry;
@@ -152,7 +151,6 @@ class IndicatorDataEntryController extends Controller
             'financialYears' => FinancialYear::query()->orderBy('name')->get(),
             'reportingPeriods' => ReportingPeriod::query()->orderBy('sequence')->get(),
             'organizations' => Organization::query()->orderBy('name')->get(),
-            'dataSources' => DataSource::query()->orderBy('name')->get(),
             'locationLevels' => AdminLocationLevel::levels(),
         ];
     }

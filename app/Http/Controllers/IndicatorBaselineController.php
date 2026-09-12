@@ -8,6 +8,7 @@ use App\Http\Resources\IndicatorBaselineResource;
 use App\Models\FinancialYear;
 use App\Models\Indicator;
 use App\Models\IndicatorBaseline;
+use App\Models\Organization;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,7 +19,7 @@ class IndicatorBaselineController extends Controller
     public function index(Request $request): JsonResponse|View
     {
         $baselines = IndicatorBaseline::query()
-            ->with(['indicator', 'financialYear'])
+            ->with(['indicator', 'financialYear', 'organization'])
             ->when($request->integer('indicator_id'), fn ($query, $indicatorId) => $query->where('indicator_id', $indicatorId))
             ->latest('id')
             ->paginate($request->integer('per_page', 15));
@@ -84,6 +85,7 @@ class IndicatorBaselineController extends Controller
         return [
             'indicators' => Indicator::query()->orderBy('name')->get(),
             'financialYears' => FinancialYear::query()->orderBy('name')->get(),
+            'organizations' => Organization::query()->orderBy('name')->get(),
         ];
     }
 }

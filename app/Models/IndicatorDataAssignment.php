@@ -23,8 +23,6 @@ class IndicatorDataAssignment extends Model
 
         'organization_id',
 
-        'data_source_id',
-
         'is_active',
 
     ];
@@ -51,11 +49,6 @@ class IndicatorDataAssignment extends Model
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);
-    }
-
-    public function dataSource(): BelongsTo
-    {
-        return $this->belongsTo(DataSource::class);
     }
 
     public function locationName(): ?string

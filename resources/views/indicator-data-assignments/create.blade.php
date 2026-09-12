@@ -20,7 +20,7 @@
         @csrf
         @include('indicator-data-assignments.form', [
             'indicators' => $indicators, 'users' => $users, 'organizations' => $organizations,
-            'dataSources' => $dataSources, 'locationLevels' => $locationLevels,
+            'locationLevels' => $locationLevels,
         ])
 
         <div class="d-flex form-actions">

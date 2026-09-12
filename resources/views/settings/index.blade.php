@@ -7,7 +7,6 @@
         ['route' => 'organization-types.index', 'icon' => 'mdi-shape-outline', 'title' => 'Organization Types', 'desc' => 'Categories organizations belong to (bank, NGO, council, ...).'],
         ['route' => 'financial-years.index', 'icon' => 'mdi-calendar-range-outline', 'title' => 'Financial Years', 'desc' => 'Reporting years, e.g. 2026/27.'],
         ['route' => 'reporting-periods.index', 'icon' => 'mdi-calendar-week-outline', 'title' => 'Reporting Periods', 'desc' => 'Quarters/periods within a financial year.'],
-        ['route' => 'data-sources.index', 'icon' => 'mdi-database-outline', 'title' => 'Data Sources', 'desc' => 'How data gets collected — manual entry vs. system integration.'],
         ['route' => 'measurement-types.index', 'icon' => 'mdi-ruler', 'title' => 'Measurement Types', 'desc' => 'Count, percentage, ratio, currency, etc.'],
         ['route' => 'units-of-measure.index', 'icon' => 'mdi-tape-measure', 'title' => 'Units of Measure', 'desc' => 'People, households, TZS, USD, etc.'],
         ['route' => 'dimensions.index', 'icon' => 'mdi-format-list-bulleted', 'title' => 'Dimensions', 'desc' => 'Disaggregation categories (Gender, Age Group, ...) and their options.'],

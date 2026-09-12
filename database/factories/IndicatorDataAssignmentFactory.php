@@ -22,7 +22,6 @@ class IndicatorDataAssignmentFactory extends Factory
             'location_level' => null,
             'location_id' => null,
             'organization_id' => null,
-            'data_source_id' => null,
             'is_active' => true,
         ];
     }

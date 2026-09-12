@@ -104,17 +104,6 @@
         <p class="text-muted small mb-0 mt-1">Pick a Location Level above, then narrow down to the exact place.</p>
     </div>
 
-    <div class="col-md-6 mb-3">
-        <label for="data_source_id" class="form-label">Data Source</label>
-        <select name="data_source_id" id="data_source_id" class="form-control @error('data_source_id') is-invalid @enderror">
-            <option value="">—</option>
-            @foreach ($dataSources as $dataSource)
-            <option value="{{ $dataSource->id }}" @selected((int) old('data_source_id', $entry?->data_source_id) === $dataSource->id)>{{ $dataSource->name }}</option>
-            @endforeach
-        </select>
-        @error('data_source_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-    </div>
-
     <div class="col-md-4 mb-3">
         <label for="actual_value" class="form-label">Actual Value</label>
         <input type="number" step="0.0001" name="actual_value" id="actual_value" class="form-control @error('actual_value') is-invalid @enderror"

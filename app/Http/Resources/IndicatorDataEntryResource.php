@@ -21,7 +21,6 @@ class IndicatorDataEntryResource extends JsonResource
             'location_level' => $this->location_level,
             'location_id' => $this->location_id,
             'organization_id' => $this->organization_id,
-            'data_source_id' => $this->data_source_id,
             'actual_value' => $this->actual_value,
             'budget_allocated' => $this->budget_allocated,
             'budget_used' => $this->budget_used,

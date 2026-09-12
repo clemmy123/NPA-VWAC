@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreIndicatorRequest;
 use App\Http\Requests\UpdateIndicatorRequest;
 use App\Http\Resources\IndicatorResource;
-use App\Models\DataSource;
 use App\Models\DimensionOption;
 use App\Models\FinancialYear;
 use App\Models\Indicator;
@@ -77,16 +76,15 @@ class IndicatorController extends Controller
 
         return view('indicators.show', [
             'indicator' => $indicator,
-            'baselines' => $indicator->baselines()->with('financialYear')->latest('id')->get(),
+            'baselines' => $indicator->baselines()->with(['financialYear', 'organization'])->latest('id')->get(),
             'targets' => $indicator->targets()->with(['financialYear', 'reportingPeriod', 'dimensionOption'])->latest('id')->get(),
-            'assignments' => $indicator->assignments()->with(['user', 'organization', 'dataSource'])->latest('id')->get(),
+            'assignments' => $indicator->assignments()->with(['user', 'organization'])->latest('id')->get(),
             'allIndicators' => Indicator::query()->orderBy('name')->get(),
             'financialYears' => FinancialYear::query()->orderBy('name')->get(),
             'reportingPeriods' => ReportingPeriod::query()->orderBy('sequence')->get(),
             'dimensionOptions' => DimensionOption::query()->orderBy('name')->get(),
             'users' => User::query()->orderBy('name')->get(),
             'organizations' => Organization::query()->orderBy('name')->get(),
-            'dataSources' => DataSource::query()->orderBy('name')->get(),
             'locationLevels' => AdminLocationLevel::levels(),
         ]);
     }

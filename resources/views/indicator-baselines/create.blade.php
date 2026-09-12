@@ -18,7 +18,7 @@
 <div class="chart-card">
     <form action="{{ route('indicator-baselines.store') }}" method="POST">
         @csrf
-        @include('indicator-baselines.form', ['indicators' => $indicators, 'financialYears' => $financialYears])
+        @include('indicator-baselines.form', ['indicators' => $indicators, 'financialYears' => $financialYears, 'organizations' => $organizations])
 
         <div class="d-flex form-actions">
             <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> Save Baseline</button>

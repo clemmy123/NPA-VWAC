@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DataSource;
 use App\Models\Indicator;
 use App\Models\IndicatorDataAssignment;
 use App\Models\Organization;
@@ -17,7 +16,7 @@ class IndicatorDataAssignmentController extends Controller
     public function index(Request $request): View
     {
         $assignments = IndicatorDataAssignment::query()
-            ->with(['indicator', 'user', 'organization', 'dataSource'])
+            ->with(['indicator', 'user', 'organization'])
             ->when($request->integer('indicator_id'), fn ($query, $indicatorId) => $query->where('indicator_id', $indicatorId))
             ->when($request->integer('user_id'), fn ($query, $userId) => $query->where('user_id', $userId))
             ->latest('id')
@@ -74,7 +73,6 @@ class IndicatorDataAssignmentController extends Controller
             'indicators' => Indicator::query()->orderBy('name')->get(),
             'users' => User::query()->orderBy('name')->get(),
             'organizations' => Organization::query()->orderBy('name')->get(),
-            'dataSources' => DataSource::query()->orderBy('name')->get(),
             'locationLevels' => AdminLocationLevel::levels(),
         ];
     }
@@ -88,7 +86,6 @@ class IndicatorDataAssignmentController extends Controller
             'location_level' => ['nullable', 'string', 'in:'.implode(',', AdminLocationLevel::levels()), 'required_with:location_id'],
             'location_id' => ['nullable', 'integer', 'required_with:location_level'],
             'organization_id' => ['nullable', 'integer', 'exists:organizations,id'],
-            'data_source_id' => ['nullable', 'integer', 'exists:data_sources,id'],
             'is_active' => ['nullable', 'boolean'],
         ]);
 

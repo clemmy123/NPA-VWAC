@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\DataSource;
 use App\Models\Dimension;
 use App\Models\DimensionOption;
 use App\Models\FinancialYear;
@@ -119,21 +118,6 @@ class SettingsCrudTest extends TestCase
         $this->actingAs($admin)->delete(route('reporting-periods.destroy', $period))
             ->assertRedirect(route('reporting-periods.index'));
         $this->assertDatabaseMissing('reporting_periods', ['id' => $period->id]);
-    }
-
-    public function test_data_sources_crud(): void
-    {
-        $admin = $this->superAdmin();
-
-        $this->actingAs($admin)->post(route('data-sources.store'), [
-            'code' => 'survey_2', 'name' => 'Household Survey', 'collection_method' => 'manual',
-        ])->assertRedirect(route('data-sources.index'));
-
-        $dataSource = DataSource::where('code', 'survey_2')->firstOrFail();
-
-        $this->actingAs($admin)->delete(route('data-sources.destroy', $dataSource))
-            ->assertRedirect(route('data-sources.index'));
-        $this->assertDatabaseMissing('data_sources', ['id' => $dataSource->id]);
     }
 
     public function test_measurement_types_crud(): void

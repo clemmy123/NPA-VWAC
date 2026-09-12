@@ -57,7 +57,7 @@
                 <td>{{ $baseline->baseline_value }}</td>
                 <td>{{ $baseline->financialYear?->name ?? '—' }}</td>
                 <td>{{ $baseline->baseline_date?->format('d M Y') ?? '—' }}</td>
-                <td>{{ $baseline->source ?? '—' }}</td>
+                <td>{{ $baseline->organization?->name ?? '—' }}</td>
                 <td>
                     @can('indicator.set-baseline')
                     <a href="{{ route('indicator-baselines.edit', $baseline) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
@@ -82,7 +82,7 @@
     @forelse ($baselines as $baseline)
     <div class="mob-card">
         <div class="mob-card-top"><span class="fw-600">{{ $baseline->baseline_value }}</span><span class="text-muted small">{{ $baseline->financialYear?->name ?? '—' }}</span></div>
-        <div class="mob-card-meta"><span>{{ $baseline->source ?? '—' }}</span></div>
+        <div class="mob-card-meta"><span>{{ $baseline->organization?->name ?? '—' }}</span></div>
         <div class="mob-card-footer">
             @can('indicator.set-baseline')
             <a href="{{ route('indicator-baselines.edit', $baseline) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
@@ -242,6 +242,7 @@
             'baseline' => new \App\Models\IndicatorBaseline(['indicator_id' => $indicator->id]),
             'indicators' => $allIndicators,
             'financialYears' => $financialYears,
+            'organizations' => $organizations,
         ])
         <div class="d-flex form-actions">
             <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> Save</button>
@@ -281,7 +282,6 @@
             'indicators' => $allIndicators,
             'users' => $users,
             'organizations' => $organizations,
-            'dataSources' => $dataSources,
             'locationLevels' => $locationLevels,
         ])
         <div class="d-flex form-actions">

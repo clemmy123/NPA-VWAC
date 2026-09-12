@@ -53,8 +53,6 @@ class IndicatorDataEntry extends Model implements HasMedia
 
         'organization_id',
 
-        'data_source_id',
-
         'actual_value',
 
         'budget_allocated',
@@ -143,11 +141,6 @@ class IndicatorDataEntry extends Model implements HasMedia
     public function organization()
     {
         return $this->belongsTo(Organization::class);
-    }
-
-    public function dataSource()
-    {
-        return $this->belongsTo(DataSource::class);
     }
 
     public function enteredBy()

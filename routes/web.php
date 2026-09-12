@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\AdminLocationController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\DataSourceController;
 use App\Http\Controllers\DimensionController;
 use App\Http\Controllers\DimensionOptionController;
 use App\Http\Controllers\FinancialYearController;
@@ -227,7 +226,6 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
         Route::resource('organizations', OrganizationController::class)->except(['show']);
         Route::resource('financial-years', FinancialYearController::class)->except(['show']);
         Route::resource('reporting-periods', ReportingPeriodController::class)->except(['show']);
-        Route::resource('data-sources', DataSourceController::class)->except(['show']);
         Route::resource('measurement-types', MeasurementTypeController::class)->except(['show']);
         Route::resource('units-of-measure', UnitOfMeasureController::class)
             ->parameters(['units-of-measure' => 'unit_of_measure'])

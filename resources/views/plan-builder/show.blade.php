@@ -70,6 +70,15 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div>
+                            <label>Baseline source (organization)</label>
+                            <select class="pb-input pb-baseline-org select2" {{ $canSetBaseline ? '' : 'disabled' }}>
+                                <option value="">—</option>
+                                @foreach ($organizations as $organization)
+                                <option value="{{ $organization->id }}" @selected((isset($baselines[$indicator->id]) ? $baselines[$indicator->id]->organization_id : null) === $organization->id)>{{ $organization->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                 </td>
                 <td>
@@ -211,6 +220,7 @@
     const THEMATIC_AREA_ID = {{ $thematicArea->id }};
     const FINANCIAL_YEAR_ID = @json($currentFinancialYear?->id);
     const FINANCIAL_YEARS = @json($financialYears->map(fn ($fy) => ['id' => $fy->id, 'name' => $fy->name])->values());
+    const ORGANIZATIONS = @json($organizations->map(fn ($org) => ['id' => $org->id, 'name' => $org->name])->values());
     const CAN_UPDATE_INDICATOR = @json($canUpdateIndicator);
     const CAN_CREATE_INDICATOR = @json($canCreateIndicator);
     const CAN_SET_BASELINE = @json($canSetBaseline);
@@ -314,15 +324,18 @@
         if (!FINANCIAL_YEAR_ID || !tr.dataset.id) return;
         const value = tr.querySelector('.pb-baseline').value;
         if (value === '') return;
+        const orgSelect = tr.querySelector('.pb-baseline-org');
+        const organizationId = orgSelect ? (orgSelect.value || null) : null;
         autosaveFlag('saving');
         try {
             if (tr.dataset.baselineId) {
-                await api(baselineUrl(tr.dataset.baselineId), 'PATCH', { baseline_value: value });
+                await api(baselineUrl(tr.dataset.baselineId), 'PATCH', { baseline_value: value, organization_id: organizationId });
             } else {
                 const res = await api(baselinesUrl, 'POST', {
                     indicator_id: tr.dataset.id,
                     financial_year_id: FINANCIAL_YEAR_ID,
                     baseline_value: value,
+                    organization_id: organizationId,
                 });
                 tr.dataset.baselineId = res.data.id;
             }
@@ -393,9 +406,11 @@
             el.addEventListener('change', () => syncIndicator(tr));
         });
         const baseline = tr.querySelector('.pb-baseline');
+        const baselineOrg = tr.querySelector('.pb-baseline-org');
         const target = tr.querySelector('.pb-target');
         const targetFy = tr.querySelector('.pb-target-fy');
         if (baseline) baseline.addEventListener('change', () => syncBaseline(tr));
+        if (baselineOrg) baselineOrg.addEventListener('change', () => syncBaseline(tr));
         if (target) target.addEventListener('change', () => syncTarget(tr));
         if (targetFy) targetFy.addEventListener('change', () => syncTarget(tr));
 
@@ -442,6 +457,13 @@
                             @endforeach
                         </select>
                     </div>
+                    <div>
+                        <label>Baseline source (organization)</label>
+                        <select class="pb-input pb-baseline-org select2">
+                            <option value="">—</option>
+                            ${ORGANIZATIONS.map((org) => '<option value="' + org.id + '">' + org.name + '</option>').join('')}
+                        </select>
+                    </div>
                 </div>
             </td>
             <td>
@@ -463,6 +485,9 @@
         `;
         body.appendChild(tr);
         wireRow(tr);
+        if (window.jQuery) {
+            jQuery(tr).find('.select2').select2({ width: '100%' });
+        }
         tr.querySelector('.pb-name').focus();
     }
 

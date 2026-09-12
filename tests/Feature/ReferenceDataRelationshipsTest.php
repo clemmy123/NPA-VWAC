@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Council;
-use App\Models\DataSource;
 use App\Models\Dimension;
 use App\Models\DimensionOption;
 use App\Models\District;
@@ -101,7 +100,6 @@ class ReferenceDataRelationshipsTest extends TestCase
     {
         $this->assertNotNull(MeasurementType::factory()->create()->id);
         $this->assertNotNull(UnitOfMeasure::factory()->create()->id);
-        $this->assertNotNull(DataSource::factory()->create()->id);
         $this->assertNotNull(FundSource::factory()->create()->id);
     }
 }

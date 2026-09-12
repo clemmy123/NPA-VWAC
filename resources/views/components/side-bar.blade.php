@@ -132,7 +132,7 @@
 
                 {{-- Settings --}}
                 @can('settings.manage')
-                <li class="{{ request()->routeIs('settings.*', 'organizations.*', 'organization-types.*', 'financial-years.*', 'reporting-periods.*', 'data-sources.*', 'measurement-types.*', 'units-of-measure.*', 'dimensions.*') ? 'active' : '' }}">
+                <li class="{{ request()->routeIs('settings.*', 'organizations.*', 'organization-types.*', 'financial-years.*', 'reporting-periods.*', 'measurement-types.*', 'units-of-measure.*', 'dimensions.*') ? 'active' : '' }}">
                     <a href="{{ route('settings.index') }}">
                         <i class="bi bi-gear"></i>
                         <span>Settings</span>

@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\FinancialYear;
 use App\Models\Indicator;
 use App\Models\IndicatorBaseline;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,7 +22,7 @@ class IndicatorBaselineFactory extends Factory
             'financial_year_id' => FinancialYear::factory(),
             'baseline_value' => fake()->randomFloat(4, 0, 100000),
             'baseline_date' => now()->toDateString(),
-            'source' => fake()->company(),
+            'organization_id' => Organization::factory(),
             'remarks' => fake()->sentence(),
         ];
     }

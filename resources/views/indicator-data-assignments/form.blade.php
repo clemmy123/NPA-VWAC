@@ -35,17 +35,6 @@
     </div>
 
     <div class="col-md-6 mb-3">
-        <label for="data_source_id" class="form-label">Data Source</label>
-        <select name="data_source_id" id="data_source_id" class="form-control @error('data_source_id') is-invalid @enderror">
-            <option value="">—</option>
-            @foreach ($dataSources as $dataSource)
-            <option value="{{ $dataSource->id }}" @selected((int) old('data_source_id', $assignment?->data_source_id) === $dataSource->id)>{{ $dataSource->name }}</option>
-            @endforeach
-        </select>
-        @error('data_source_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-    </div>
-
-    <div class="col-md-6 mb-3">
         <label for="location_level" class="form-label">Location Level</label>
         <select name="location_level" id="location_level" class="form-control @error('location_level') is-invalid @enderror">
             <option value="">— (all locations)</option>

@@ -113,13 +113,6 @@ class Indicator extends Model
 
     }
 
-    public function dataSources()
-    {
-
-        return $this->belongsToMany(DataSource::class, 'indicator_data_sources')->withPivot('is_primary')->withTimestamps();
-
-    }
-
     public function dimensions()
     {
 

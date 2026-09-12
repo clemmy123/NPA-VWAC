@@ -40,10 +40,14 @@
     </div>
 
     <div class="col-12 mb-3">
-        <label for="source" class="form-label">Source</label>
-        <input type="text" name="source" id="source" class="form-control @error('source') is-invalid @enderror"
-               value="{{ old('source', $baseline?->source) }}" maxlength="255">
-        @error('source')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        <label for="organization_id" class="form-label">Source (Organization)</label>
+        <select name="organization_id" id="organization_id" class="form-control select2 @error('organization_id') is-invalid @enderror">
+            <option value="">—</option>
+            @foreach ($organizations as $organization)
+            <option value="{{ $organization->id }}" @selected((int) old('organization_id', $baseline?->organization_id) === $organization->id)>{{ $organization->name }}</option>
+            @endforeach
+        </select>
+        @error('organization_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
     <div class="col-12 mb-3">

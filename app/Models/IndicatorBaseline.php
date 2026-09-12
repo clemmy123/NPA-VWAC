@@ -19,7 +19,7 @@ class IndicatorBaseline extends Model
 
         'baseline_date',
 
-        'source',
+        'organization_id',
 
         'remarks',
 
@@ -46,5 +46,10 @@ class IndicatorBaseline extends Model
     public function financialYear()
     {
         return $this->belongsTo(FinancialYear::class);
+    }
+
+    public function organization()
+    {
+        return $this->belongsTo(Organization::class);
     }
 }

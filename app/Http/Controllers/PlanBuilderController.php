@@ -6,6 +6,7 @@ use App\Models\FinancialYear;
 use App\Models\IndicatorBaseline;
 use App\Models\IndicatorTarget;
 use App\Models\MeasurementType;
+use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ThematicArea;
 use App\Models\UnitOfMeasure;
@@ -113,6 +114,7 @@ class PlanBuilderController extends Controller
             'targets' => $targets,
             'currentFinancialYear' => $currentFinancialYear,
             'financialYears' => FinancialYear::query()->orderByDesc('start_date')->get(),
+            'organizations' => Organization::query()->orderBy('name')->get(),
             'measurementTypes' => MeasurementType::query()->orderBy('name')->get(),
             'unitsOfMeasure' => UnitOfMeasure::query()->orderBy('name')->get(),
             'reportingFrequencies' => ['monthly', 'quarterly', 'biannual', 'annual'],

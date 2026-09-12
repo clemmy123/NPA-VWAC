@@ -39,7 +39,7 @@
                 <td>{{ $baseline->financialYear?->name ?? '—' }}</td>
                 <td>{{ rtrim(rtrim(number_format((float) $baseline->baseline_value, 4), '0'), '.') }}</td>
                 <td>{{ $baseline->baseline_date?->format('d M Y') ?? '—' }}</td>
-                <td>{{ $baseline->source ?? '—' }}</td>
+                <td>{{ $baseline->organization?->name ?? '—' }}</td>
                 <td>
                     @can('indicator.set-baseline')
                     <a href="{{ route('indicator-baselines.edit', $baseline) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
@@ -81,7 +81,7 @@
         </div>
         <div class="mob-card-meta">
             <span><i class="mdi mdi-calendar-outline"></i> {{ $baseline->financialYear?->name ?? '—' }}</span>
-            <span><i class="mdi mdi-file-document-outline"></i> {{ $baseline->source ?? '—' }}</span>
+            <span><i class="mdi mdi-file-document-outline"></i> {{ $baseline->organization?->name ?? '—' }}</span>
         </div>
         <div class="mob-card-footer">
             @can('indicator.set-baseline')

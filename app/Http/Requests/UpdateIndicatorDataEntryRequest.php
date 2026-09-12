@@ -28,7 +28,6 @@ class UpdateIndicatorDataEntryRequest extends FormRequest
             'location_level' => ['nullable', 'string', Rule::in(AdminLocationLevel::levels()), 'required_with:location_id'],
             'location_id' => ['nullable', 'integer', 'required_with:location_level'],
             'organization_id' => ['nullable', 'integer', 'exists:organizations,id'],
-            'data_source_id' => ['nullable', 'integer', 'exists:data_sources,id'],
             'actual_value' => ['nullable', 'numeric'],
             'budget_allocated' => ['nullable', 'numeric'],
             'budget_used' => ['nullable', 'numeric'],

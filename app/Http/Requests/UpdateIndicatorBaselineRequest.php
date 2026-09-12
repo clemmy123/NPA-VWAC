@@ -20,7 +20,7 @@ class UpdateIndicatorBaselineRequest extends FormRequest
             'financial_year_id' => ['nullable', 'integer', 'exists:financial_years,id'],
             'baseline_value' => ['sometimes', 'required', 'numeric'],
             'baseline_date' => ['nullable', 'date'],
-            'source' => ['nullable', 'string', 'max:255'],
+            'organization_id' => ['nullable', 'integer', 'exists:organizations,id'],
             'remarks' => ['nullable', 'string'],
         ];
     }

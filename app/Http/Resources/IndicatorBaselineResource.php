@@ -15,7 +15,7 @@ class IndicatorBaselineResource extends JsonResource
             'financial_year_id' => $this->financial_year_id,
             'baseline_value' => $this->baseline_value,
             'baseline_date' => $this->baseline_date?->toDateString(),
-            'source' => $this->source,
+            'organization_id' => $this->organization_id,
             'remarks' => $this->remarks,
             'created_by' => $this->created_by,
             'created_at' => $this->created_at,

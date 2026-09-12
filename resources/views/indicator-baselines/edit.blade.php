@@ -19,7 +19,7 @@
     <form action="{{ route('indicator-baselines.update', $baseline) }}" method="POST">
         @csrf
         @method('PUT')
-        @include('indicator-baselines.form', ['baseline' => $baseline, 'indicators' => $indicators, 'financialYears' => $financialYears])
+        @include('indicator-baselines.form', ['baseline' => $baseline, 'indicators' => $indicators, 'financialYears' => $financialYears, 'organizations' => $organizations])
 
         <div class="d-flex form-actions">
             <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> Save Changes</button>

@@ -25,7 +25,6 @@
             'financialYears' => $financialYears,
             'reportingPeriods' => $reportingPeriods,
             'organizations' => $organizations,
-            'dataSources' => $dataSources,
             'locationLevels' => $locationLevels,
         ])
 
