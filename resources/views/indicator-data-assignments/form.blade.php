@@ -3,7 +3,7 @@
 <div class="row">
     <div class="col-md-6 mb-3">
         <label for="indicator_id" class="form-label">Indicator</label>
-        <select name="indicator_id" id="indicator_id" class="form-control @error('indicator_id') is-invalid @enderror" required>
+        <select name="indicator_id" id="indicator_id" class="form-control select2 @error('indicator_id') is-invalid @enderror" required>
             <option value="">Select an indicator…</option>
             @foreach ($indicators as $indicator)
             <option value="{{ $indicator->id }}" @selected((int) old('indicator_id', $assignment?->indicator_id) === $indicator->id)>{{ $indicator->name }}</option>
@@ -14,7 +14,7 @@
 
     <div class="col-md-6 mb-3">
         <label for="user_id" class="form-label">User</label>
-        <select name="user_id" id="user_id" class="form-control @error('user_id') is-invalid @enderror" required>
+        <select name="user_id" id="user_id" class="form-control select2 @error('user_id') is-invalid @enderror" required>
             <option value="">Select a user…</option>
             @foreach ($users as $availableUser)
             <option value="{{ $availableUser->id }}" @selected((int) old('user_id', $assignment?->user_id) === $availableUser->id)>{{ $availableUser->name }} ({{ $availableUser->email }})</option>
@@ -25,7 +25,7 @@
 
     <div class="col-md-6 mb-3">
         <label for="organization_id" class="form-label">Organization</label>
-        <select name="organization_id" id="organization_id" class="form-control @error('organization_id') is-invalid @enderror">
+        <select name="organization_id" id="organization_id" class="form-control select2 @error('organization_id') is-invalid @enderror">
             <option value="">—</option>
             @foreach ($organizations as $organization)
             <option value="{{ $organization->id }}" @selected((int) old('organization_id', $assignment?->organization_id) === $organization->id)>{{ $organization->name }}</option>

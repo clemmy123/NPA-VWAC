@@ -73,7 +73,7 @@
         <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
         <div class="mb-3">
             <label for="user_id" class="form-label">User</label>
-            <select name="user_id" id="user_id" class="form-control" required>
+            <select name="user_id" id="user_id" class="form-control select2" required>
                 <option value="">Select a Project Manager…</option>
                 @foreach ($assignableManagers as $user)
                 <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>

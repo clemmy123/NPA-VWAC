@@ -13,7 +13,7 @@
 <div class="row">
     <div class="col-md-6 mb-3">
         <label for="thematic_area_id" class="form-label">Thematic Area</label>
-        <select name="thematic_area_id" id="thematic_area_id" class="form-control @error('thematic_area_id') is-invalid @enderror" required>
+        <select name="thematic_area_id" id="thematic_area_id" class="form-control select2 @error('thematic_area_id') is-invalid @enderror" required>
             <option value="">Select a thematic area…</option>
             @foreach ($thematicAreas as $thematicArea)
             <option value="{{ $thematicArea->id }}" @selected((int) old('thematic_area_id', $indicator?->thematic_area_id) === $thematicArea->id)>{{ $thematicArea->name }}</option>

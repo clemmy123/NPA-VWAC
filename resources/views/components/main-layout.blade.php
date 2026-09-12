@@ -161,14 +161,19 @@
             body.appendChild(template.content.cloneNode(true));
             modalEl.querySelector('.modal-title').textContent = trigger.getAttribute('data-quick-add-title') || 'Add';
 
-            // Select2 multi-selects (e.g. Intervention's Linked Indicators) only
-            // exist in the DOM from this point on, since they were inert inside
-            // a <template> until just now — init here rather than relying on
+            // Select2 selects (e.g. Intervention's Linked Indicators, or a
+            // long lookup list like Thematic Area) only exist in the DOM from
+            // this point on, since they were inert inside a <template> until
+            // just now — init here rather than relying on select2Init.js or
             // the form partial's own @push('scripts'), which already fired
             // (and no-opped) at initial page load.
             if (window.jQuery) {
                 jQuery(body).find('.select2-multi').select2({
                     placeholder: 'Select indicators…',
+                    width: '100%',
+                    dropdownParent: jQuery(modalEl),
+                });
+                jQuery(body).find('.select2').select2({
                     width: '100%',
                     dropdownParent: jQuery(modalEl),
                 });

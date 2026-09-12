@@ -5,7 +5,7 @@
 <div class="row">
     <div class="col-md-6 mb-3">
         <label for="project_id" class="form-label">Project</label>
-        <select name="project_id" id="project_id" class="form-control @error('project_id') is-invalid @enderror" required>
+        <select name="project_id" id="project_id" class="form-control select2 @error('project_id') is-invalid @enderror" required>
             <option value="">Select a project…</option>
             @foreach ($projects as $project)
             <option value="{{ $project->id }}" @selected((int) old('project_id', $thematicArea?->project_id) === $project->id)>{{ $project->name }}</option>

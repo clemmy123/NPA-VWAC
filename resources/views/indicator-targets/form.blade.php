@@ -5,7 +5,7 @@
 <div class="row">
     <div class="col-md-6 mb-3">
         <label for="indicator_id" class="form-label">Indicator</label>
-        <select name="indicator_id" id="indicator_id" class="form-control @error('indicator_id') is-invalid @enderror" required>
+        <select name="indicator_id" id="indicator_id" class="form-control select2 @error('indicator_id') is-invalid @enderror" required>
             <option value="">Select an indicator…</option>
             @foreach ($indicators as $indicator)
             <option value="{{ $indicator->id }}" @selected((int) old('indicator_id', $target?->indicator_id) === $indicator->id)>{{ $indicator->name }}</option>

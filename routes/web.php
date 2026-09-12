@@ -17,6 +17,7 @@ use App\Http\Controllers\LocalAuthController;
 use App\Http\Controllers\MeasurementTypeController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationTypeController;
+use App\Http\Controllers\PlanBuilderController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectUserController;
 use App\Http\Controllers\ReportingPeriodController;
@@ -112,6 +113,11 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
         ->middleware('can:project.assign-manager')->name('projects.managers.store');
     Route::delete('projects/{project}/managers/{user}', [ProjectUserController::class, 'destroy'])
         ->middleware('can:project.assign-manager')->name('projects.managers.destroy');
+
+    Route::get('plan-builder', [PlanBuilderController::class, 'index'])
+        ->middleware('can:thematic-area.view')->name('plan-builder.index');
+    Route::get('plan-builder/{thematic_area}', [PlanBuilderController::class, 'show'])
+        ->middleware('can:thematic-area.view')->name('plan-builder.show');
 
     Route::get('thematic-areas/create', [ThematicAreaController::class, 'create'])
         ->middleware('can:thematic-area.create')->name('thematic-areas.create');

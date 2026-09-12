@@ -73,7 +73,7 @@
             label.className = 'form-label small text-muted mb-1';
             label.textContent = LABELS[level];
             var select = document.createElement('select');
-            select.className = 'form-control form-control-sm';
+            select.className = 'form-control form-control-sm select2';
             select.dataset.level = level;
             wrapper.appendChild(label);
             wrapper.appendChild(select);
@@ -105,6 +105,14 @@
 
             return fetchOptions(level, parentId).then(function (options) {
                 renderOptions(select, options, preset ? preset.id : null);
+
+                // Some levels (ward, village/mtaa) can run into the thousands,
+                // so every cascade level gets a searchable select2 rather than
+                // a long native dropdown — init here since these selects are
+                // built well after the page's own DOMContentLoaded already fired.
+                if (window.jQuery) {
+                    jQuery(select).select2({ width: '100%', placeholder: 'Select ' + LABELS[level] + '…' });
+                }
 
                 if (index === path.length - 1) {
                     hiddenInput.value = preset ? preset.id : (select.value || '');

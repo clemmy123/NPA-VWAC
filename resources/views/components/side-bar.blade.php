@@ -19,10 +19,20 @@
                 {{-- Dashboard --}}
                 <li class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     <a href="{{ route('dashboard') }}">
-                        <i class="mdi mdi-view-dashboard-outline"></i>
+                        <i class="bi bi-speedometer2"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
+
+                {{-- Plan Builder: live, one-thematic-area-at-a-time plan construction --}}
+                @can('thematic-area.view')
+                <li class="{{ request()->routeIs('plan-builder.*') ? 'active' : '' }}">
+                    <a href="{{ route('plan-builder.index') }}">
+                        <i class="bi bi-pencil-square"></i>
+                        <span>Plan Builder</span>
+                    </a>
+                </li>
+                @endcan
 
                 {{-- Plan hierarchy: Projects / Thematic Areas / Indicators / Interventions --}}
                 @canany(['project.view', 'thematic-area.view', 'indicator.view', 'intervention.view'])
@@ -34,7 +44,7 @@
                 @endphp
                 <li class="{{ $planActive ? 'active' : '' }}">
                     <a href="javascript: void(0);">
-                        <i class="mdi mdi-sitemap-outline"></i>
+                        <i class="bi bi-diagram-3"></i>
                         <span>Plan Hierarchy</span>
                         <span class="menu-arrow"></span>
                     </a>
@@ -74,7 +84,7 @@
                 @endphp
                 <li class="{{ $targetsActive ? 'active' : '' }}">
                     <a href="javascript: void(0);">
-                        <i class="mdi mdi-bullseye-arrow"></i>
+                        <i class="bi bi-bullseye"></i>
                         <span>Baselines &amp; Targets</span>
                         <span class="menu-arrow"></span>
                     </a>
@@ -94,7 +104,7 @@
                 @can('indicator-data.view')
                 <li class="{{ request()->routeIs('indicator-data-entries.*') ? 'active' : '' }}">
                     <a href="{{ route('indicator-data-entries.index') }}">
-                        <i class="mdi mdi-clipboard-text-outline"></i>
+                        <i class="bi bi-clipboard-data"></i>
                         <span>Data Entries</span>
                     </a>
                 </li>
@@ -104,7 +114,7 @@
                 @can('indicator.assign-user')
                 <li class="{{ request()->routeIs('indicator-data-assignments.*') ? 'active' : '' }}">
                     <a href="{{ route('indicator-data-assignments.index') }}">
-                        <i class="mdi mdi-account-arrow-right-outline"></i>
+                        <i class="bi bi-person-check"></i>
                         <span>Data Assignments</span>
                     </a>
                 </li>
@@ -114,7 +124,7 @@
                 @can('user.view')
                 <li class="{{ request()->routeIs('users.*') ? 'active' : '' }}">
                     <a href="{{ route('users.index') }}">
-                        <i class="mdi mdi-account-group-outline"></i>
+                        <i class="bi bi-people"></i>
                         <span>Users</span>
                     </a>
                 </li>
@@ -124,7 +134,7 @@
                 @can('settings.manage')
                 <li class="{{ request()->routeIs('settings.*', 'organizations.*', 'organization-types.*', 'financial-years.*', 'reporting-periods.*', 'data-sources.*', 'measurement-types.*', 'units-of-measure.*', 'dimensions.*') ? 'active' : '' }}">
                     <a href="{{ route('settings.index') }}">
-                        <i class="mdi mdi-cog-outline"></i>
+                        <i class="bi bi-gear"></i>
                         <span>Settings</span>
                     </a>
                 </li>

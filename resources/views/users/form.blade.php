@@ -38,7 +38,7 @@
 
     <div class="col-md-6 mb-3">
         <label for="organization_id" class="form-label">Organization</label>
-        <select name="organization_id" id="organization_id" class="form-control @error('organization_id') is-invalid @enderror">
+        <select name="organization_id" id="organization_id" class="form-control select2 @error('organization_id') is-invalid @enderror">
             <option value="">—</option>
             @foreach ($organizations as $organization)
             <option value="{{ $organization->id }}" @selected((int) old('organization_id', $user?->organization_id) === $organization->id)>{{ $organization->name }}</option>
