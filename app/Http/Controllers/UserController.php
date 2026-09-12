@@ -114,7 +114,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'.($user ? ",{$user->id}" : '')],
             'phone_number' => ['nullable', 'string', 'max:50'],
-            'gender' => ['nullable', 'string', 'in:male,female,other'],
+            'gender' => ['nullable', 'string', 'in:male,female'],
             'organization_id' => ['nullable', 'integer', 'exists:organizations,id'],
             'auth_provider' => ['required', 'string', 'in:jumuishi,local'],
             'password' => $passwordRules,

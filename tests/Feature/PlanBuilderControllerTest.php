@@ -128,6 +128,36 @@ class PlanBuilderControllerTest extends TestCase
         $response->assertSee('value="18"', false);
     }
 
+    public function test_the_target_financial_year_can_be_chosen_per_indicator(): void
+    {
+        $tm = $this->userWithRole('Thematic Manager');
+        $thematicArea = ThematicArea::factory()->create();
+        $thematicArea->users()->attach($tm->id, ['is_active' => true]);
+        $currentYear = FinancialYear::factory()->create(['is_current' => true, 'name' => '2026/27']);
+        $otherYear = FinancialYear::factory()->create(['is_current' => false, 'name' => '2027/28']);
+        $indicator = Indicator::factory()->create(['thematic_area_id' => $thematicArea->id]);
+
+        $response = $this->actingAs($tm)->get(route('plan-builder.show', $thematicArea));
+
+        $response->assertOk();
+        $response->assertSee('pb-target-fy', false);
+        $response->assertSee('2026/27');
+        $response->assertSee('2027/28');
+
+        $response = $this->actingAs($tm)->postJson(route('indicator-targets.store'), [
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $otherYear->id,
+            'target_value' => 25,
+        ]);
+
+        $response->assertCreated();
+        $this->assertDatabaseHas('indicator_targets', [
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $otherYear->id,
+            'target_value' => 25,
+        ]);
+    }
+
     public function test_a_new_indicator_can_be_created_via_json_from_the_builder_page(): void
     {
         $tm = $this->userWithRole('Thematic Manager');

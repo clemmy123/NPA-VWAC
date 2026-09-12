@@ -112,6 +112,7 @@ class PlanBuilderController extends Controller
             'baselines' => $baselines,
             'targets' => $targets,
             'currentFinancialYear' => $currentFinancialYear,
+            'financialYears' => FinancialYear::query()->orderByDesc('start_date')->get(),
             'measurementTypes' => MeasurementType::query()->orderBy('name')->get(),
             'unitsOfMeasure' => UnitOfMeasure::query()->orderBy('name')->get(),
             'reportingFrequencies' => ['monthly', 'quarterly', 'biannual', 'annual'],

@@ -17,8 +17,11 @@
 </div>
 
 @unless ($currentFinancialYear)
-<div class="alert alert-warning mb-3">No financial year is marked current — baseline and target columns are disabled until one is set in Settings.</div>
+<div class="alert alert-warning mb-3">No financial year is marked current — the baseline column is disabled until one is set in Settings.</div>
 @endunless
+@if ($financialYears->isEmpty())
+<div class="alert alert-warning mb-3">No financial years exist yet — the target column is disabled until one is added in Settings.</div>
+@endif
 
 <div class="chart-card mb-3">
     <input type="text" id="pbNameInput" class="pb-name-input" value="{{ $thematicArea->name }}" maxlength="255"
@@ -34,7 +37,7 @@
                 <th style="width:34%">Indicator</th>
                 <th style="width:14%">Unit</th>
                 <th style="width:14%">Baseline ({{ $currentFinancialYear?->name ?? '—' }})</th>
-                <th style="width:14%">Target ({{ $currentFinancialYear?->name ?? '—' }})</th>
+                <th style="width:14%">Target</th>
                 <th style="width:56px"></th>
             </tr>
         </thead>
@@ -85,7 +88,12 @@
                 <td>
                     <input type="number" step="any" class="pb-input pb-target" placeholder="0"
                            value="{{ isset($targets[$indicator->id]) ? (float) $targets[$indicator->id]->target_value : '' }}"
-                           {{ $canSetTarget && $currentFinancialYear ? '' : 'disabled' }}>
+                           {{ $canSetTarget && $financialYears->isNotEmpty() ? '' : 'disabled' }}>
+                    <select class="pb-input pb-target-fy" {{ $canSetTarget && $financialYears->isNotEmpty() ? '' : 'disabled' }}>
+                        @foreach ($financialYears as $fy)
+                        <option value="{{ $fy->id }}" @selected((isset($targets[$indicator->id]) ? $targets[$indicator->id]->financial_year_id : $currentFinancialYear?->id) === $fy->id)>{{ $fy->name }}</option>
+                        @endforeach
+                    </select>
                 </td>
                 <td>
                     @if ($canDeleteIndicator)
@@ -129,6 +137,19 @@
     .pb-desc-input:hover:not([readonly]) { background: var(--hover-bg); }
     .pb-desc-input:focus { outline: none; border-color: var(--accent); background: var(--surface); color: var(--input-text); }
 
+    /* .table-card .table thead th forces white-space:nowrap + ellipsis
+       (higher specificity than a lone .pb-table thead th would have, hence
+       the .table-card prefix here) for short plain-text headers elsewhere;
+       "Baseline (2026/27)" / "Target (2026/27)" are too long for a 14%-wide
+       column at that size, so let these headers wrap onto a second line
+       instead of ellipsing away the financial year. */
+    .table-card .table.pb-table thead th {
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        line-height: 1.3;
+    }
+
     /* The shared .table-card table rule clips/nowraps plain text cells for
        ellipsis truncation; this table's cells hold inputs/selects that must
        lay out normally (name input on its own line, "More fields" below it,
@@ -149,6 +170,12 @@
     input.pb-input.pb-name:hover:not([readonly]) { background: var(--hover-bg); }
     .pb-input:focus { outline: 2px solid rgba(var(--accent-rgb), .3); outline-offset: 1px; border-color: var(--accent); }
     .pb-input[readonly], .pb-input[disabled] { background: var(--surface-faint); color: var(--muted-mid); }
+    /* Block, not the select's default inline-block, so it stacks under the
+       target input instead of being squeezed onto the same line and clipped
+       by the shared .table-card cell's white-space:nowrap/overflow:hidden
+       (which only .pb-name and .pb-more-fields escape today via their own
+       display:block/grid — same trick applied here). */
+    .pb-target-fy { display: block; margin-top: 6px; height: 26px; font-size: .68rem; color: var(--muted-mid); }
 
     .pb-more-toggle {
         all: unset; display: inline-flex; align-items: center; gap: 2px; font-size: .68rem; color: var(--accent-text);
@@ -170,7 +197,7 @@
     .pb-table tbody tr:last-child td:first-child { border-bottom-left-radius: var(--radius-lg); }
     .pb-table tbody tr:last-child td:last-child { border-bottom-right-radius: var(--radius-lg); }
     .pb-add-ghost-btn {
-        all: unset; display: flex; align-items: center; gap: 6px; justify-content: center;
+        display: flex; align-items: center; gap: 6px; justify-content: center;
         font-size: .82rem; font-weight: 600; color: var(--muted-mid); cursor: pointer;
         padding: 9px 10px; border-radius: 6px; border: 1.5px dashed var(--border-strong); width: 100%; font-family: inherit;
     }
@@ -183,6 +210,7 @@
 (function () {
     const THEMATIC_AREA_ID = {{ $thematicArea->id }};
     const FINANCIAL_YEAR_ID = @json($currentFinancialYear?->id);
+    const FINANCIAL_YEARS = @json($financialYears->map(fn ($fy) => ['id' => $fy->id, 'name' => $fy->name])->values());
     const CAN_UPDATE_INDICATOR = @json($canUpdateIndicator);
     const CAN_CREATE_INDICATOR = @json($canCreateIndicator);
     const CAN_SET_BASELINE = @json($canSetBaseline);
@@ -306,17 +334,20 @@
     }
 
     async function syncTarget(tr) {
-        if (!FINANCIAL_YEAR_ID || !tr.dataset.id) return;
+        if (!tr.dataset.id) return;
+        const fySelect = tr.querySelector('.pb-target-fy');
+        const financialYearId = fySelect ? fySelect.value : FINANCIAL_YEAR_ID;
+        if (!financialYearId) return;
         const value = tr.querySelector('.pb-target').value;
         if (value === '') return;
         autosaveFlag('saving');
         try {
             if (tr.dataset.targetId) {
-                await api(targetUrl(tr.dataset.targetId), 'PATCH', { target_value: value });
+                await api(targetUrl(tr.dataset.targetId), 'PATCH', { financial_year_id: financialYearId, target_value: value });
             } else {
                 const res = await api(targetsUrl, 'POST', {
                     indicator_id: tr.dataset.id,
-                    financial_year_id: FINANCIAL_YEAR_ID,
+                    financial_year_id: financialYearId,
                     target_value: value,
                 });
                 tr.dataset.targetId = res.data.id;
@@ -363,8 +394,10 @@
         });
         const baseline = tr.querySelector('.pb-baseline');
         const target = tr.querySelector('.pb-target');
+        const targetFy = tr.querySelector('.pb-target-fy');
         if (baseline) baseline.addEventListener('change', () => syncBaseline(tr));
         if (target) target.addEventListener('change', () => syncTarget(tr));
+        if (targetFy) targetFy.addEventListener('change', () => syncTarget(tr));
 
         const moreToggle = tr.querySelector('.pb-more-toggle');
         const moreFields = tr.querySelector('.pb-more-fields');
@@ -420,7 +453,12 @@
                 </select>
             </td>
             <td><input type="number" step="any" class="pb-input pb-baseline" placeholder="0" ${FINANCIAL_YEAR_ID && CAN_SET_BASELINE ? '' : 'disabled'}></td>
-            <td><input type="number" step="any" class="pb-input pb-target" placeholder="0" ${FINANCIAL_YEAR_ID && CAN_SET_TARGET ? '' : 'disabled'}></td>
+            <td>
+                <input type="number" step="any" class="pb-input pb-target" placeholder="0" ${FINANCIAL_YEARS.length && CAN_SET_TARGET ? '' : 'disabled'}>
+                <select class="pb-input pb-target-fy" ${FINANCIAL_YEARS.length && CAN_SET_TARGET ? '' : 'disabled'}>
+                    ${FINANCIAL_YEARS.map((fy) => '<option value="' + fy.id + '"' + (fy.id === FINANCIAL_YEAR_ID ? ' selected' : '') + '>' + fy.name + '</option>').join('')}
+                </select>
+            </td>
             <td>${CAN_DELETE_INDICATOR ? '<button type="button" class="btn-icon danger pb-delete" title="Delete indicator"><i class="mdi mdi-trash-can-outline"></i></button>' : ''}</td>
         `;
         body.appendChild(tr);
