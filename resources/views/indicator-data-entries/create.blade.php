@@ -1,14 +1,14 @@
 @extends('components.main-layout')
-@section('title', 'New Data Entry')
+@section('title', 'New Data Collection')
 
 @section('content')
 <div class="page-header">
     <div>
-        <h4 class="page-title">New Data Entry</h4>
+        <h4 class="page-title">New Data Collection</h4>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('indicator-data-entries.index') }}">Data Entries</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('indicator-data-entries.index') }}">Data Collections</a></li>
                 <li class="breadcrumb-item active">New</li>
             </ol>
         </nav>

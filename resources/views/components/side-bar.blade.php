@@ -100,12 +100,12 @@
                 </li>
                 @endcan
 
-                {{-- Data entry --}}
+                {{-- Data collections --}}
                 @can('indicator-data.view')
                 <li class="{{ request()->routeIs('indicator-data-entries.*') ? 'active' : '' }}">
                     <a href="{{ route('indicator-data-entries.index') }}">
                         <i class="bi bi-clipboard-data"></i>
-                        <span>Data Entries</span>
+                        <span>Data Collections</span>
                     </a>
                 </li>
                 @endcan
@@ -117,6 +117,26 @@
                         <i class="bi bi-person-check"></i>
                         <span>Data Assignments</span>
                     </a>
+                </li>
+                @endcan
+
+                {{-- Reports --}}
+                @can('report.view')
+                @php($reportsActive = request()->routeIs('reports.*'))
+                <li class="{{ $reportsActive ? 'active' : '' }}">
+                    <a href="javascript: void(0);">
+                        <i class="bi bi-file-earmark-bar-graph"></i>
+                        <span>Reports</span>
+                        <span class="menu-arrow"></span>
+                    </a>
+                    <ul class="nav-second-level" aria-expanded="{{ $reportsActive ? 'true' : 'false' }}">
+                        <li class="{{ request()->routeIs('reports.general') ? 'active' : '' }}">
+                            <a href="{{ route('reports.general') }}">General Report</a>
+                        </li>
+                        <li>
+                            <a href="javascript: void(0);">Workstation Reports</a>
+                        </li>
+                    </ul>
                 </li>
                 @endcan
 

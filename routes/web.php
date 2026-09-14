@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DimensionController;
 use App\Http\Controllers\DimensionOptionController;
 use App\Http\Controllers\FinancialYearController;
+use App\Http\Controllers\GeneralReportController;
 use App\Http\Controllers\IndicatorBaselineController;
 use App\Http\Controllers\IndicatorController;
 use App\Http\Controllers\IndicatorDataAssignmentController;
@@ -251,6 +252,10 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
         ->middlewareFor('store', 'can:user.create')
         ->middlewareFor('update', 'can:user.update')
         ->middlewareFor('destroy', 'can:user.update');
+
+    Route::get('reports/general', [GeneralReportController::class, 'index'])
+        ->middleware('can:report.view')
+        ->name('reports.general');
 
     // Indicator data assignments: who (which user/organization) reports on which
     // indicator, optionally scoped to a location — this is what lets an

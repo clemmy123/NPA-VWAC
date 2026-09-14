@@ -1,5 +1,5 @@
 @extends('components.main-layout')
-@section('title', 'Data Entries')
+@section('title', 'Data Collections')
 
 @php
     $statusBadge = [
@@ -13,16 +13,16 @@
 @section('content')
 <div class="page-header">
     <div>
-        <h4 class="page-title">Data Entries</h4>
+        <h4 class="page-title">Data Collections</h4>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item active">Data Entries</li>
+                <li class="breadcrumb-item active">Data Collections</li>
             </ol>
         </nav>
     </div>
     @can('indicator-data.create')
-    <a href="{{ route('indicator-data-entries.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> New Entry</a>
+    <a href="{{ route('indicator-data-entries.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> New Collection</a>
     @endcan
 </div>
 
@@ -61,7 +61,7 @@
                     @can('indicator-data.submit')
                     @if ($canEdit)
                     <form action="{{ route('indicator-data-entries.submit', $entry) }}" method="POST" class="d-inline"
-                          onsubmit="return confirm('Submit this entry for review?');">
+                          onsubmit="return confirm('Submit this collection for review?');">
                         @csrf
                         <button type="submit" class="btn-icon" title="Submit"><i class="mdi mdi-send-outline"></i></button>
                     </form>
@@ -70,14 +70,14 @@
                     @if ($entry->status === 'submitted')
                     @can('indicator-data.approve')
                     <form action="{{ route('indicator-data-entries.approve', $entry) }}" method="POST" class="d-inline"
-                          onsubmit="return confirm('Approve this entry?');">
+                          onsubmit="return confirm('Approve this collection?');">
                         @csrf
                         <button type="submit" class="btn-icon" title="Approve"><i class="mdi mdi-check-circle-outline"></i></button>
                     </form>
                     @endcan
                     @can('indicator-data.return')
                     <form action="{{ route('indicator-data-entries.return', $entry) }}" method="POST" class="d-inline"
-                          onsubmit="return confirm('Return this entry to the submitter?');">
+                          onsubmit="return confirm('Return this collection to the submitter?');">
                         @csrf
                         <button type="submit" class="btn-icon danger" title="Return"><i class="mdi mdi-undo"></i></button>
                     </form>
@@ -90,7 +90,7 @@
                 <td colspan="8">
                     <div class="tbl-empty">
                         <i class="mdi mdi-clipboard-text-outline"></i>
-                        <p>No data entries found.</p>
+                        <p>No data collections found.</p>
                     </div>
                 </td>
             </tr>
@@ -126,7 +126,7 @@
             @can('indicator-data.submit')
             @if ($canEdit)
             <form action="{{ route('indicator-data-entries.submit', $entry) }}" method="POST" class="d-inline"
-                  onsubmit="return confirm('Submit this entry for review?');">
+                  onsubmit="return confirm('Submit this collection for review?');">
                 @csrf
                 <button type="submit" class="btn-icon" title="Submit"><i class="mdi mdi-send-outline"></i></button>
             </form>
@@ -135,14 +135,14 @@
             @if ($entry->status === 'submitted')
             @can('indicator-data.approve')
             <form action="{{ route('indicator-data-entries.approve', $entry) }}" method="POST" class="d-inline"
-                  onsubmit="return confirm('Approve this entry?');">
+                  onsubmit="return confirm('Approve this collection?');">
                 @csrf
                 <button type="submit" class="btn-icon" title="Approve"><i class="mdi mdi-check-circle-outline"></i></button>
             </form>
             @endcan
             @can('indicator-data.return')
             <form action="{{ route('indicator-data-entries.return', $entry) }}" method="POST" class="d-inline"
-                  onsubmit="return confirm('Return this entry to the submitter?');">
+                  onsubmit="return confirm('Return this collection to the submitter?');">
                 @csrf
                 <button type="submit" class="btn-icon danger" title="Return"><i class="mdi mdi-undo"></i></button>
             </form>
@@ -153,7 +153,7 @@
     @empty
     <div class="tbl-empty">
         <i class="mdi mdi-clipboard-text-outline"></i>
-        <p>No data entries found.</p>
+        <p>No data collections found.</p>
     </div>
     @endforelse
 

@@ -60,3 +60,71 @@
   font-size: 0.68rem;
   font-weight: 700;
 }
+
+.report-freq-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.report-freq {
+  display: inline-flex;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.report-freq a {
+  padding: 6px 16px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted-mid);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.report-freq a.is-active {
+  background: var(--divider-faint);
+  color: var(--heading-dark);
+}
+
+.report-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.report-filters .rf-field {
+  flex: 1 1 180px;
+  min-width: 160px;
+}
+
+.report-filters .rf-field label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.report-filters .rf-field .form-control {
+  font-size: 0.82rem;
+  border-color: var(--border-soft);
+  border-radius: 6px;
+  height: 36px;
+}
+
+.report-filters .rf-actions {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.report-filters .rf-actions .btn {
+  min-width: 96px;
+  height: 36px;
+}

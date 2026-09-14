@@ -167,7 +167,7 @@
         </thead>
         <tbody id="expenses-tbody"></tbody>
     </table>
-    <p class="text-muted small mb-0" id="expenses-empty-hint">No expenses recorded for this entry.</p>
+    <p class="text-muted small mb-0" id="expenses-empty-hint">No expenses recorded for this collection.</p>
 </div>
 
 @php

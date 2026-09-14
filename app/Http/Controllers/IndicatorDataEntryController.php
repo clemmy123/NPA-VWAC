@@ -64,7 +64,7 @@ class IndicatorDataEntryController extends Controller
             return (new IndicatorDataEntryResource($entry->load(self::RELATIONS)))->response()->setStatusCode(201);
         }
 
-        return redirect()->route('indicator-data-entries.index')->with('success', 'Data entry created as a draft.');
+        return redirect()->route('indicator-data-entries.index')->with('success', 'Data collection created as a draft.');
     }
 
     public function show(IndicatorDataEntry $indicatorDataEntry): IndicatorDataEntryResource
@@ -93,7 +93,7 @@ class IndicatorDataEntryController extends Controller
             return new IndicatorDataEntryResource($entry->load(self::RELATIONS));
         }
 
-        return redirect()->route('indicator-data-entries.index')->with('success', 'Data entry updated.');
+        return redirect()->route('indicator-data-entries.index')->with('success', 'Data collection updated.');
     }
 
     public function submit(Request $request, IndicatorDataEntry $indicatorDataEntry): JsonResponse|RedirectResponse|IndicatorDataEntryResource
@@ -104,7 +104,7 @@ class IndicatorDataEntryController extends Controller
             return new IndicatorDataEntryResource($entry->load(self::RELATIONS));
         }
 
-        return redirect()->route('indicator-data-entries.index')->with('success', 'Data entry submitted for review.');
+        return redirect()->route('indicator-data-entries.index')->with('success', 'Data collection submitted for review.');
     }
 
     public function approve(Request $request, IndicatorDataEntry $indicatorDataEntry): JsonResponse|RedirectResponse|IndicatorDataEntryResource
@@ -115,7 +115,7 @@ class IndicatorDataEntryController extends Controller
             return new IndicatorDataEntryResource($entry->load(self::RELATIONS));
         }
 
-        return redirect()->route('indicator-data-entries.index')->with('success', 'Data entry approved.');
+        return redirect()->route('indicator-data-entries.index')->with('success', 'Data collection approved.');
     }
 
     public function returnEntry(Request $request, IndicatorDataEntry $indicatorDataEntry): JsonResponse|RedirectResponse|IndicatorDataEntryResource
@@ -126,7 +126,7 @@ class IndicatorDataEntryController extends Controller
             return new IndicatorDataEntryResource($entry->load(self::RELATIONS));
         }
 
-        return redirect()->route('indicator-data-entries.index')->with('success', 'Data entry returned to the submitter.');
+        return redirect()->route('indicator-data-entries.index')->with('success', 'Data collection returned to the submitter.');
     }
 
     public function downloadEvidence(IndicatorDataEntry $indicatorDataEntry, Media $media): BinaryFileResponse

@@ -37,6 +37,7 @@ class IndicatorDataEntriesPageTest extends TestCase
         $response = $this->actingAs($user)->get(route('indicator-data-entries.index'));
 
         $response->assertOk();
+        $response->assertSee('Data Collections');
         $response->assertSee('table-card', false);
         $response->assertSee($entry->indicator->name);
         $response->assertSee(route('indicator-data-entries.create'), false);
