@@ -4,7 +4,7 @@
 @section('icon', 'mdi-tools')
 @section('code', '503')
 @section('title-text', 'Under maintenance')
-@section('message', 'NPA VWAC is temporarily unavailable while we perform some maintenance. Please check back shortly.')
+@section('message', config('app.name').' is temporarily unavailable while we perform some maintenance. Please check back shortly.')
 
 @section('actions')
 @endsection

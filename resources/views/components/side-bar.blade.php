@@ -19,7 +19,7 @@
                 {{-- Dashboard --}}
                 <li class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     <a href="{{ route('dashboard') }}">
-                        <i class="bi bi-speedometer2"></i>
+                        <i class="bi bi-grid"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>

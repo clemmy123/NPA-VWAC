@@ -110,7 +110,9 @@
                 // so every cascade level gets a searchable select2 rather than
                 // a long native dropdown — init here since these selects are
                 // built well after the page's own DOMContentLoaded already fired.
-                if (window.jQuery) {
+                if (window.initAppSelect2) {
+                    window.initAppSelect2(select, { placeholder: 'Select ' + LABELS[level] + '…' });
+                } else if (window.jQuery) {
                     jQuery(select).select2({ width: '100%', placeholder: 'Select ' + LABELS[level] + '…' });
                 }
 

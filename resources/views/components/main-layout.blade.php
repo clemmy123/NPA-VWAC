@@ -3,9 +3,9 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>{{ config('app.name', 'NPA VWAC') }} | @yield('title')</title>
+    <title>{{ config('app.name') }} | @yield('title')</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta content="NPA VWAC II" name="description" />
+    <meta content="{{ config('app.name') }}" name="description" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="shortcut icon" href="{{ asset('app-assets/images/logo-sm.png') }}">
@@ -98,7 +98,7 @@
     <script src="{{ asset('app-assets/libs/sweetalert2/sweetalert2.min.js') }}"></script>
 
     <script src="{{ asset('app-assets/js/pages/sweetalerts.init.js') }}"></script>
-    <script src="{{ asset('app-assets/select2/js/select2Init.js') }}"></script>
+    <script src="{{ asset('app-assets/select2/js/select2Init.js') }}?v={{ filemtime(public_path('app-assets/select2/js/select2Init.js')) }}"></script>
 
     @php
         $flashToasts = [];
@@ -167,7 +167,14 @@
             // just now — init here rather than relying on select2Init.js or
             // the form partial's own @push('scripts'), which already fired
             // (and no-opped) at initial page load.
-            if (window.jQuery) {
+            if (window.initAppSelect2In) {
+                window.initAppSelect2In(body, { dropdownParent: jQuery(modalEl) });
+                jQuery(body).find('select[multiple], .select2-multi').select2({
+                    placeholder: 'Select indicators…',
+                    width: '100%',
+                    dropdownParent: jQuery(modalEl),
+                });
+            } else if (window.jQuery) {
                 jQuery(body).find('.select2-multi').select2({
                     placeholder: 'Select indicators…',
                     width: '100%',

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="referrer" content="no-referrer">
-    <title>@yield('title', 'NPA VWAC')</title>
+    <title>@yield('title', config('app.name'))</title>
     <link rel="shortcut icon" href="{{ asset('app-assets/images/logo-sm.png') }}">
 
     {{-- Deliberately not @vite-dependent: this page must still render correctly

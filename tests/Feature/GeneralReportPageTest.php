@@ -50,12 +50,15 @@ class GeneralReportPageTest extends TestCase
         $response->assertSee('Monthly Reports');
         $response->assertSee('Plan');
         $response->assertSee('Thematic Area');
+        $response->assertSee('id="project_id"', false);
+        $response->assertSee('id="thematic_area_id"', false);
+        $response->assertSee('minimumResultsForSearch', false);
         $response->assertSee('Filter');
         $response->assertSee('Reset');
         $response->assertSee('>Monthly</a>', false);
         $response->assertSee('>Quarterly</a>', false);
         $response->assertSee('>Yearly</a>', false);
-        $response->assertSee('click Filter to see monitoring and evaluation analysis');
+        $response->assertSee('Apply filters to see analysis.');
         $response->assertDontSee('Monitoring & Evaluation');
     }
 

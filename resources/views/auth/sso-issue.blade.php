@@ -10,7 +10,7 @@
 @endphp
 @extends('errors.layout', ['variant' => $variant])
 
-@section('title', 'Sign-in Unavailable - NPA VWAC')
+@section('title', 'Sign-in Unavailable - '.config('app.name'))
 @section('icon', $icon)
 @section('title-text', 'Unable to sign in')
 @section('message', $message)

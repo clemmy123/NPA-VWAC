@@ -19,7 +19,7 @@
 <div class="table-card d-none d-md-block">
     <table class="table mb-0">
         <thead>
-            <tr><th>#</th><th>Name</th><th>Type</th><th>Code</th><th>Status</th><th>Actions</th></tr>
+            <tr><th>#</th><th>Name</th><th>Type</th><th>Code</th><th>Location</th><th>Status</th><th>Actions</th></tr>
         </thead>
         <tbody>
             @forelse ($organizations as $organization)
@@ -28,6 +28,7 @@
                 <td>{{ $organization->name }}</td>
                 <td>{{ $organization->organizationType?->name ?? '—' }}</td>
                 <td>{{ $organization->code ?? '—' }}</td>
+                <td>{{ $organization->locationName() ?? '—' }}</td>
                 <td><span class="s-badge {{ $organization->is_active ? 's-active' : 's-inactive' }}">{{ $organization->is_active ? 'Active' : 'Inactive' }}</span></td>
                 <td>
                     <a href="{{ route('organizations.edit', $organization) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
@@ -41,7 +42,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="6">
+                <td colspan="7">
                     <div class="tbl-empty">
                         <i class="mdi mdi-bank-outline"></i>
                         <p>No organizations found.</p>
@@ -65,6 +66,7 @@
         </div>
         <div class="mob-card-meta">
             <span><i class="mdi mdi-shape-outline"></i> {{ $organization->organizationType?->name ?? '—' }}</span>
+            <span><i class="mdi mdi-map-marker-outline"></i> {{ $organization->locationName() ?? '—' }}</span>
         </div>
         <div class="mob-card-footer">
             <a href="{{ route('organizations.edit', $organization) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
