@@ -177,9 +177,9 @@
 }
 
 .report-toolbar .rf-field {
-  flex: 0 1 220px;
-  min-width: 180px;
-  max-width: 260px;
+  flex: 0 1 200px;
+  min-width: 170px;
+  max-width: 220px;
   position: relative;
   overflow: visible;
   z-index: 1;

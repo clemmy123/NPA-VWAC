@@ -38,39 +38,6 @@
     <input type="hidden" name="apply" value="1">
 
     <div class="report-toolbar-row">
-        @if ($frequency === 'monthly')
-        <div class="rf-field">
-            <label for="month" class="visually-hidden">Month</label>
-            <input type="date" name="month" id="month" class="form-control" value="{{ $month->toDateString() }}">
-        </div>
-        @elseif ($frequency === 'quarterly')
-        <div class="rf-field">
-            <label for="reporting_period_id" class="visually-hidden">Quarter</label>
-            <select name="reporting_period_id" id="reporting_period_id" class="form-control">
-                @forelse ($reportingPeriods as $period)
-                <option value="{{ $period->id }}" @selected($selectedReportingPeriod?->id === $period->id)>
-                    {{ $period->financialYear?->name }} · {{ $period->name }}
-                </option>
-                @empty
-                <option value="">No quarters yet</option>
-                @endforelse
-            </select>
-        </div>
-        @else
-        <div class="rf-field">
-            <label for="financial_year_id" class="visually-hidden">Year</label>
-            <select name="financial_year_id" id="financial_year_id" class="form-control">
-                @forelse ($financialYears as $financialYear)
-                <option value="{{ $financialYear->id }}" @selected($selectedFinancialYear?->id === $financialYear->id)>
-                    {{ $financialYear->name }}{{ $financialYear->is_current ? ' (current)' : '' }}
-                </option>
-                @empty
-                <option value="">No financial years yet</option>
-                @endforelse
-            </select>
-        </div>
-        @endif
-
         <div class="rf-field">
             <label for="organization_type_id" class="visually-hidden">Workstation type</label>
             <select name="organization_type_id" id="organization_type_id" class="form-control">
@@ -114,6 +81,39 @@
             <label for="workstation-search" class="visually-hidden">Search workstations</label>
             <input type="search" name="search" id="workstation-search" class="form-control" value="{{ $search }}" placeholder="Search..." autocomplete="off">
         </div>
+
+        @if ($frequency === 'monthly')
+        <div class="rf-field">
+            <label for="month" class="visually-hidden">Month</label>
+            <input type="date" name="month" id="month" class="form-control" value="{{ $month->toDateString() }}">
+        </div>
+        @elseif ($frequency === 'quarterly')
+        <div class="rf-field">
+            <label for="reporting_period_id" class="visually-hidden">Quarter</label>
+            <select name="reporting_period_id" id="reporting_period_id" class="form-control">
+                @forelse ($reportingPeriods as $period)
+                <option value="{{ $period->id }}" @selected($selectedReportingPeriod?->id === $period->id)>
+                    {{ $period->financialYear?->name }} · {{ $period->name }}
+                </option>
+                @empty
+                <option value="">No quarters yet</option>
+                @endforelse
+            </select>
+        </div>
+        @else
+        <div class="rf-field">
+            <label for="financial_year_id" class="visually-hidden">Year</label>
+            <select name="financial_year_id" id="financial_year_id" class="form-control">
+                @forelse ($financialYears as $financialYear)
+                <option value="{{ $financialYear->id }}" @selected($selectedFinancialYear?->id === $financialYear->id)>
+                    {{ $financialYear->name }}{{ $financialYear->is_current ? ' (current)' : '' }}
+                </option>
+                @empty
+                <option value="">No financial years yet</option>
+                @endforelse
+            </select>
+        </div>
+        @endif
     </div>
 </form>
 
