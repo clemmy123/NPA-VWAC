@@ -133,8 +133,8 @@
                         <li class="{{ request()->routeIs('reports.general') ? 'active' : '' }}">
                             <a href="{{ route('reports.general') }}">General Report</a>
                         </li>
-                        <li>
-                            <a href="javascript: void(0);">Workstation Reports</a>
+                        <li class="{{ request()->routeIs('reports.workstation') ? 'active' : '' }}">
+                            <a href="{{ route('reports.workstation') }}">Workstation Reports</a>
                         </li>
                     </ul>
                 </li>

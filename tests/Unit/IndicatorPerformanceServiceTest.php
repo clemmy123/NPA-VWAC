@@ -6,6 +6,7 @@ use App\Models\FinancialYear;
 use App\Models\Indicator;
 use App\Models\IndicatorDataEntry;
 use App\Models\IndicatorTarget;
+use App\Models\Organization;
 use App\Models\ReportingPeriod;
 use App\Services\IndicatorPerformanceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -212,6 +213,41 @@ class IndicatorPerformanceServiceTest extends TestCase
         $this->assertSame(400.0, $result['target_value']);
         $this->assertSame(200.0, $result['actual_value']);
         $this->assertSame(50.0, $result['achievement_percent']);
+    }
+
+    public function test_summarize_limits_approved_actuals_to_the_selected_organization(): void
+    {
+        $indicator = Indicator::factory()->create(['aggregation_method' => 'sum']);
+        $financialYear = FinancialYear::factory()->create();
+        $orgA = Organization::factory()->create();
+        $orgB = Organization::factory()->create();
+        IndicatorTarget::factory()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'target_value' => 1000,
+        ]);
+
+        IndicatorDataEntry::factory()->approved()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'organization_id' => $orgA->id,
+            'actual_value' => 300,
+        ]);
+        IndicatorDataEntry::factory()->approved()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'organization_id' => $orgB->id,
+            'actual_value' => 700,
+        ]);
+
+        $result = $this->service->summarize($indicator, $financialYear, organizationId: $orgA->id);
+
+        $this->assertSame(300.0, $result['actual_value']);
+        $this->assertSame(30.0, $result['achievement_percent']);
+
+        $combined = $this->service->summarize($indicator, $financialYear, organizationId: [$orgA->id, $orgB->id]);
+
+        $this->assertSame(1000.0, $combined['actual_value']);
     }
 
     public function test_analyse_summarizes_percentage_bands_and_builds_alerts(): void

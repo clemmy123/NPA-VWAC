@@ -5,6 +5,9 @@
         @if ($periodLabel) · {{ $periodLabel }} @endif
         @if ($selectedProject) · {{ $selectedProject->name }} @endif
         @if ($selectedThematicArea) · {{ $selectedThematicArea->name }} @endif
+        @if ($selectedOrganization ?? null) · {{ $selectedOrganization->name }}
+        @elseif ($workstationScopeLabel ?? null) · {{ $workstationScopeLabel }}
+        @endif
     </p>
 </div>
 

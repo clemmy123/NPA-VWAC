@@ -18,8 +18,10 @@ class IndicatorPerformanceService
      * assume every indicator sums its entries.
      *
      * Optional `$reportingPeriod` / `$from`+`$to` narrow actuals (and, for a
-     * quarter, prefer a period-specific target when one exists).
+     * quarter, prefer a period-specific target when one exists). Optional
+     * `$organizationId` limits actuals to one workstation, or a list of them.
      *
+     * @param  int|list<int>|null  $organizationId
      * @return array{target_value: float|null, actual_value: float|null, achievement_percent: float|null, aggregation_method: string}
      */
     public function summarize(
@@ -28,9 +30,10 @@ class IndicatorPerformanceService
         ?ReportingPeriod $reportingPeriod = null,
         ?CarbonInterface $from = null,
         ?CarbonInterface $to = null,
+        int|array|null $organizationId = null,
     ): array {
         $targetValue = $this->targetValue($indicator, $financialYear, $reportingPeriod);
-        $actualValue = $this->actualValue($indicator, $financialYear, $reportingPeriod, $from, $to);
+        $actualValue = $this->actualValue($indicator, $financialYear, $reportingPeriod, $from, $to, $organizationId);
 
         return [
             'target_value' => $targetValue,
@@ -65,11 +68,22 @@ class IndicatorPerformanceService
         ?ReportingPeriod $reportingPeriod = null,
         ?CarbonInterface $from = null,
         ?CarbonInterface $to = null,
+        int|array|null $organizationId = null,
     ): ?float {
         $query = IndicatorDataEntry::query()
             ->where('indicator_id', $indicator->id)
             ->where('financial_year_id', $financialYear->id)
             ->where('status', 'approved');
+
+        $organizationIds = match (true) {
+            is_array($organizationId) => array_values($organizationId),
+            $organizationId !== null => [$organizationId],
+            default => null,
+        };
+
+        if ($organizationIds !== null) {
+            $query->whereIn('organization_id', $organizationIds);
+        }
 
         if ($reportingPeriod !== null) {
             $query->where(function (Builder $inner) use ($reportingPeriod): void {

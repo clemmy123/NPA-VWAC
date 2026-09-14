@@ -39,6 +39,7 @@ class DashboardShellTest extends TestCase
         $response->assertSee('General Report');
         $response->assertSee('Workstation Reports');
         $response->assertSee(route('reports.general'), false);
+        $response->assertSee(route('reports.workstation'), false);
     }
 
     public function test_data_entry_user_only_sees_nav_items_they_are_permitted_to_view(): void
