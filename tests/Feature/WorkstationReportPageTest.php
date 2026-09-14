@@ -51,6 +51,7 @@ class WorkstationReportPageTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Monthly Workstation Reports');
+        $response->assertSee('filter-card', false);
         $response->assertSee('All Workstation Types');
         $response->assertSee('All Plans');
         $response->assertSee('All Thematic Areas');
