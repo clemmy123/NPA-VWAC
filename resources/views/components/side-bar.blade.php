@@ -19,7 +19,7 @@
                 {{-- Dashboard --}}
                 <li class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     <a href="{{ route('dashboard') }}">
-                        <i class="bi bi-speedometer2"></i>
+                        <i class="bi bi-grid"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
@@ -104,12 +104,12 @@
                 </li>
                 @endcan
 
-                {{-- Data entry --}}
+                {{-- Data collections --}}
                 @can('indicator-data.view')
                 <li class="{{ request()->routeIs('indicator-data-entries.*') ? 'active' : '' }}">
                     <a href="{{ route('indicator-data-entries.index') }}">
                         <i class="bi bi-clipboard-data"></i>
-                        <span>Data Entries</span>
+                        <span>Data Collections</span>
                     </a>
                 </li>
                 @endcan
@@ -131,6 +131,26 @@
                         <i class="bi bi-person-check"></i>
                         <span>Data Assignments</span>
                     </a>
+                </li>
+                @endcan
+
+                {{-- Reports --}}
+                @can('report.view')
+                @php($reportsActive = request()->routeIs('reports.*'))
+                <li class="{{ $reportsActive ? 'active' : '' }}">
+                    <a href="javascript: void(0);">
+                        <i class="bi bi-file-earmark-bar-graph"></i>
+                        <span>Reports</span>
+                        <span class="menu-arrow"></span>
+                    </a>
+                    <ul class="nav-second-level" aria-expanded="{{ $reportsActive ? 'true' : 'false' }}">
+                        <li class="{{ request()->routeIs('reports.general') ? 'active' : '' }}">
+                            <a href="{{ route('reports.general') }}">General Report</a>
+                        </li>
+                        <li class="{{ request()->routeIs('reports.workstation') ? 'active' : '' }}">
+                            <a href="{{ route('reports.workstation') }}">Workstation Reports</a>
+                        </li>
+                    </ul>
                 </li>
                 @endcan
 

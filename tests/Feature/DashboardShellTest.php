@@ -26,10 +26,20 @@ class DashboardShellTest extends TestCase
         $response = $this->actingAs($user)->get('/dashboard');
 
         $response->assertOk();
+        $response->assertSee('NPA-VWAC | Dashboard', false);
+        $response->assertSee('>NPA-VWAC</span>', false);
+        $response->assertDontSee('Laravel |', false);
         $response->assertSee('left-side-menu', false);
+        $response->assertSee('bi-grid', false);
+        $response->assertDontSee('bi-speedometer2', false);
         $response->assertSee('navbar-custom', false);
         $response->assertSee(route('projects.index'), false);
+        $response->assertSee('Data Collections');
         $response->assertSee(route('indicator-data-entries.index'), false);
+        $response->assertSee('General Report');
+        $response->assertSee('Workstation Reports');
+        $response->assertSee(route('reports.general'), false);
+        $response->assertSee(route('reports.workstation'), false);
     }
 
     public function test_data_entry_user_only_sees_nav_items_they_are_permitted_to_view(): void
@@ -40,7 +50,10 @@ class DashboardShellTest extends TestCase
         $response = $this->actingAs($user)->get('/dashboard');
 
         $response->assertOk();
+        $response->assertSee('Data Collections');
         $response->assertSee(route('indicator-data-entries.index'), false);
+        $response->assertDontSee('General Report');
+        $response->assertDontSee('Workstation Reports');
         $response->assertDontSee(route('projects.index'), false);
     }
 }

@@ -117,4 +117,17 @@ class AdminLocationLevelTest extends TestCase
         $this->assertSame('Mbeya', AdminLocationLevel::name('region', $region->region_id));
         $this->assertNull(AdminLocationLevel::name('region', 999999));
     }
+
+    public function test_ward_options_can_be_listed_by_council_skipping_division(): void
+    {
+        $council = Council::factory()->create();
+        $division = Division::factory()->create(['council_id' => $council->council_id]);
+        Ward::factory()->create(['division_id' => $division->division_id, 'name' => 'Council Ward']);
+        Ward::factory()->create(['name' => 'Elsewhere Ward']);
+
+        $options = AdminLocationLevel::options('ward', $council->council_id, 'council');
+
+        $this->assertCount(1, $options);
+        $this->assertSame('Council Ward', $options[0]['name']);
+    }
 }

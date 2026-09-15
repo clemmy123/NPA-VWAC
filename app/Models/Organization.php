@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\AdminLocationLevel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +17,8 @@ class Organization extends Model
         'code',
         'name',
         'description',
+        'location_level',
+        'location_id',
         'is_active',
     ];
 
@@ -34,5 +37,14 @@ class Organization extends Model
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
+    }
+
+    public function locationName(): ?string
+    {
+        if ($this->location_level === null || $this->location_id === null) {
+            return null;
+        }
+
+        return AdminLocationLevel::name($this->location_level, (int) $this->location_id);
     }
 }

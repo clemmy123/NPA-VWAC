@@ -6,6 +6,8 @@ use App\Models\FinancialYear;
 use App\Models\Indicator;
 use App\Models\IndicatorDataEntry;
 use App\Models\IndicatorTarget;
+use App\Models\Organization;
+use App\Models\ReportingPeriod;
 use App\Services\IndicatorPerformanceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -126,5 +128,165 @@ class IndicatorPerformanceServiceTest extends TestCase
         $result = $this->service->summarize($indicator, $financialYearA);
 
         $this->assertSame(100.0, $result['actual_value']);
+    }
+
+    public function test_monthly_range_excludes_approved_entries_outside_the_month(): void
+    {
+        $indicator = Indicator::factory()->create(['aggregation_method' => 'sum']);
+        $financialYear = FinancialYear::factory()->create([
+            'start_date' => '2025-07-01',
+            'end_date' => '2026-06-30',
+        ]);
+        IndicatorTarget::factory()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'target_value' => 1000,
+        ]);
+
+        IndicatorDataEntry::factory()->approved()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'entry_date' => '2025-12-05',
+            'actual_value' => 300,
+        ]);
+        IndicatorDataEntry::factory()->approved()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'entry_date' => '2026-01-05',
+            'actual_value' => 700,
+        ]);
+
+        $result = $this->service->summarize(
+            $indicator,
+            $financialYear,
+            null,
+            now()->setDate(2025, 12, 1)->startOfMonth(),
+            now()->setDate(2025, 12, 1)->endOfMonth(),
+        );
+
+        $this->assertSame(300.0, $result['actual_value']);
+        $this->assertSame(30.0, $result['achievement_percent']);
+    }
+
+    public function test_quarterly_summarize_prefers_period_target_and_period_actuals(): void
+    {
+        $indicator = Indicator::factory()->create(['aggregation_method' => 'sum']);
+        $financialYear = FinancialYear::factory()->create([
+            'start_date' => '2025-07-01',
+            'end_date' => '2026-06-30',
+        ]);
+        $period = ReportingPeriod::factory()->create([
+            'financial_year_id' => $financialYear->id,
+            'name' => 'Q2',
+            'start_date' => '2025-10-01',
+            'end_date' => '2025-12-31',
+        ]);
+        IndicatorTarget::factory()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'reporting_period_id' => null,
+            'target_value' => 1000,
+        ]);
+        IndicatorTarget::factory()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'reporting_period_id' => $period->id,
+            'target_value' => 400,
+        ]);
+        IndicatorDataEntry::factory()->approved()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'reporting_period_id' => $period->id,
+            'entry_date' => '2025-11-10',
+            'actual_value' => 200,
+        ]);
+        IndicatorDataEntry::factory()->approved()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'reporting_period_id' => null,
+            'entry_date' => '2026-01-10',
+            'actual_value' => 800,
+        ]);
+
+        $result = $this->service->summarize($indicator, $financialYear, $period);
+
+        $this->assertSame(400.0, $result['target_value']);
+        $this->assertSame(200.0, $result['actual_value']);
+        $this->assertSame(50.0, $result['achievement_percent']);
+    }
+
+    public function test_summarize_limits_approved_actuals_to_the_selected_organization(): void
+    {
+        $indicator = Indicator::factory()->create(['aggregation_method' => 'sum']);
+        $financialYear = FinancialYear::factory()->create();
+        $orgA = Organization::factory()->create();
+        $orgB = Organization::factory()->create();
+        IndicatorTarget::factory()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'target_value' => 1000,
+        ]);
+
+        IndicatorDataEntry::factory()->approved()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'organization_id' => $orgA->id,
+            'actual_value' => 300,
+        ]);
+        IndicatorDataEntry::factory()->approved()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'organization_id' => $orgB->id,
+            'actual_value' => 700,
+        ]);
+
+        $result = $this->service->summarize($indicator, $financialYear, organizationId: $orgA->id);
+
+        $this->assertSame(300.0, $result['actual_value']);
+        $this->assertSame(30.0, $result['achievement_percent']);
+
+        $combined = $this->service->summarize($indicator, $financialYear, organizationId: [$orgA->id, $orgB->id]);
+
+        $this->assertSame(1000.0, $combined['actual_value']);
+    }
+
+    public function test_analyse_summarizes_percentage_bands_and_builds_alerts(): void
+    {
+        $onTrack = Indicator::factory()->create(['name' => 'On track indicator', 'code' => 'A']);
+        $atRisk = Indicator::factory()->create(['name' => 'At risk indicator', 'code' => 'B']);
+        $offTrack = Indicator::factory()->create(['name' => 'Off track indicator', 'code' => 'C']);
+        $missing = Indicator::factory()->create(['name' => 'Missing actuals', 'code' => 'D']);
+
+        $result = $this->service->analyse([
+            [
+                'indicator' => $onTrack,
+                'performance' => ['target_value' => 100.0, 'actual_value' => 120.0, 'achievement_percent' => 120.0, 'aggregation_method' => 'sum'],
+            ],
+            [
+                'indicator' => $atRisk,
+                'performance' => ['target_value' => 100.0, 'actual_value' => 60.0, 'achievement_percent' => 60.0, 'aggregation_method' => 'sum'],
+            ],
+            [
+                'indicator' => $offTrack,
+                'performance' => ['target_value' => 100.0, 'actual_value' => 20.0, 'achievement_percent' => 20.0, 'aggregation_method' => 'sum'],
+            ],
+            [
+                'indicator' => $missing,
+                'performance' => ['target_value' => 100.0, 'actual_value' => null, 'achievement_percent' => null, 'aggregation_method' => 'sum'],
+            ],
+        ]);
+
+        $this->assertSame(4, $result['total']);
+        $this->assertSame(1, $result['on_track']);
+        $this->assertSame(1, $result['at_risk']);
+        $this->assertSame(1, $result['off_track']);
+        $this->assertSame(1, $result['no_data']);
+        $this->assertSame(25.0, $result['on_track_percent']);
+        $this->assertSame(66.7, $result['average_achievement']);
+        $this->assertSame(['On track', 'At risk', 'Off track', 'No data'], $result['chart']['status_labels']);
+        $this->assertSame([1, 1, 1, 1], $result['chart']['status_values']);
+        $this->assertSame('danger', $result['alerts'][0]['level']);
+        $this->assertSame('Off track', $result['alerts'][0]['title']);
+        $this->assertTrue(collect($result['alerts'])->contains(fn (array $alert): bool => $alert['title'] === 'No approved actuals'));
     }
 }

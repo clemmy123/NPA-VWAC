@@ -485,7 +485,9 @@
         `;
         body.appendChild(tr);
         wireRow(tr);
-        if (window.jQuery) {
+        if (window.initAppSelect2In) {
+            window.initAppSelect2In(tr);
+        } else if (window.jQuery) {
             jQuery(tr).find('.select2').select2({ width: '100%' });
         }
         tr.querySelector('.pb-name').focus();

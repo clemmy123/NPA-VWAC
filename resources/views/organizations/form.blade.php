@@ -32,7 +32,18 @@
                   class="form-control @error('description') is-invalid @enderror">{{ old('description', $organization?->description) }}</textarea>
         @error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
+</div>
 
+<div class="mb-3">
+    <p class="form-label mb-2">Location</p>
+    @include('components.organization-location', [
+        'ancestorChain' => $locationAncestorChain ?? [],
+        'currentLevel' => old('location_level', $organization?->location_level),
+        'currentId' => old('location_id', $organization?->location_id),
+    ])
+</div>
+
+<div class="row">
     <div class="col-12 mb-3">
         <div class="form-check">
             <input type="hidden" name="is_active" value="0">

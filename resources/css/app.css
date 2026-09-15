@@ -7,6 +7,7 @@
 @import './app/sidebar.css';
 @import './app/topbar.css';
 @import './app/content.css';
+@import './app/forms.css';
 @import './app/alerts.css';
 @import './app/toasts.css';
 @import './app/cards.css';
@@ -14,4 +15,5 @@
 @import './app/mobile-cards.css';
 @import './app/badges.css';
 @import './app/filters.css';
+@import './app/reports.css';
 @import './app/chat-fab.css';

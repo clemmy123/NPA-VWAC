@@ -92,9 +92,13 @@ class AdminLocationLevel
      *
      * @return list<array{id: int, name: string}>
      */
-    public static function options(string $level, ?int $parentId = null): array
+    public static function options(string $level, ?int $parentId = null, ?string $parentLevel = null): array
     {
         abort_unless(self::isValidLevel($level), 404);
+
+        if ($level === 'ward' && $parentLevel === 'council') {
+            return self::wardsForCouncil($parentId);
+        }
 
         $definition = self::LEVELS[$level];
         $query = $definition['model']::query();
@@ -109,6 +113,27 @@ class AdminLocationLevel
 
         return $query->orderBy('name')->get()
             ->map(fn ($record) => ['id' => (int) $record->{$definition['key']}, 'name' => $record->name])
+            ->all();
+    }
+
+    /**
+     * Wards under a council, skipping the TAMISEMI division step used by the
+     * full admin cascade. Organization forms pick Region → District → Council
+     * → Ward → Street/Village.
+     *
+     * @return list<array{id: int, name: string}>
+     */
+    public static function wardsForCouncil(?int $councilId): array
+    {
+        if ($councilId === null) {
+            return [];
+        }
+
+        return Ward::query()
+            ->whereHas('division', fn ($query) => $query->where('council_id', $councilId))
+            ->orderBy('name')
+            ->get()
+            ->map(fn (Ward $ward) => ['id' => (int) $ward->ward_id, 'name' => $ward->name])
             ->all();
     }
 
