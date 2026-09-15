@@ -114,16 +114,6 @@
                 </li>
                 @endcan
 
-                {{-- Late data entries report --}}
-                @can('report.view')
-                <li class="{{ request()->routeIs('reports.late-data-entries') ? 'active' : '' }}">
-                    <a href="{{ route('reports.late-data-entries') }}">
-                        <i class="bi bi-alarm"></i>
-                        <span>Late Data Entries</span>
-                    </a>
-                </li>
-                @endcan
-
                 {{-- Indicator data assignments --}}
                 @can('indicator.assign-user')
                 <li class="{{ request()->routeIs('indicator-data-assignments.*') ? 'active' : '' }}">
@@ -149,6 +139,9 @@
                         </li>
                         <li class="{{ request()->routeIs('reports.workstation') ? 'active' : '' }}">
                             <a href="{{ route('reports.workstation') }}">Workstation Reports</a>
+                        </li>
+                        <li class="{{ request()->routeIs('reports.late-data-entries') ? 'active' : '' }}">
+                            <a href="{{ route('reports.late-data-entries') }}">Late Data Entries</a>
                         </li>
                     </ul>
                 </li>
