@@ -80,7 +80,7 @@
             <span class="dash-stat-icon is-purple"><i class="bi bi-graph-up"></i></span>
             <div>
                 <div class="dash-stat-label">Progress</div>
-                <div class="dash-stat-value">{{ $progressPercent === null ? '—' : (int) round($progressPercent).'% reached' }}</div>
+                <div class="dash-stat-value">{{ $progressPercent === null ? '0% reached' : (int) round($progressPercent).'% reached' }}</div>
             </div>
         </div>
     </div>
@@ -97,7 +97,6 @@
         <div class="dash-progress-track" aria-hidden="true">
             <div class="dash-progress-fill" style="width: {{ $progressPercent === null ? 0 : min(100, max(0, $progressPercent)) }}%"></div>
         </div>
-        <span class="dash-progress-pct">({{ $progressPercent === null ? '—' : (int) round($progressPercent).'%' }})</span>
     </div>
 </div>
 
@@ -159,7 +158,7 @@
             legend: { display: true, position: 'bottom' },
             scales: {
                 xAxes: [{ ticks: { autoSkip: false }, gridLines: { display: false } }],
-                yAxes: [{ ticks: { beginAtZero: true, callback: function (value) { return value; } } }]
+                yAxes: [{ ticks: { beginAtZero: true, callback: function (value) { return value; } }, gridLines: { display: false } }]
             },
             tooltips: {
                 callbacks: {

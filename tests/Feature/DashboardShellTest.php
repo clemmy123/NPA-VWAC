@@ -26,8 +26,8 @@ class DashboardShellTest extends TestCase
         $response = $this->actingAs($user)->get('/dashboard');
 
         $response->assertOk();
-        $response->assertSee('NPA-VWAC | Dashboard', false);
-        $response->assertSee('>NPA-VWAC</span>', false);
+        $response->assertSee('JAMII FUATILIA | Dashboard', false);
+        $response->assertSee('>JAMII FUATILIA</span>', false);
         $response->assertDontSee('Laravel |', false);
         $response->assertSee('left-side-menu', false);
         $response->assertSee('sidebar-home', false);

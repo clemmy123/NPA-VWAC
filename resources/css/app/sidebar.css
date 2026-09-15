@@ -95,12 +95,13 @@
 }
 
 .sidebar-brand .brand-text {
-  font-size: 1.35rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: var(--heading-dark);
-  letter-spacing: 0.01em;
-  line-height: 1.2;
+  letter-spacing: 0.02em;
+  line-height: 1.25;
   text-align: center;
+  white-space: normal;
 }
 
 .sidebar-home {
