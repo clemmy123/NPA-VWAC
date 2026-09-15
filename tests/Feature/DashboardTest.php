@@ -147,4 +147,22 @@ class DashboardTest extends TestCase
         $response->assertSee($second->name);
         $response->assertSee('value="'.$second->id.'"', false);
     }
+
+    public function test_data_entry_user_dashboard_is_limited_to_their_assigned_indicator(): void
+    {
+        $user = $this->userWithRole('Data Entry User');
+        FinancialYear::factory()->create(['is_current' => true]);
+        $assigned = Indicator::factory()->create(['name' => 'Assigned dashboard indicator']);
+        $other = Indicator::factory()->create(['name' => 'Hidden dashboard indicator']);
+        \App\Models\IndicatorDataAssignment::factory()->create([
+            'indicator_id' => $assigned->id,
+            'user_id' => $user->id,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response->assertOk();
+        $response->assertSee($assigned->name);
+        $response->assertDontSee($other->name);
+    }
 }

@@ -140,6 +140,10 @@
         }
 
         levelSelect.addEventListener('change', function () { rebuild(false); });
+        root.addEventListener('location-cascade:set', function (event) {
+            ancestorChain = event.detail && event.detail.ancestorChain ? event.detail.ancestorChain : {};
+            rebuild(true);
+        });
 
         if (levelSelect.value) {
             rebuild(true);

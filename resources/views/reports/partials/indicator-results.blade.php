@@ -16,6 +16,19 @@
                 <td>
                     <div class="fw-semibold">{{ $row['indicator']->name }}</div>
                     <div class="text-muted small">{{ $row['indicator']->code }}</div>
+                    @if (! ($selectedThematicArea ?? null) && $row['indicator']->thematicArea)
+                    <div class="text-muted small">{{ $row['indicator']->thematicArea->name }}</div>
+                    @endif
+                    @foreach (($row['breakdowns'] ?? []) as $breakdownType => $breakdownRows)
+                        @if ($breakdownRows !== [])
+                        <details class="small mt-1">
+                            <summary>{{ ucfirst($breakdownType) }} ({{ count($breakdownRows) }})</summary>
+                            @foreach ($breakdownRows as $breakdownRow)
+                            <div class="text-muted">{{ $breakdownRow['label'] }}: {{ rtrim(rtrim(number_format($breakdownRow['value'], 2), '0'), '.') }}</div>
+                            @endforeach
+                        </details>
+                        @endif
+                    @endforeach
                 </td>
                 <td>{{ $row['indicator']->unitOfMeasure?->name ?? '—' }}</td>
                 <td class="text-end">{{ $perf['target_value'] === null ? '—' : rtrim(rtrim(number_format($perf['target_value'], 2), '0'), '.') }}</td>

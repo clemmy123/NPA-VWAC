@@ -42,7 +42,7 @@ class IndicatorController extends Controller
         $indicators = Indicator::query()
             ->with(['interventions', 'thematicArea'])
             ->when($request->integer('thematic_area_id'), fn ($query, $thematicAreaId) => $query->where('thematic_area_id', $thematicAreaId))
-            ->when(! $user->can('indicator.view-all'), fn ($query) => $query->whereIn('id', $user->assignedIndicatorIds()))
+            ->when(! $user->hasRole('Super Admin'), fn ($query) => $query->whereIn('id', $this->visibleIndicatorIds($user)))
             ->latest('id')
             ->paginate($request->integer('per_page', 15));
 
@@ -53,13 +53,14 @@ class IndicatorController extends Controller
         return view('indicators.index', ['indicators' => $indicators]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('indicators.create', $this->formData());
+        return view('indicators.create', $this->formData($request->user()));
     }
 
     public function store(StoreIndicatorRequest $request): JsonResponse|RedirectResponse
     {
+        $this->authorizeThematicArea($request->user(), (int) $request->validated('thematic_area_id'));
         $indicator = Indicator::create($this->withoutNullDefaults($request->validated()) + ['created_by' => $request->user()->id]);
 
         if ($request->wantsJson()) {
@@ -73,9 +74,7 @@ class IndicatorController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->can('indicator.view-all')) {
-            abort_unless(in_array($indicator->id, $user->assignedIndicatorIds(), true), 403);
-        }
+        $this->authorizeIndicator($user, $indicator);
 
         if ($request->wantsJson()) {
             return new IndicatorResource($indicator->load('interventions'));
@@ -88,7 +87,7 @@ class IndicatorController extends Controller
             'baselines' => $indicator->baselines()->with(['financialYear', 'organization'])->latest('id')->get(),
             'targets' => $indicator->targets()->with(['financialYear', 'reportingPeriod', 'dimensionOption'])->latest('id')->get(),
             'assignments' => $indicator->assignments()->with(['user', 'organization'])->latest('id')->get(),
-            'allIndicators' => Indicator::query()->orderBy('name')->get(),
+            'allIndicators' => Indicator::query()->whereIn('id', $this->visibleIndicatorIds($user))->orderBy('name')->get(),
             'financialYears' => FinancialYear::query()->orderBy('name')->get(),
             'reportingPeriods' => ReportingPeriod::query()->orderBy('sequence')->get(),
             'dimensionOptions' => DimensionOption::query()->orderBy('name')->get(),
@@ -98,13 +97,19 @@ class IndicatorController extends Controller
         ]);
     }
 
-    public function edit(Indicator $indicator): View
+    public function edit(Request $request, Indicator $indicator): View
     {
-        return view('indicators.edit', ['indicator' => $indicator] + $this->formData());
+        $this->authorizeIndicator($request->user(), $indicator);
+
+        return view('indicators.edit', ['indicator' => $indicator] + $this->formData($request->user()));
     }
 
     public function update(UpdateIndicatorRequest $request, Indicator $indicator): JsonResponse|RedirectResponse|IndicatorResource
     {
+        $this->authorizeIndicator($request->user(), $indicator);
+        if ($request->validated('thematic_area_id')) {
+            $this->authorizeThematicArea($request->user(), (int) $request->validated('thematic_area_id'));
+        }
         $indicator->update($this->withoutNullDefaults($request->validated()));
 
         if ($request->wantsJson()) {
@@ -116,6 +121,7 @@ class IndicatorController extends Controller
 
     public function destroy(Request $request, Indicator $indicator): JsonResponse|RedirectResponse
     {
+        $this->authorizeIndicator($request->user(), $indicator);
         $indicator->delete();
 
         if ($request->wantsJson()) {
@@ -141,13 +147,46 @@ class IndicatorController extends Controller
     }
 
     /** @return array<string, mixed> */
-    private function formData(): array
+    private function formData(User $user): array
     {
+        $visibleAreaIds = $user->visibleThematicAreaIds();
+
         return [
             'statusOptions' => self::STATUS_OPTIONS,
-            'thematicAreas' => ThematicArea::query()->orderBy('name')->get(),
+            'thematicAreas' => ThematicArea::query()
+                ->when(! $user->hasRole('Super Admin') && $visibleAreaIds !== [], fn ($query) => $query->whereIn('id', $visibleAreaIds))
+                ->orderBy('name')->get(),
             'measurementTypes' => MeasurementType::query()->orderBy('name')->get(),
             'unitsOfMeasure' => UnitOfMeasure::query()->orderBy('name')->get(),
         ];
+    }
+
+    /** @return list<int> */
+    private function visibleIndicatorIds(User $user): array
+    {
+        if ($user->hasRole('Super Admin')) {
+            return Indicator::query()->pluck('id')->all();
+        }
+
+        if ($user->can('indicator.view-all')) {
+            $thematicAreaIds = $user->visibleThematicAreaIds();
+
+            return Indicator::query()
+                ->when($thematicAreaIds !== [], fn ($query) => $query->whereIn('thematic_area_id', $thematicAreaIds))
+                ->pluck('id')->all();
+        }
+
+        return $user->assignedIndicatorIds();
+    }
+
+    private function authorizeIndicator(User $user, Indicator $indicator): void
+    {
+        abort_unless($user->hasRole('Super Admin') || in_array($indicator->id, $this->visibleIndicatorIds($user), true), 403);
+    }
+
+    private function authorizeThematicArea(User $user, int $thematicAreaId): void
+    {
+        $visibleIds = $user->visibleThematicAreaIds();
+        abort_unless($user->hasRole('Super Admin') || $visibleIds === [] || in_array($thematicAreaId, $visibleIds, true), 403);
     }
 }

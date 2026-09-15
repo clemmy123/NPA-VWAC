@@ -5,7 +5,7 @@
     // they must never submit a blank/null value.
     $collectionModes = ['progressive', 'manual', 'system', 'mixed'];
     $aggregationMethods = ['sum', 'average', 'latest', 'count', 'max', 'min'];
-    $reportingFrequencies = ['monthly', 'quarterly', 'biannual', 'annual'];
+    $reportingFrequencies = ['daily', 'weekly', 'monthly', 'quarterly', 'biannual', 'annual'];
     $collectionScopes = ['national', 'individual', 'aggregate'];
     $locationLevels = ['national', 'region', 'district', 'ward', 'village', 'facility'];
 @endphp

@@ -20,7 +20,13 @@ class IndicatorDataEntryService
      */
     public function create(array $data, array $rows, array $expenses, array $evidenceFiles, User $user): IndicatorDataEntry
     {
-        $this->assertAssignmentScope($user, (int) $data['indicator_id'], $data['location_level'] ?? null, $data['location_id'] ?? null);
+        $this->assertAssignmentScope(
+            $user,
+            (int) $data['indicator_id'],
+            $data['location_level'] ?? null,
+            isset($data['location_id']) ? (int) $data['location_id'] : null,
+            isset($data['organization_id']) ? (int) $data['organization_id'] : null,
+        );
 
         return DB::transaction(function () use ($data, $rows, $expenses, $evidenceFiles, $user): IndicatorDataEntry {
             $entry = IndicatorDataEntry::create($data + [
@@ -51,8 +57,15 @@ class IndicatorDataEntryService
         $indicatorId = (int) ($data['indicator_id'] ?? $entry->indicator_id);
         $locationLevel = array_key_exists('location_level', $data) ? $data['location_level'] : $entry->location_level;
         $locationId = array_key_exists('location_id', $data) ? $data['location_id'] : $entry->location_id;
+        $organizationId = array_key_exists('organization_id', $data) ? $data['organization_id'] : $entry->organization_id;
 
-        $this->assertAssignmentScope($user, $indicatorId, $locationLevel, $locationId);
+        $this->assertAssignmentScope(
+            $user,
+            $indicatorId,
+            $locationLevel,
+            $locationId !== null ? (int) $locationId : null,
+            $organizationId !== null ? (int) $organizationId : null,
+        );
 
         DB::transaction(function () use ($entry, $data, $rows, $expenses, $evidenceFiles): void {
             $entry->update($data);
@@ -82,7 +95,13 @@ class IndicatorDataEntryService
         $media->delete();
     }
 
-    private function assertAssignmentScope(User $user, int $indicatorId, ?string $locationLevel, ?int $locationId): void
+    private function assertAssignmentScope(
+        User $user,
+        int $indicatorId,
+        ?string $locationLevel,
+        ?int $locationId,
+        ?int $organizationId,
+    ): void
     {
         if ($user->hasRole('Super Admin')) {
             return;
@@ -90,27 +109,28 @@ class IndicatorDataEntryService
 
         $assignments = IndicatorDataAssignment::query()
             ->where('indicator_id', $indicatorId)
-            ->where('user_id', $user->id)
             ->where('is_active', true)
+            ->where(function ($query) use ($user): void {
+                $query->where('user_id', $user->id);
+
+                if ($user->organization_id !== null) {
+                    $query->orWhere('organization_id', $user->organization_id);
+                }
+            })
             ->get();
 
         if ($assignments->isEmpty()) {
             throw new AuthorizationException('You are not assigned to report on this indicator.');
         }
 
-        $unrestricted = $assignments->contains(fn (IndicatorDataAssignment $assignment) => $assignment->location_level === null);
-
-        if ($unrestricted) {
-            return;
-        }
-
         $matches = $assignments->contains(
-            fn (IndicatorDataAssignment $assignment) => $assignment->location_level === $locationLevel
-                && $assignment->location_id === $locationId
+            fn (IndicatorDataAssignment $assignment) => ($assignment->location_level === null
+                    || ($assignment->location_level === $locationLevel && (int) $assignment->location_id === $locationId))
+                && ($assignment->organization_id === null || (int) $assignment->organization_id === $organizationId)
         );
 
         if (! $matches) {
-            throw new AuthorizationException('You are not assigned to report on this indicator for the given location.');
+            throw new AuthorizationException('You are not assigned to report on this indicator for the given location and organization.');
         }
     }
 

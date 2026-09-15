@@ -51,7 +51,10 @@ class WorkstationReportController extends Controller
             ->get();
 
         $projects = $this->visibleProjects($request)->with('thematicAreas')->orderBy('name')->get();
-        $thematicAreas = $projects->flatMap->thematicAreas->sortBy('name')->values();
+        $visibleAreaIds = $request->user()->hasRole('Super Admin') ? null : $this->visibleThematicAreaIds($request);
+        $thematicAreas = $projects->flatMap->thematicAreas
+            ->when($visibleAreaIds !== null, fn ($areas) => $areas->whereIn('id', $visibleAreaIds))
+            ->sortBy('name')->values();
 
         $selectedOrganization = $organizations->count() === 1 ? $organizations->first() : null;
         $selectedProject = $projects->firstWhere('id', (int) ($data['project_id'] ?? 0));
@@ -66,8 +69,10 @@ class WorkstationReportController extends Controller
             : $areasForPlan;
 
         $month = isset($data['month']) ? Carbon::parse($data['month'])->startOfMonth() : now()->startOfMonth();
-        $financialYears = FinancialYear::query()->orderByDesc('start_date')->get();
-        $reportingPeriods = ReportingPeriod::query()->with('financialYear')->orderBy('start_date')->get();
+        $financialYears = FinancialYear::query()->where('is_active', true)
+            ->whereDate('start_date', '<=', now()->toDateString())->orderByDesc('start_date')->get();
+        $reportingPeriods = ReportingPeriod::query()->with('financialYear')->where('is_active', true)
+            ->whereDate('start_date', '<=', now()->toDateString())->orderBy('start_date')->get();
 
         $selectedFinancialYear = null;
         $selectedReportingPeriod = null;

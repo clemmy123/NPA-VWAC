@@ -189,4 +189,28 @@ class AdminLocationLevel
 
         return $definition['model']::query()->find($id)?->name;
     }
+
+    public static function isWithin(string $level, int $id, string $scopeLevel, int $scopeId): bool
+    {
+        if (! self::isValidLevel($level) || ! self::isValidLevel($scopeLevel)) {
+            return false;
+        }
+
+        $chain = self::ancestorChain($level, $id);
+
+        return isset($chain[$scopeLevel]) && (int) $chain[$scopeLevel]['id'] === $scopeId;
+    }
+
+    /** @return list<string> */
+    public static function levelsAtOrBelow(string $level): array
+    {
+        if (! self::isValidLevel($level)) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            self::levels(),
+            fn (string $candidate): bool => in_array($level, self::pathToLevel($candidate), true),
+        ));
+    }
 }

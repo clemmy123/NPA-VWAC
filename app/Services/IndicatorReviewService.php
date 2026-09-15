@@ -32,6 +32,7 @@ class IndicatorReviewService
         if ($entry->status !== 'submitted') {
             throw ValidationException::withMessages(['status' => 'Only submitted entries can be approved.']);
         }
+        $this->assertReviewerScope($entry, $actor);
 
         DB::transaction(function () use ($entry, $actor, $comment): void {
             $entry->update([
@@ -55,6 +56,7 @@ class IndicatorReviewService
         if ($entry->status !== 'submitted') {
             throw ValidationException::withMessages(['status' => 'Only submitted entries can be returned.']);
         }
+        $this->assertReviewerScope($entry, $actor);
 
         DB::transaction(function () use ($entry, $actor, $comment): void {
             $entry->update(['status' => 'rejected']);
@@ -84,6 +86,19 @@ class IndicatorReviewService
             throw ValidationException::withMessages([
                 'actual_value' => 'Disaggregated rows must sum to the entry total when reconciliation is required for this indicator.',
             ]);
+        }
+    }
+
+    private function assertReviewerScope(IndicatorDataEntry $entry, User $actor): void
+    {
+        if ($actor->hasRole('Super Admin')) {
+            return;
+        }
+
+        $thematicAreaId = (int) $entry->indicator()->value('thematic_area_id');
+        $assignedAreaIds = $actor->assignedThematicAreaIds();
+        if ($assignedAreaIds !== [] && ! in_array($thematicAreaId, $assignedAreaIds, true)) {
+            throw new AuthorizationException('You may only review entries in your assigned thematic areas.');
         }
     }
 }

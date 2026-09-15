@@ -8,6 +8,7 @@ use App\Http\Resources\IndicatorDataEntryResource;
 use App\Models\FinancialYear;
 use App\Models\Indicator;
 use App\Models\IndicatorDataEntry;
+use App\Models\IndicatorDataAssignment;
 use App\Models\Organization;
 use App\Models\ReportingPeriod;
 use App\Models\User;
@@ -91,7 +92,17 @@ class IndicatorDataEntryController extends Controller
     private function authorizeIndicatorAccess(User $user, IndicatorDataEntry $indicatorDataEntry): void
     {
         if (! $user->can('indicator.view-all')) {
-            abort_unless(in_array($indicatorDataEntry->indicator_id, $user->assignedIndicatorIds(), true), 403);
+            $allowed = $this->assignmentsForUser($user)
+                ->where('indicator_id', $indicatorDataEntry->indicator_id)
+                ->contains(fn (IndicatorDataAssignment $assignment): bool =>
+                    ($assignment->location_level === null
+                        || ($assignment->location_level === $indicatorDataEntry->location_level
+                            && (int) $assignment->location_id === (int) $indicatorDataEntry->location_id))
+                    && ($assignment->organization_id === null
+                        || (int) $assignment->organization_id === (int) $indicatorDataEntry->organization_id)
+                );
+
+            abort_unless($allowed, 403);
         }
     }
 
@@ -161,15 +172,78 @@ class IndicatorDataEntryController extends Controller
     /** @return array<string, mixed> */
     private function formData(User $user): array
     {
+        $assignments = $this->assignmentsForUser($user);
+        $indicatorIds = $assignments->pluck('indicator_id')->unique()->values();
+        $indicators = Indicator::query()
+            ->with(['dimensions.options', 'measurementType', 'unitOfMeasure'])
+            ->when(! $user->can('indicator.view-all'), fn ($query) => $query->whereIn('id', $indicatorIds))
+            ->orderBy('name')
+            ->get();
+
+        $assignmentScopes = $assignments->groupBy('indicator_id')->map(function ($items): array {
+            $organizationIds = $items->pluck('organization_id')->filter()->unique()->values();
+            $locations = $items->filter(fn ($item) => $item->location_level !== null && $item->location_id !== null);
+
+            $singleLocation = $locations->pluck('location_level')->unique()->count() === 1
+                && $locations->pluck('location_id')->unique()->count() === 1;
+            $location = $singleLocation ? $locations->first() : null;
+
+            return [
+                'organization_id' => $organizationIds->count() === 1 ? (int) $organizationIds->first() : null,
+                'location_level' => $location?->location_level,
+                'location_id' => $location ? (int) $location->location_id : null,
+                'location_chain' => $location
+                    ? AdminLocationLevel::ancestorChain($location->location_level, (int) $location->location_id)
+                    : [],
+            ];
+        });
+        $dimensionConfig = $indicators->mapWithKeys(fn (Indicator $indicator): array => [
+            $indicator->id => $indicator->dimensions->map(fn ($dimension): array => [
+                'id' => $dimension->id,
+                'name' => $dimension->name,
+                'required' => (bool) $dimension->pivot->is_required,
+                'must_reconcile' => (bool) $dimension->pivot->must_reconcile,
+                'options' => $dimension->options->where('is_active', true)->sortBy('sort_order')->values()->map(fn ($option): array => [
+                    'id' => $option->id,
+                    'name' => $option->name,
+                ])->all(),
+            ])->all(),
+        ]);
+
+        $organizationIds = $user->can('indicator.view-all')
+            ? null
+            : $assignments->pluck('organization_id')->filter()->unique()->values();
+
         return [
-            'indicators' => Indicator::query()
-                ->when(! $user->can('indicator.view-all'), fn ($query) => $query->whereIn('id', $user->assignedIndicatorIds()))
-                ->orderBy('name')
-                ->get(),
-            'financialYears' => FinancialYear::query()->orderBy('name')->get(),
-            'reportingPeriods' => ReportingPeriod::query()->orderBy('sequence')->get(),
-            'organizations' => Organization::query()->orderBy('name')->get(),
+            'indicators' => $indicators,
+            'financialYears' => FinancialYear::query()
+                ->where('is_active', true)
+                ->whereDate('start_date', '<=', now()->toDateString())
+                ->orderByDesc('start_date')->get(),
+            'reportingPeriods' => ReportingPeriod::query()
+                ->where('is_active', true)
+                ->whereDate('start_date', '<=', now()->toDateString())
+                ->orderBy('start_date')->get(),
+            'organizations' => Organization::query()
+                ->when($organizationIds !== null && $organizationIds->isNotEmpty(), fn ($query) => $query->whereIn('id', $organizationIds))
+                ->when($organizationIds !== null && $organizationIds->isEmpty(), fn ($query) => $query->whereRaw('1 = 0'))
+                ->orderBy('name')->get(),
             'locationLevels' => AdminLocationLevel::levels(),
+            'assignmentScopes' => $assignmentScopes,
+            'dimensionConfig' => $dimensionConfig,
         ];
+    }
+
+    private function assignmentsForUser(User $user)
+    {
+        return IndicatorDataAssignment::query()
+            ->where('is_active', true)
+            ->where(function ($query) use ($user): void {
+                $query->where('user_id', $user->id);
+                if ($user->organization_id !== null) {
+                    $query->orWhere('organization_id', $user->organization_id);
+                }
+            })
+            ->get();
     }
 }

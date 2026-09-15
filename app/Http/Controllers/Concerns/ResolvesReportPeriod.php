@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Concerns;
 
 use App\Models\FinancialYear;
 use App\Models\Project;
+use App\Models\Indicator;
 use App\Models\ReportingPeriod;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -18,13 +19,27 @@ trait ResolvesReportPeriod
 
         if (! $request->user()->hasRole('Super Admin')) {
             $user = $request->user();
-            $query->where(function (Builder $inner) use ($user): void {
+            $visibleThematicAreaIds = $this->visibleThematicAreaIds($request);
+            $query->where(function (Builder $inner) use ($user, $visibleThematicAreaIds): void {
                 $inner->whereIn('id', $user->assignedProjectIds())
-                    ->orWhereHas('thematicAreas', fn (Builder $areas) => $areas->whereIn('id', $user->visibleThematicAreaIds()));
+                    ->orWhereHas('thematicAreas', fn (Builder $areas) => $areas
+                        ->whereIn('id', $visibleThematicAreaIds));
             });
         }
 
         return $query;
+    }
+
+    /** @return list<int> */
+    private function visibleThematicAreaIds(Request $request): array
+    {
+        $user = $request->user();
+        $viaIndicators = Indicator::query()
+            ->whereIn('id', $user->assignedIndicatorIds())
+            ->pluck('thematic_area_id')
+            ->all();
+
+        return array_values(array_unique([...$user->visibleThematicAreaIds(), ...$viaIndicators]));
     }
 
     /**

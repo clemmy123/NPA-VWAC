@@ -117,7 +117,7 @@ class PlanBuilderController extends Controller
             'organizations' => Organization::query()->orderBy('name')->get(),
             'measurementTypes' => MeasurementType::query()->orderBy('name')->get(),
             'unitsOfMeasure' => UnitOfMeasure::query()->orderBy('name')->get(),
-            'reportingFrequencies' => ['monthly', 'quarterly', 'biannual', 'annual'],
+            'reportingFrequencies' => ['daily', 'weekly', 'monthly', 'quarterly', 'biannual', 'annual'],
             'canUpdateThematicArea' => $user->can('thematic-area.update'),
             'canCreateIndicator' => $user->can('indicator.create'),
             'canUpdateIndicator' => $user->can('indicator.update'),

@@ -155,4 +155,86 @@ class DataEntryAssignmentScopeTest extends TestCase
 
         $response->assertCreated();
     }
+
+    public function test_an_organization_assignment_cannot_be_used_to_submit_for_another_organization(): void
+    {
+        $assignedOrganization = Organization::factory()->create();
+        $otherOrganization = Organization::factory()->create();
+        $indicator = Indicator::factory()->create(['collection_scope' => 'institutional']);
+        $financialYear = FinancialYear::factory()->started()->create();
+        $user = User::factory()->create(['organization_id' => $assignedOrganization->id]);
+        $user->assignRole('Data Entry User');
+        IndicatorDataAssignment::factory()->create([
+            'indicator_id' => $indicator->id,
+            'user_id' => User::factory()->create()->id,
+            'organization_id' => $assignedOrganization->id,
+        ]);
+
+        $this->actingAs($user)->postJson('/indicator-data-entries', [
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'entry_date' => now()->toDateString(),
+            'organization_id' => $otherOrganization->id,
+        ])->assertForbidden();
+
+        $this->actingAs($user)->postJson('/indicator-data-entries', [
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'entry_date' => now()->toDateString(),
+            'organization_id' => $assignedOrganization->id,
+        ])->assertCreated();
+    }
+
+    public function test_indicator_reporting_level_is_enforced(): void
+    {
+        $indicator = Indicator::factory()->create([
+            'requires_location' => true,
+            'reporting_location_level' => 'council',
+        ]);
+        $financialYear = FinancialYear::factory()->started()->create();
+        $user = User::factory()->create();
+        $user->assignRole('Data Entry User');
+        IndicatorDataAssignment::factory()->create([
+            'indicator_id' => $indicator->id,
+            'user_id' => $user->id,
+        ]);
+
+        $this->actingAs($user)->postJson('/indicator-data-entries', [
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'entry_date' => now()->toDateString(),
+            'location_level' => 'region',
+            'location_id' => \App\Models\Region::factory()->create()->region_id,
+        ])->assertJsonValidationErrors('location_level');
+    }
+
+    public function test_a_council_scoped_user_can_submit_data_down_to_street_level(): void
+    {
+        $council = \App\Models\Council::factory()->create();
+        $division = \App\Models\Division::factory()->create(['council_id' => $council->council_id]);
+        $ward = \App\Models\Ward::factory()->create(['division_id' => $division->division_id]);
+        $street = \App\Models\VillageMtaa::factory()->create(['ward_id' => $ward->ward_id, 'type' => 'mtaa']);
+        $indicator = Indicator::factory()->create([
+            'requires_location' => true,
+            'reporting_location_level' => 'council',
+        ]);
+        $financialYear = FinancialYear::factory()->started()->create();
+        $user = User::factory()->create();
+        $user->assignRole('Data Entry User');
+        IndicatorDataAssignment::factory()->create([
+            'indicator_id' => $indicator->id,
+            'user_id' => $user->id,
+            'location_level' => 'council',
+            'location_id' => $council->council_id,
+        ]);
+
+        $this->actingAs($user)->postJson('/indicator-data-entries', [
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'entry_date' => now()->toDateString(),
+            'location_level' => 'village_mtaa',
+            'location_id' => $street->village_mtaa_id,
+            'actual_value' => 12,
+        ])->assertCreated();
+    }
 }

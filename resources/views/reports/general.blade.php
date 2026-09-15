@@ -38,7 +38,7 @@
     @if ($frequency === 'monthly')
     <div class="rf-field">
         <label for="month">Month</label>
-        <input type="date" name="month" id="month" class="form-control" value="{{ $month->toDateString() }}">
+        <input type="month" name="month" id="month" class="form-control" value="{{ $month->format('Y-m') }}" max="{{ now()->format('Y-m') }}">
     </div>
     @elseif ($frequency === 'quarterly')
     <div class="rf-field">
@@ -82,6 +82,7 @@
     <div class="rf-field">
         <label for="thematic_area_id">Thematic Area</label>
         <select name="thematic_area_id" id="thematic_area_id" class="form-control">
+            <option value="" @selected(! $selectedThematicArea)>All Thematic Areas</option>
             @forelse ($thematicAreas as $thematicArea)
             <option value="{{ $thematicArea->id }}" data-project-id="{{ $thematicArea->project_id }}" @selected($selectedThematicArea?->id === $thematicArea->id)>
                 {{ $thematicArea->name }}
@@ -105,10 +106,6 @@
 @elseif ($projects->isEmpty())
 <div class="chart-card">
     <p class="mb-0 text-muted">No plans are visible to you yet.</p>
-</div>
-@elseif (! $selectedThematicArea)
-<div class="chart-card">
-    <p class="mb-0 text-muted">Select a plan and thematic area, then click Filter.</p>
 </div>
 @elseif (! $selectedFinancialYear)
 <div class="chart-card">

@@ -102,13 +102,25 @@
 </div>
 
 <div class="chart-card">
-    <div class="chart-card-title">Data by Region</div>
-    @if ($regionChart['labels'] === [])
-    <p class="mb-0 text-muted">No regional collections for this indicator yet.</p>
+    <div class="chart-card-title">{{ $breakdown['title'] }}</div>
+    @if ($breakdown['labels'] === [])
+    <p class="mb-0 text-muted">No approved collections for this indicator yet.</p>
     @else
     <div class="dash-region-chart">
         <canvas id="dashboard-region-chart"></canvas>
     </div>
+    @if ($breakdown['type'] === 'location' && $breakdown['rows'] !== [])
+    <div class="table-responsive mt-3">
+        <table class="table table-sm mb-0">
+            <thead><tr><th>Administrative hierarchy</th><th class="text-end">Approved actual</th></tr></thead>
+            <tbody>
+            @foreach ($breakdown['rows'] as $row)
+                <tr><td>{{ $row['path'] }}</td><td class="text-end">{{ number_format($row['value'], 2) }}</td></tr>
+            @endforeach
+            </tbody>
+        </table>
+    </div>
+    @endif
     @endif
 </div>
 @endif
@@ -117,11 +129,11 @@
 
 @push('scripts')
 @include('reports.partials.filter-selects-script', ['formId' => 'dashboard-filters', 'autoSubmit' => true])
-@if ($regionChart['labels'] !== [])
+@if ($breakdown['labels'] !== [])
 <script src="{{ asset('app-assets/libs/chart-js/Chart.bundle.min.js') }}"></script>
 <script>
 (function () {
-    var chart = @json($regionChart);
+    var chart = @json($breakdown);
     var canvas = document.getElementById('dashboard-region-chart');
     if (!canvas) {
         return;
@@ -136,7 +148,7 @@
         data: {
             labels: chart.labels,
             datasets: [{
-                label: '% Reached',
+                label: 'Approved actual',
                 data: chart.values,
                 backgroundColor: '#3b82f6',
                 hoverBackgroundColor: '#2563eb'
@@ -148,11 +160,11 @@
             legend: { display: true, position: 'bottom' },
             scales: {
                 xAxes: [{ ticks: { autoSkip: false }, gridLines: { display: false } }],
-                yAxes: [{ ticks: { beginAtZero: true, suggestedMax: 100, callback: function (value) { return value; } } }]
+                yAxes: [{ ticks: { beginAtZero: true, callback: function (value) { return value; } } }]
             },
             tooltips: {
                 callbacks: {
-                    label: function (item) { return item.yLabel + '% Reached'; }
+                    label: function (item) { return 'Approved actual: ' + item.yLabel; }
                 }
             }
         }

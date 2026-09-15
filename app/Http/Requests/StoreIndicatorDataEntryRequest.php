@@ -6,6 +6,7 @@ use App\Models\FinancialYear;
 use App\Models\Indicator;
 use App\Models\ReportingPeriod;
 use App\Support\AdminLocationLevel;
+use Carbon\Carbon;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -78,11 +79,22 @@ class StoreIndicatorDataEntryRequest extends FormRequest
 
         $today = now()->startOfDay();
 
+        if (! $validator->errors()->has('entry_date') && $this->filled('entry_date')
+            && Carbon::parse($this->input('entry_date'))->startOfDay()->gt($today)) {
+            $validator->errors()->add('entry_date', 'You cannot enter data for a future date.');
+        }
+
         if (! $validator->errors()->has('financial_year_id') && $this->filled('financial_year_id')) {
             $financialYear = FinancialYear::find($this->input('financial_year_id'));
 
             if ($financialYear && $financialYear->start_date->gt($today)) {
                 $validator->errors()->add('financial_year_id', 'You cannot enter data for a future financial year.');
+            }
+            if ($financialYear && $this->filled('entry_date')) {
+                $entryDate = Carbon::parse($this->input('entry_date'));
+                if (! $entryDate->betweenIncluded($financialYear->start_date, $financialYear->end_date)) {
+                    $validator->errors()->add('entry_date', 'The entry date must fall within the selected financial year.');
+                }
             }
         }
 
@@ -91,6 +103,9 @@ class StoreIndicatorDataEntryRequest extends FormRequest
 
             if ($period && $period->start_date->gt($today)) {
                 $validator->errors()->add('reporting_period_id', 'You cannot enter data for a future reporting period.');
+            }
+            if ($period && (int) $period->financial_year_id !== (int) $this->input('financial_year_id')) {
+                $validator->errors()->add('reporting_period_id', 'The reporting period must belong to the selected financial year.');
             }
         }
     }
@@ -105,6 +120,12 @@ class StoreIndicatorDataEntryRequest extends FormRequest
             $validator->errors()->add('location_level', 'This indicator requires a reporting location.');
         }
 
+        if ($indicator->requires_location && $indicator->reporting_location_level
+            && $this->filled('location_level')
+            && $this->input('location_level') !== $indicator->reporting_location_level) {
+            $validator->errors()->add('location_level', 'This indicator must stop at the '.str_replace('_', ' ', $indicator->reporting_location_level).' level.');
+        }
+
         if ($indicator->requires_activity && ! $this->filled('activity_name')) {
             $validator->errors()->add('activity_name', 'This indicator requires an activity name.');
         }
@@ -115,6 +136,30 @@ class StoreIndicatorDataEntryRequest extends FormRequest
 
         if ($indicator->requires_evidence && ! $this->hasFile('evidence')) {
             $validator->errors()->add('evidence', 'This indicator requires supporting evidence to be attached.');
+        }
+
+        $periodTypes = ['quarterly' => 'quarter', 'biannual' => 'semi_annual', 'annual' => 'annual'];
+        $requiredPeriodType = $periodTypes[$indicator->reporting_frequency] ?? null;
+        $period = $this->filled('reporting_period_id') ? ReportingPeriod::find($this->input('reporting_period_id')) : null;
+        if ($period && $requiredPeriodType !== $period->period_type) {
+            $validator->errors()->add('reporting_period_id', 'The reporting period does not match this indicator frequency.');
+        }
+
+        if ($this->filled('actual_value')) {
+            $actual = (float) $this->input('actual_value');
+            $type = $indicator->measurementType?->code;
+            if ($type === 'count' && floor($actual) !== $actual) {
+                $validator->errors()->add('actual_value', 'A count must be a whole number.');
+            }
+            if ($type === 'percentage' && ($actual < 0 || $actual > 100)) {
+                $validator->errors()->add('actual_value', 'A percentage must be between 0 and 100.');
+            }
+            if ($type === 'yes_no' && ! in_array($actual, [0.0, 1.0], true)) {
+                $validator->errors()->add('actual_value', 'Select either Yes or No.');
+            }
+            if (in_array($type, ['count', 'currency'], true) && $actual < 0) {
+                $validator->errors()->add('actual_value', 'The actual value cannot be negative.');
+            }
         }
     }
 }

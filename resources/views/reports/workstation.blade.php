@@ -40,7 +40,7 @@
     @if ($frequency === 'monthly')
     <div class="rf-field">
         <label for="month">Month</label>
-        <input type="date" name="month" id="month" class="form-control" value="{{ $month->toDateString() }}">
+        <input type="month" name="month" id="month" class="form-control" value="{{ $month->format('Y-m') }}" max="{{ now()->format('Y-m') }}">
     </div>
     @elseif ($frequency === 'quarterly')
     <div class="rf-field">
