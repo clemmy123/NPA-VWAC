@@ -37,9 +37,12 @@ class IndicatorController extends Controller
 
     public function index(Request $request): JsonResponse|View
     {
+        $user = $request->user();
+
         $indicators = Indicator::query()
             ->with(['interventions', 'thematicArea'])
             ->when($request->integer('thematic_area_id'), fn ($query, $thematicAreaId) => $query->where('thematic_area_id', $thematicAreaId))
+            ->when(! $user->can('indicator.view-all'), fn ($query) => $query->whereIn('id', $user->assignedIndicatorIds()))
             ->latest('id')
             ->paginate($request->integer('per_page', 15));
 
@@ -68,6 +71,12 @@ class IndicatorController extends Controller
 
     public function show(Request $request, Indicator $indicator): JsonResponse|View|IndicatorResource
     {
+        $user = $request->user();
+
+        if (! $user->can('indicator.view-all')) {
+            abort_unless(in_array($indicator->id, $user->assignedIndicatorIds(), true), 403);
+        }
+
         if ($request->wantsJson()) {
             return new IndicatorResource($indicator->load('interventions'));
         }

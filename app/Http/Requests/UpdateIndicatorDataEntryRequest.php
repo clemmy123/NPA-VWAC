@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Models\FinancialYear;
 use App\Models\Indicator;
 use App\Models\IndicatorDataEntry;
+use App\Models\ReportingPeriod;
 use App\Support\AdminLocationLevel;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -64,7 +66,40 @@ class UpdateIndicatorDataEntryRequest extends FormRequest
             if (! $validator->errors()->has('indicator_id')) {
                 $this->applyIndicatorConfigRules($validator);
             }
+
+            $this->applyPeriodWindowRules($validator);
         });
+    }
+
+    private function applyPeriodWindowRules(Validator $validator): void
+    {
+        if ($this->user()?->can('indicator-data.override-period')) {
+            return;
+        }
+
+        /** @var IndicatorDataEntry $entry */
+        $entry = $this->route('indicator_data_entry');
+        $today = now()->startOfDay();
+
+        $financialYearId = $this->has('financial_year_id') ? $this->input('financial_year_id') : $entry->financial_year_id;
+
+        if (! $validator->errors()->has('financial_year_id') && $financialYearId) {
+            $financialYear = FinancialYear::find($financialYearId);
+
+            if ($financialYear && $financialYear->start_date->gt($today)) {
+                $validator->errors()->add('financial_year_id', 'You cannot enter data for a future financial year.');
+            }
+        }
+
+        $reportingPeriodId = $this->has('reporting_period_id') ? $this->input('reporting_period_id') : $entry->reporting_period_id;
+
+        if (! $validator->errors()->has('reporting_period_id') && $reportingPeriodId) {
+            $period = ReportingPeriod::find($reportingPeriodId);
+
+            if ($period && $period->start_date->gt($today)) {
+                $validator->errors()->add('reporting_period_id', 'You cannot enter data for a future reporting period.');
+            }
+        }
     }
 
     private function applyIndicatorConfigRules(Validator $validator): void

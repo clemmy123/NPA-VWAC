@@ -55,7 +55,7 @@ class IndicatorDataEntriesPageTest extends TestCase
     {
         $user = $this->userWithRole('Super Admin');
         $indicator = Indicator::factory()->create();
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->started()->create();
 
         $response = $this->actingAs($user)->post(route('indicator-data-entries.store'), [
             'indicator_id' => $indicator->id,

@@ -56,7 +56,7 @@ class IndicatorDataEntryEvidenceTest extends TestCase
     public function test_creating_an_entry_requires_evidence_when_the_indicator_requires_it(): void
     {
         $indicator = Indicator::factory()->create(['requires_evidence' => true]);
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->started()->create();
         $entrant = $this->assignedDataEntryUser($indicator);
 
         $response = $this->actingAs($entrant)->post('/indicator-data-entries', [
@@ -71,7 +71,7 @@ class IndicatorDataEntryEvidenceTest extends TestCase
     public function test_uploading_evidence_attaches_it_to_the_entry(): void
     {
         $indicator = Indicator::factory()->create(['requires_evidence' => true]);
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->started()->create();
         $entrant = $this->assignedDataEntryUser($indicator);
         $file = $this->fakePdf();
 
@@ -91,7 +91,7 @@ class IndicatorDataEntryEvidenceTest extends TestCase
     public function test_rejects_a_disallowed_file_type(): void
     {
         $indicator = Indicator::factory()->create();
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->started()->create();
         $entrant = $this->assignedDataEntryUser($indicator);
         $file = UploadedFile::fake()->create('script.exe', 10, 'application/octet-stream');
 

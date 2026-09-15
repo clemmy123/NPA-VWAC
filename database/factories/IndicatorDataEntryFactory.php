@@ -19,7 +19,7 @@ class IndicatorDataEntryFactory extends Factory
     {
         return [
             'indicator_id' => Indicator::factory(),
-            'financial_year_id' => FinancialYear::factory(),
+            'financial_year_id' => FinancialYear::factory()->started(),
             'reporting_period_id' => null,
             'entry_date' => now()->toDateString(),
             'activity_name' => fake()->sentence(3),

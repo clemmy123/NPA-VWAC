@@ -31,4 +31,19 @@ class FinancialYearFactory extends Factory
             'is_current' => true,
         ]);
     }
+
+    /**
+     * Pins the year to one that has already started, for tests exercising
+     * behavior that's gated on "not a future financial year".
+     */
+    public function started(): static
+    {
+        $startYear = now()->subYear()->year;
+
+        return $this->state(fn (array $attributes) => [
+            'name' => "{$startYear}/".($startYear + 1),
+            'start_date' => "{$startYear}-07-01",
+            'end_date' => ($startYear + 1).'-06-30',
+        ]);
+    }
 }

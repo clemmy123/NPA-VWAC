@@ -57,7 +57,7 @@ class BankDataEntryWorkflowTest extends TestCase
         // 3. Super Admin assigns the bank user to exactly one indicator.
         $assignedIndicator = Indicator::factory()->create(['name' => 'Loans disbursed to women']);
         $unassignedIndicator = Indicator::factory()->create(['name' => 'Unrelated indicator']);
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->started()->create();
 
         $this->actingAs($admin)->post(route('indicator-data-assignments.store'), [
             'indicator_id' => $assignedIndicator->id,

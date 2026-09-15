@@ -49,7 +49,7 @@ class DataEntryWorkflowTest extends TestCase
     public function test_full_draft_to_submit_to_approve_lifecycle(): void
     {
         $indicator = Indicator::factory()->create();
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->started()->create();
         $entrant = $this->assignedDataEntryUser($indicator);
         $reviewer = $this->userWithRole('Thematic Manager');
 
@@ -82,7 +82,7 @@ class DataEntryWorkflowTest extends TestCase
     public function test_draft_to_submit_to_reject_to_resubmit_lifecycle(): void
     {
         $indicator = Indicator::factory()->create();
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->started()->create();
         $entrant = $this->assignedDataEntryUser($indicator);
         $reviewer = $this->userWithRole('Thematic Manager');
 
@@ -111,7 +111,7 @@ class DataEntryWorkflowTest extends TestCase
     public function test_reconciliation_is_enforced_when_indicator_requires_it(): void
     {
         $indicator = Indicator::factory()->create();
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->started()->create();
         IndicatorDimension::factory()->mustReconcile()->create(['indicator_id' => $indicator->id]);
         $entrant = $this->assignedDataEntryUser($indicator);
 
@@ -147,7 +147,7 @@ class DataEntryWorkflowTest extends TestCase
     public function test_reconciliation_is_not_enforced_when_indicator_does_not_require_it(): void
     {
         $indicator = Indicator::factory()->create();
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->started()->create();
         $entrant = $this->assignedDataEntryUser($indicator);
 
         $response = $this->actingAs($entrant)->postJson('/indicator-data-entries', [
@@ -168,7 +168,7 @@ class DataEntryWorkflowTest extends TestCase
     public function test_row_dimension_tags_are_persisted(): void
     {
         $indicator = Indicator::factory()->create();
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->started()->create();
         $option = DimensionOption::factory()->create();
         $entrant = $this->assignedDataEntryUser($indicator);
 
@@ -188,7 +188,7 @@ class DataEntryWorkflowTest extends TestCase
     public function test_user_without_an_assignment_cannot_create_an_entry_for_the_indicator(): void
     {
         $indicator = Indicator::factory()->create();
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->started()->create();
         $user = $this->userWithRole('Data Entry User');
 
         $response = $this->actingAs($user)->postJson('/indicator-data-entries', [
@@ -203,7 +203,7 @@ class DataEntryWorkflowTest extends TestCase
     public function test_user_assigned_to_a_specific_region_cannot_create_an_entry_for_a_different_region(): void
     {
         $indicator = Indicator::factory()->create();
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->started()->create();
         $regionA = Region::factory()->create();
         $regionB = Region::factory()->create();
 
@@ -237,7 +237,7 @@ class DataEntryWorkflowTest extends TestCase
     public function test_super_admin_bypasses_assignment_scoping(): void
     {
         $indicator = Indicator::factory()->create();
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->started()->create();
         $admin = $this->userWithRole('Super Admin');
 
         $response = $this->actingAs($admin)->postJson('/indicator-data-entries', [

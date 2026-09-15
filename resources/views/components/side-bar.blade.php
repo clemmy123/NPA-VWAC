@@ -34,8 +34,12 @@
                 </li>
                 @endcan
 
-                {{-- Plan hierarchy: Projects / Thematic Areas / Indicators / Interventions --}}
-                @canany(['project.view', 'thematic-area.view', 'indicator.view', 'intervention.view'])
+                {{-- Plan hierarchy: Projects / Thematic Areas / Indicators / Interventions.
+                     Deliberately gated on 'indicator.view-all' rather than plain
+                     'indicator.view'/'intervention.view' — a Data Entry User has
+                     those (needed for their own scoped indicator dropdown) but
+                     shouldn't see the full plan-management browsing UI. --}}
+                @canany(['project.view', 'thematic-area.view', 'indicator.view-all'])
                 @php
                     $planActive = request()->routeIs('projects.*')
                         || request()->routeIs('thematic-areas.*')
@@ -77,8 +81,8 @@
                 </li>
                 @endcanany
 
-                {{-- Baselines & targets --}}
-                @can('indicator.view')
+                {{-- Baselines & targets: management-only, not a Data Entry User concern --}}
+                @can('indicator.view-all')
                 @php
                     $targetsActive = request()->routeIs('indicator-baselines.*') || request()->routeIs('indicator-targets.*');
                 @endphp
@@ -106,6 +110,16 @@
                     <a href="{{ route('indicator-data-entries.index') }}">
                         <i class="bi bi-clipboard-data"></i>
                         <span>Data Entries</span>
+                    </a>
+                </li>
+                @endcan
+
+                {{-- Late data entries report --}}
+                @can('report.view')
+                <li class="{{ request()->routeIs('reports.late-data-entries') ? 'active' : '' }}">
+                    <a href="{{ route('reports.late-data-entries') }}">
+                        <i class="bi bi-alarm"></i>
+                        <span>Late Data Entries</span>
                     </a>
                 </li>
                 @endcan

@@ -159,4 +159,30 @@ class User extends Authenticatable
 
         return array_values(array_unique([...$viaProjects, ...$this->assignedThematicAreaIds()]));
     }
+
+    /**
+     * Indicators this user is scoped to report on: those with an active
+     * IndicatorDataAssignment naming this user directly, or naming this
+     * user's organization (e.g. a bank's staff all inherit their
+     * organization's assignments). Only meaningful for users who lack
+     * 'indicator.view-all' — see IndicatorController/IndicatorDataEntryController.
+     *
+     * @return list<int>
+     */
+    public function assignedIndicatorIds(): array
+    {
+        return IndicatorDataAssignment::query()
+            ->where('is_active', true)
+            ->where(function ($query) {
+                $query->where('user_id', $this->id);
+
+                if ($this->organization_id !== null) {
+                    $query->orWhere('organization_id', $this->organization_id);
+                }
+            })
+            ->pluck('indicator_id')
+            ->unique()
+            ->values()
+            ->all();
+    }
 }

@@ -12,6 +12,7 @@ use App\Http\Controllers\IndicatorDataEntryController;
 use App\Http\Controllers\IndicatorTargetController;
 use App\Http\Controllers\InterventionController;
 use App\Http\Controllers\JumuishiSsoController;
+use App\Http\Controllers\LateDataEntryController;
 use App\Http\Controllers\LocalAuthController;
 use App\Http\Controllers\MeasurementTypeController;
 use App\Http\Controllers\OrganizationController;
@@ -26,7 +27,10 @@ use App\Http\Controllers\UnitOfMeasureController;
 use App\Http\Controllers\UserController;
 use App\Models\User;
 use App\Services\JumuishiUrl;
+use Database\Seeders\ConstantDataSeeder;
+use Database\Seeders\DevUserSeeder;
 use Database\Seeders\RolePermissionSeeder;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -36,23 +40,28 @@ Route::redirect('/', '/dashboard');
 
 if (app()->environment('local')) {
     // Local-only convenience: Jumuishi SSO can't be exercised against a local
-    // instance (there's no central hub to redirect to), so this logs in the
-    // first Super Admin (creating one via RolePermissionSeeder's roles if
-    // needed) to let the shell be reviewed in a browser without real SSO.
-    Route::get('/dev-login', function () {
+    // instance (there's no central hub to redirect to), so this offers a
+    // "log in as..." picker over one seeded test user per role (see
+    // DevUserSeeder), to let the shell be reviewed in a browser without real
+    // SSO. Never registered outside local — see Console/Commands/MakeSuperAdmin
+    // for how a real Super Admin is created in production.
+    Route::get('/dev-login', function (Request $request) {
         if (! Role::where('name', 'Super Admin')->exists()) {
-            Artisan::call('db:seed', [
-                '--class' => RolePermissionSeeder::class,
-                '--force' => true,
-            ]);
+            Artisan::call('db:seed', ['--class' => RolePermissionSeeder::class, '--force' => true]);
         }
 
-        $user = User::query()->whereHas('roles', fn ($query) => $query->where('name', 'Super Admin'))->first();
-
-        if (! $user) {
-            $user = User::factory()->create();
-            $user->assignRole('Super Admin');
+        if (! User::where('email', DevUserSeeder::TEST_USERS['Data Entry User'])->exists()) {
+            Artisan::call('db:seed', ['--class' => ConstantDataSeeder::class, '--force' => true]);
+            Artisan::call('db:seed', ['--class' => DevUserSeeder::class, '--force' => true]);
         }
+
+        $role = $request->string('role')->toString();
+
+        if ($role === '' || ! array_key_exists($role, DevUserSeeder::TEST_USERS)) {
+            return view('dev.login-picker', ['roles' => array_keys(DevUserSeeder::TEST_USERS)]);
+        }
+
+        $user = User::query()->where('email', DevUserSeeder::TEST_USERS[$role])->firstOrFail();
 
         Auth::login($user);
 
@@ -214,6 +223,10 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
     Route::delete('indicator-data-entries/{indicator_data_entry}/evidence/{media}', [IndicatorDataEntryController::class, 'destroyEvidence'])
         ->middleware('can:indicator-data.update')
         ->name('indicator-data-entries.evidence.destroy');
+
+    Route::get('reports/late-data-entries', [LateDataEntryController::class, 'index'])
+        ->middleware('can:report.view')
+        ->name('reports.late-data-entries');
 
     // Settings: lookup/reference data management (organizations, financial years,
     // data sources, measurement types, units, disaggregation dimensions). All

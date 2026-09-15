@@ -10,6 +10,7 @@ use App\Models\Indicator;
 use App\Models\IndicatorDataEntry;
 use App\Models\Organization;
 use App\Models\ReportingPeriod;
+use App\Models\User;
 use App\Services\IndicatorDataEntryService;
 use App\Services\IndicatorReviewService;
 use App\Support\AdminLocationLevel;
@@ -31,11 +32,14 @@ class IndicatorDataEntryController extends Controller
 
     public function index(Request $request): JsonResponse|View
     {
+        $user = $request->user();
+
         $entries = IndicatorDataEntry::query()
             ->with(['indicator', 'financialYear', 'reportingPeriod', 'enteredBy'])
             ->when($request->integer('indicator_id'), fn ($query, $indicatorId) => $query->where('indicator_id', $indicatorId))
             ->when($request->string('status')->toString(), fn ($query, $status) => $query->where('status', $status))
             ->when($request->integer('entered_by'), fn ($query, $enteredBy) => $query->where('entered_by', $enteredBy))
+            ->when(! $user->can('indicator.view-all'), fn ($query) => $query->whereIn('indicator_id', $user->assignedIndicatorIds()))
             ->latest('id')
             ->paginate($request->integer('per_page', 15));
 
@@ -46,9 +50,9 @@ class IndicatorDataEntryController extends Controller
         return view('indicator-data-entries.index', ['entries' => $entries]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('indicator-data-entries.create', $this->formData());
+        return view('indicator-data-entries.create', $this->formData($request->user()));
     }
 
     public function store(StoreIndicatorDataEntryRequest $request): JsonResponse|RedirectResponse
@@ -67,17 +71,28 @@ class IndicatorDataEntryController extends Controller
         return redirect()->route('indicator-data-entries.index')->with('success', 'Data entry created as a draft.');
     }
 
-    public function show(IndicatorDataEntry $indicatorDataEntry): IndicatorDataEntryResource
+    public function show(Request $request, IndicatorDataEntry $indicatorDataEntry): IndicatorDataEntryResource
     {
+        $this->authorizeIndicatorAccess($request->user(), $indicatorDataEntry);
+
         return new IndicatorDataEntryResource($indicatorDataEntry->load(self::RELATIONS));
     }
 
-    public function edit(IndicatorDataEntry $indicatorDataEntry): View
+    public function edit(Request $request, IndicatorDataEntry $indicatorDataEntry): View
     {
+        $this->authorizeIndicatorAccess($request->user(), $indicatorDataEntry);
+
         return view('indicator-data-entries.edit', [
             'entry' => $indicatorDataEntry->load(self::RELATIONS),
             'locationAncestorChain' => $this->locationAncestorChain($indicatorDataEntry->location_level, $indicatorDataEntry->location_id ? (int) $indicatorDataEntry->location_id : null),
-        ] + $this->formData());
+        ] + $this->formData($request->user()));
+    }
+
+    private function authorizeIndicatorAccess(User $user, IndicatorDataEntry $indicatorDataEntry): void
+    {
+        if (! $user->can('indicator.view-all')) {
+            abort_unless(in_array($indicatorDataEntry->indicator_id, $user->assignedIndicatorIds(), true), 403);
+        }
     }
 
     public function update(UpdateIndicatorDataEntryRequest $request, IndicatorDataEntry $indicatorDataEntry): JsonResponse|RedirectResponse|IndicatorDataEntryResource
@@ -144,10 +159,13 @@ class IndicatorDataEntryController extends Controller
     }
 
     /** @return array<string, mixed> */
-    private function formData(): array
+    private function formData(User $user): array
     {
         return [
-            'indicators' => Indicator::query()->orderBy('name')->get(),
+            'indicators' => Indicator::query()
+                ->when(! $user->can('indicator.view-all'), fn ($query) => $query->whereIn('id', $user->assignedIndicatorIds()))
+                ->orderBy('name')
+                ->get(),
             'financialYears' => FinancialYear::query()->orderBy('name')->get(),
             'reportingPeriods' => ReportingPeriod::query()->orderBy('sequence')->get(),
             'organizations' => Organization::query()->orderBy('name')->get(),

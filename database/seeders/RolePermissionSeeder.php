@@ -16,11 +16,11 @@ class RolePermissionSeeder extends Seeder
         $permissions = [
             'project.view', 'project.create', 'project.update', 'project.delete', 'project.assign-manager',
             'thematic-area.view', 'thematic-area.create', 'thematic-area.update', 'thematic-area.delete', 'thematic-area.assign-manager',
-            'indicator.view', 'indicator.create', 'indicator.update', 'indicator.delete', 'indicator.configure',
+            'indicator.view', 'indicator.view-all', 'indicator.create', 'indicator.update', 'indicator.delete', 'indicator.configure',
             'indicator.set-baseline', 'indicator.set-target', 'indicator.assign-user',
             'intervention.view', 'intervention.create', 'intervention.update', 'intervention.delete',
             'indicator-data.view', 'indicator-data.create', 'indicator-data.update', 'indicator-data.submit',
-            'indicator-data.review', 'indicator-data.approve', 'indicator-data.return',
+            'indicator-data.review', 'indicator-data.approve', 'indicator-data.return', 'indicator-data.override-period',
             'report.view', 'report.export',
             'user.view', 'user.create', 'user.update', 'user.assign-role',
             'settings.manage',
@@ -40,19 +40,23 @@ class RolePermissionSeeder extends Seeder
         $pm->syncPermissions([
             'project.view', 'project.update', 'project.assign-manager',
             'thematic-area.view', 'thematic-area.create', 'thematic-area.update', 'thematic-area.assign-manager',
-            'indicator.view', 'intervention.view',
+            'indicator.view', 'indicator.view-all', 'intervention.view',
             'indicator-data.view', 'report.view', 'report.export',
         ]);
 
         $tm->syncPermissions([
             'thematic-area.view', 'thematic-area.update',
-            'indicator.view', 'indicator.create', 'indicator.update', 'indicator.configure',
+            'indicator.view', 'indicator.view-all', 'indicator.create', 'indicator.update', 'indicator.configure',
             'indicator.set-baseline', 'indicator.set-target', 'indicator.assign-user',
             'intervention.view', 'intervention.create', 'intervention.update', 'intervention.delete',
             'indicator-data.view', 'indicator-data.review', 'indicator-data.approve', 'indicator-data.return',
             'report.view', 'report.export',
         ]);
 
+        // Data Entry Users deliberately do NOT get 'indicator.view-all' or
+        // 'indicator-data.override-period': they only see indicators/entries
+        // they're assigned to (App\Models\User::assignedIndicatorIds()) and can
+        // only key in data for the current or a past-unfilled reporting period.
         $de->syncPermissions([
             'indicator.view', 'intervention.view',
             'indicator-data.view', 'indicator-data.create', 'indicator-data.update', 'indicator-data.submit',

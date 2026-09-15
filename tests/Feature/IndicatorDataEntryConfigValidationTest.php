@@ -40,7 +40,7 @@ class IndicatorDataEntryConfigValidationTest extends TestCase
     public function test_creating_an_entry_requires_location_when_the_indicator_requires_it(): void
     {
         $indicator = Indicator::factory()->create(['requires_location' => true]);
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->started()->create();
         $entrant = $this->assignedDataEntryUser($indicator);
 
         $response = $this->actingAs($entrant)->postJson('/indicator-data-entries', [
@@ -55,7 +55,7 @@ class IndicatorDataEntryConfigValidationTest extends TestCase
     public function test_creating_an_entry_requires_activity_name_when_the_indicator_requires_it(): void
     {
         $indicator = Indicator::factory()->create(['requires_activity' => true]);
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->started()->create();
         $entrant = $this->assignedDataEntryUser($indicator);
 
         $response = $this->actingAs($entrant)->postJson('/indicator-data-entries', [
@@ -70,7 +70,7 @@ class IndicatorDataEntryConfigValidationTest extends TestCase
     public function test_creating_an_entry_requires_budget_allocated_when_the_indicator_has_budget_implication(): void
     {
         $indicator = Indicator::factory()->create(['has_budget_implication' => true]);
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->started()->create();
         $entrant = $this->assignedDataEntryUser($indicator);
 
         $response = $this->actingAs($entrant)->postJson('/indicator-data-entries', [
@@ -89,7 +89,7 @@ class IndicatorDataEntryConfigValidationTest extends TestCase
             'requires_activity' => true,
             'has_budget_implication' => true,
         ]);
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->started()->create();
         $region = Region::factory()->create();
         $entrant = $this->assignedDataEntryUser($indicator);
 
@@ -113,7 +113,7 @@ class IndicatorDataEntryConfigValidationTest extends TestCase
             'requires_activity' => false,
             'has_budget_implication' => false,
         ]);
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->started()->create();
         $entrant = $this->assignedDataEntryUser($indicator);
 
         $response = $this->actingAs($entrant)->postJson('/indicator-data-entries', [
