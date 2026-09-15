@@ -204,4 +204,62 @@ class WorkstationReportPageTest extends TestCase
 
         $this->actingAs($user)->get(route('reports.workstation'))->assertOk();
     }
+
+    public function test_indicator_results_table_is_paginated(): void
+    {
+        $user = $this->userWithRole('Super Admin');
+        Organization::factory()->create();
+        $project = Project::factory()->create();
+        $thematicArea = ThematicArea::factory()->create(['project_id' => $project->id]);
+        $financialYear = FinancialYear::factory()->create([
+            'start_date' => '2025-07-01',
+            'end_date' => '2026-06-30',
+            'is_current' => true,
+        ]);
+
+        foreach (range(1, 16) as $index) {
+            $indicator = Indicator::factory()->create([
+                'thematic_area_id' => $thematicArea->id,
+                'name' => 'Workstation indicator '.$index,
+                'code' => sprintf('WS-%02d', $index),
+                'aggregation_method' => 'sum',
+            ]);
+            IndicatorTarget::factory()->create([
+                'indicator_id' => $indicator->id,
+                'financial_year_id' => $financialYear->id,
+                'target_value' => 100,
+            ]);
+        }
+
+        $pageOne = $this->actingAs($user)->get(route('reports.workstation', [
+            'frequency' => 'monthly',
+            'month' => '2025-12-01',
+            'project_id' => $project->id,
+            'thematic_area_id' => $thematicArea->id,
+            'apply' => 1,
+        ]));
+
+        $pageOne->assertOk();
+        $pageOne->assertSee('id="results"', false);
+        $pageOne->assertSee('>Workstation indicator 1</div>', false);
+        $pageOne->assertDontSee('>Workstation indicator 11</div>', false);
+        $pageOne->assertSee('page=2', false);
+        $pageOne->assertSee('#results', false);
+        $pageOne->assertSee('Showing');
+        $pageOne->assertSee('>10</span>', false);
+        $pageOne->assertSee('>16</span>', false);
+
+        $pageTwo = $this->actingAs($user)->get(route('reports.workstation', [
+            'frequency' => 'monthly',
+            'month' => '2025-12-01',
+            'project_id' => $project->id,
+            'thematic_area_id' => $thematicArea->id,
+            'apply' => 1,
+            'page' => 2,
+        ]));
+
+        $pageTwo->assertOk();
+        $pageTwo->assertSee('>Workstation indicator 16</div>', false);
+        $pageTwo->assertDontSee('>Workstation indicator 1</div>', false);
+    }
 }

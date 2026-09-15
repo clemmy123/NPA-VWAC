@@ -1,5 +1,5 @@
 /* ==========================================================================
-   General Report M&E analysis: KPI tiles, chart grid, and alert list.
+   General Report M&E analysis: KPI tiles and chart grid.
    ========================================================================== */
 
 .me-kpis {
@@ -62,20 +62,14 @@
   min-height: 280px;
 }
 
-.me-chart-card canvas {
-  max-height: 280px;
+.me-bar-chart,
+.me-status-chart {
+  position: relative;
+  width: 100%;
 }
 
-.me-alerts {
-  margin-bottom: 20px;
-}
-
-.me-alert-item + .me-alert-item {
-  margin-top: 10px;
-}
-
-.me-alert-item {
-  margin-bottom: 0;
+.me-status-chart {
+  height: 280px;
 }
 
 .me-section-title {

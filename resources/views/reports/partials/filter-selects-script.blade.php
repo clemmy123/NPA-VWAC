@@ -86,20 +86,50 @@
         markPlaceholder(select);
     }
 
+    function filterIndicators() {
+        var areaId = areaSelect.value === emptyValue ? '' : areaSelect.value;
+        var options = indicatorSelect.querySelectorAll('option[data-thematic-area-id]');
+        options.forEach(function (option) {
+            var match = areaId !== '' && option.getAttribute('data-thematic-area-id') === areaId;
+            option.hidden = !match;
+            option.disabled = !match;
+        });
+        var selected = indicatorSelect.options[indicatorSelect.selectedIndex];
+        if (selected && selected.hidden) {
+            indicatorSelect.value = emptyValue;
+        }
+        jQuery(indicatorSelect).trigger('change.select2');
+        markPlaceholder(indicatorSelect);
+    }
+
     function filterAreas() {
         var projectId = projectSelect.value === emptyValue ? '' : projectSelect.value;
         filterByAttribute(areaSelect, 'data-project-id', projectId);
         if (indicatorSelect) {
-            var areaId = areaSelect.value === emptyValue ? '' : areaSelect.value;
-            filterByAttribute(indicatorSelect, 'data-thematic-area-id', areaId);
+            var hasAllOption = Array.from(indicatorSelect.options).some(function (option) {
+                return option.value === emptyValue || option.value === '';
+            });
+            if (hasAllOption) {
+                filterIndicators();
+            } else {
+                var areaId = areaSelect.value === emptyValue ? '' : areaSelect.value;
+                filterByAttribute(indicatorSelect, 'data-thematic-area-id', areaId);
+            }
         }
     }
 
     jQuery(projectSelect).on('change', filterAreas);
     if (indicatorSelect) {
         jQuery(areaSelect).on('change', function () {
-            var areaId = areaSelect.value === emptyValue ? '' : areaSelect.value;
-            filterByAttribute(indicatorSelect, 'data-thematic-area-id', areaId);
+            var hasAllOption = Array.from(indicatorSelect.options).some(function (option) {
+                return option.value === emptyValue || option.value === '';
+            });
+            if (hasAllOption) {
+                filterIndicators();
+            } else {
+                var areaId = areaSelect.value === emptyValue ? '' : areaSelect.value;
+                filterByAttribute(indicatorSelect, 'data-thematic-area-id', areaId);
+            }
         });
     }
     filterAreas();

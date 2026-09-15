@@ -5,6 +5,7 @@
     $freqQuery = array_filter([
         'project_id' => $selectedProject?->id,
         'thematic_area_id' => $selectedThematicArea?->id,
+        'indicator_id' => $selectedIndicator?->id,
         'apply' => $applied ? 1 : null,
     ]);
 @endphp
@@ -90,6 +91,18 @@
             @empty
             <option value="">No thematic areas yet</option>
             @endforelse
+        </select>
+    </div>
+
+    <div class="rf-field">
+        <label for="indicator_id">Indicator</label>
+        <select name="indicator_id" id="indicator_id" class="form-control">
+            <option value="" @selected(! $selectedIndicator)>All Indicators</option>
+            @foreach ($indicators as $indicator)
+            <option value="{{ $indicator->id }}" data-thematic-area-id="{{ $indicator->thematic_area_id }}" @selected($selectedIndicator?->id === $indicator->id)>
+                {{ $indicator->code ? $indicator->code.' · ' : '' }}{{ $indicator->name }}
+            </option>
+            @endforeach
         </select>
     </div>
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\PaginatesReportRows;
 use App\Http\Controllers\Concerns\ResolvesReportPeriod;
 use App\Models\FinancialYear;
 use App\Models\Indicator;
@@ -16,6 +17,7 @@ use Illuminate\View\View;
 
 class WorkstationReportController extends Controller
 {
+    use PaginatesReportRows;
     use ResolvesReportPeriod;
 
     public const array FREQUENCIES = ['monthly', 'quarterly', 'yearly'];
@@ -104,7 +106,7 @@ class WorkstationReportController extends Controller
 
         if ($applied && $organizations->isNotEmpty() && $areasToAnalyse->isNotEmpty() && $selectedFinancialYear) {
             $indicators = Indicator::query()
-                ->with('unitOfMeasure')
+                ->with(['unitOfMeasure', 'thematicArea'])
                 ->whereIn('thematic_area_id', $areasToAnalyse->pluck('id'))
                 ->orderBy('code')
                 ->orderBy('name')
@@ -154,6 +156,7 @@ class WorkstationReportController extends Controller
             'periodLabel' => $periodLabel,
             'rows' => $rows,
             'analysis' => $analysis,
+            'rowPaginator' => $this->paginateRows($request, $rows),
         ]);
     }
 

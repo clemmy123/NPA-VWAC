@@ -5,6 +5,7 @@
         @if ($periodLabel) · {{ $periodLabel }} @endif
         @if ($selectedProject) · {{ $selectedProject->name }} @endif
         @if ($selectedThematicArea) · {{ $selectedThematicArea->name }} @endif
+        @if ($selectedIndicator ?? null) · {{ $selectedIndicator->code ? $selectedIndicator->code.' · ' : '' }}{{ $selectedIndicator->name }} @endif
         @if ($selectedOrganization ?? null) · {{ $selectedOrganization->name }}
         @elseif ($workstationScopeLabel ?? null) · {{ $workstationScopeLabel }}
         @endif
@@ -15,7 +16,15 @@
     <div class="me-kpi">
         <div class="me-kpi-label">Indicators</div>
         <div class="me-kpi-value">{{ $analysis['total'] }}</div>
-        <div class="me-kpi-meta">in this thematic area</div>
+        <div class="me-kpi-meta">
+            @if ($selectedIndicator ?? null)
+            this indicator
+            @elseif ($selectedThematicArea ?? null)
+            in this thematic area
+            @else
+            across all thematic areas
+            @endif
+        </div>
     </div>
     <div class="me-kpi">
         <div class="me-kpi-label">Average achievement</div>
@@ -41,11 +50,16 @@
 
 <div class="me-charts">
     <div class="chart-card me-chart-card">
-        <div class="chart-card-title">Achievement by indicator</div>
+        <div class="chart-card-title">{{ $analysis['chart']['title'] ?? 'Achievement by indicator' }}</div>
+        @if (($analysis['chart']['caption'] ?? '') !== '')
+        <p class="text-muted small mb-2">{{ $analysis['chart']['caption'] }}</p>
+        @endif
         @if ($analysis['total'] === 0)
         <p class="mb-0 text-muted">No indicators to chart.</p>
         @else
-        <canvas id="report-achievement-chart" height="280"></canvas>
+        <div class="me-bar-chart" style="height: {{ $analysis['chart']['height'] ?? 280 }}px">
+            <canvas id="report-achievement-chart"></canvas>
+        </div>
         @endif
     </div>
     <div class="chart-card me-chart-card">
@@ -53,24 +67,9 @@
         @if ($analysis['total'] === 0)
         <p class="mb-0 text-muted">No status data yet.</p>
         @else
-        <canvas id="report-status-chart" height="280"></canvas>
+        <div class="me-status-chart">
+            <canvas id="report-status-chart"></canvas>
+        </div>
         @endif
     </div>
-</div>
-
-<div class="me-alerts">
-    <h5 class="me-section-title">Alerts</h5>
-    @forelse ($analysis['alerts'] as $alert)
-    <div class="alert alert-{{ $alert['level'] }} me-alert-item">
-        <strong>{{ $alert['title'] }}.</strong> {{ $alert['detail'] }}
-    </div>
-    @empty
-    <div class="alert {{ $analysis['total'] === 0 ? 'alert-warning' : 'alert-success' }} me-alert-item mb-0">
-        @if ($analysis['total'] === 0)
-        <strong>No indicators.</strong> Add indicators to this thematic area to run analysis.
-        @else
-        <strong>No alerts.</strong> All scored indicators are on track for this period.
-        @endif
-    </div>
-    @endforelse
 </div>

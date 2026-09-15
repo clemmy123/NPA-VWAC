@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\PaginatesReportRows;
 use App\Http\Controllers\Concerns\ResolvesReportPeriod;
 use App\Models\FinancialYear;
 use App\Models\Indicator;
@@ -19,6 +20,7 @@ use Illuminate\View\View;
 
 class GeneralReportController extends Controller
 {
+    use PaginatesReportRows;
     use ResolvesReportPeriod;
 
     public const array FREQUENCIES = ['monthly', 'quarterly', 'yearly'];
@@ -34,6 +36,7 @@ class GeneralReportController extends Controller
             'financial_year_id' => ['nullable', 'integer', 'exists:financial_years,id'],
             'project_id' => ['nullable', 'integer', 'exists:projects,id'],
             'thematic_area_id' => ['nullable', 'integer', 'exists:thematic_areas,id'],
+            'indicator_id' => ['nullable', 'integer', 'exists:indicators,id'],
             'apply' => ['nullable', 'boolean'],
         ]);
 
@@ -54,6 +57,17 @@ class GeneralReportController extends Controller
 
         $selectedThematicArea = $areasForPlan->firstWhere('id', (int) ($data['thematic_area_id'] ?? 0));
         $areasToAnalyse = $selectedThematicArea ? collect([$selectedThematicArea]) : $areasForPlan;
+
+        $indicators = Indicator::query()
+            ->whereIn('thematic_area_id', $thematicAreas->pluck('id')->filter())
+            ->orderBy('code')
+            ->orderBy('name')
+            ->get();
+
+        $selectedIndicator = $selectedThematicArea
+            ? $indicators->where('thematic_area_id', $selectedThematicArea->id)
+                ->firstWhere('id', (int) ($data['indicator_id'] ?? 0))
+            : null;
 
         $month = isset($data['month']) ? Carbon::parse($data['month'])->startOfMonth() : now()->startOfMonth();
         $financialYears = FinancialYear::query()->where('is_active', true)
@@ -89,11 +103,17 @@ class GeneralReportController extends Controller
         $analysis = null;
 
         if ($applied && $areasToAnalyse->isNotEmpty() && $selectedFinancialYear) {
-            $indicators = Indicator::query()->with(['unitOfMeasure', 'thematicArea'])
+            $indicatorQuery = Indicator::query()->with(['unitOfMeasure', 'thematicArea'])
                 ->whereIn('thematic_area_id', $areasToAnalyse->pluck('id'))
-                ->orderBy('code')->orderBy('name')->get();
+                ->orderBy('code')->orderBy('name');
 
-            foreach ($indicators as $indicator) {
+            if ($selectedIndicator) {
+                $indicatorQuery->whereKey($selectedIndicator->id);
+            }
+
+            $indicatorList = $indicatorQuery->get();
+
+            foreach ($indicatorList as $indicator) {
                 $rows[] = [
                     'indicator' => $indicator,
                     'performance' => $this->performanceService->summarize(
@@ -122,8 +142,10 @@ class GeneralReportController extends Controller
             'applied' => $applied,
             'projects' => $projects,
             'thematicAreas' => $thematicAreas,
+            'indicators' => $indicators,
             'selectedProject' => $selectedProject,
             'selectedThematicArea' => $selectedThematicArea,
+            'selectedIndicator' => $selectedIndicator,
             'financialYears' => $financialYears,
             'reportingPeriods' => $reportingPeriods,
             'selectedFinancialYear' => $selectedFinancialYear,
@@ -131,6 +153,7 @@ class GeneralReportController extends Controller
             'periodLabel' => $periodLabel,
             'rows' => $rows,
             'analysis' => $analysis,
+            'rowPaginator' => $this->paginateRows($request, $rows),
         ]);
     }
 
