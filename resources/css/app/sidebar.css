@@ -53,10 +53,10 @@
   content: "";
   display: block;
   width: calc(100% + 40px);
-  height: var(--topbar-h);
+  /* height: var(--topbar-h); */
   margin: 0 -20px 16px;
   background: var(--surface);
-  border-bottom: 1px solid var(--border-soft);
+  /* border-bottom: 1px solid var(--border-soft); */
   flex-shrink: 0;
 }
 
