@@ -97,6 +97,7 @@ class DashboardTest extends TestCase
         $response->assertSee('Data by Region');
         $response->assertSee('Dodoma');
         $response->assertSee('id="dashboard-region-chart"', false);
+        $response->assertSee('gridLines: { display: false }', false);
     }
 
     public function test_dashboard_scopes_projects_to_the_users_assignments(): void

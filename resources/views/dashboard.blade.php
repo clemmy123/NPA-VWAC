@@ -141,7 +141,6 @@
 
     Chart.defaults.global.defaultFontColor = '#64748b';
     Chart.defaults.global.defaultFontFamily = 'Inter, sans-serif';
-    Chart.defaults.scale.gridLines.color = 'rgba(100, 116, 139, 0.12)';
 
     new Chart(canvas.getContext('2d'), {
         type: 'bar',

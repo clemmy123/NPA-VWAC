@@ -5,7 +5,6 @@
     var chart = @json($analysis['chart']);
     Chart.defaults.global.defaultFontColor = '#64748b';
     Chart.defaults.global.defaultFontFamily = 'Inter, sans-serif';
-    Chart.defaults.scale.gridLines.color = 'rgba(100, 116, 139, 0.12)';
 
     var bar = document.getElementById('report-achievement-chart');
     if (bar) {
@@ -25,8 +24,8 @@
                 maintainAspectRatio: false,
                 legend: { display: false },
                 scales: {
-                    xAxes: [{ ticks: { beginAtZero: true, suggestedMax: 100, callback: function (value) { return value + '%'; } } }],
-                    yAxes: [{ ticks: { autoSkip: false } }]
+                    xAxes: [{ ticks: { beginAtZero: true, suggestedMax: 100, callback: function (value) { return value + '%'; } }, gridLines: { display: false } }],
+                    yAxes: [{ ticks: { autoSkip: false }, gridLines: { display: false } }]
                 },
                 tooltips: {
                     callbacks: {

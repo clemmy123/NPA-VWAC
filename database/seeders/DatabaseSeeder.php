@@ -8,7 +8,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call([ConstantDataSeeder::class, RolePermissionSeeder::class, TamisemiLocationSeeder::class]);
+        $this->call([ConstantDataSeeder::class, RolePermissionSeeder::class, TamisemiLocationSeeder::class, NpaVawcPlanSeeder::class]);
 
         // Test "Test <Role>" accounts + sample assignment for the /dev-login
         // picker. Never runs outside local — production admins are created

@@ -30,6 +30,8 @@ class DashboardShellTest extends TestCase
         $response->assertSee('>NPA-VWAC</span>', false);
         $response->assertDontSee('Laravel |', false);
         $response->assertSee('left-side-menu', false);
+        $response->assertSee('sidebar-home', false);
+        $response->assertSee('>Home</a>', false);
         $response->assertSee('bi-grid', false);
         $response->assertDontSee('bi-speedometer2', false);
         $response->assertSee('navbar-custom', false);

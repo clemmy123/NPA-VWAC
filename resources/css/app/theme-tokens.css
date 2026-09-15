@@ -7,8 +7,9 @@
 
 :root {
   /* Layout dimensions */
-  --sidebar-w: 250px;
+  --sidebar-w: 260px;
   --sidebar-w-collapsed: 70px;
+  --sidebar-logo: 140px;
   --topbar-h: 62px;
   --radius: 8px;
   --radius-lg: 10px;
