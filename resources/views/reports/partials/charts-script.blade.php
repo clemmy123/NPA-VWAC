@@ -16,9 +16,8 @@
                 datasets: [{
                     label: 'Achievement %',
                     data: chart.values,
-                    backgroundColor: 'rgba(59, 130, 246, 0.35)',
-                    borderColor: '#3b82f6',
-                    borderWidth: 1
+                    backgroundColor: '#3b82f6',
+                    hoverBackgroundColor: '#2563eb'
                 }]
             },
             options: {

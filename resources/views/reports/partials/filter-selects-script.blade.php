@@ -25,7 +25,7 @@
             dropdownParent: $select.closest('.rf-field'),
             minimumResultsForSearch: 8,
             matcher: function (params, data) {
-                if (data.element && data.element.disabled && data.element.getAttribute('data-project-id')) {
+                if (data.element && data.element.disabled && (data.element.getAttribute('data-project-id') || data.element.getAttribute('data-thematic-area-id'))) {
                     return null;
                 }
 
@@ -62,31 +62,52 @@
 
     var projectSelect = document.getElementById('project_id');
     var areaSelect = document.getElementById('thematic_area_id');
+    var indicatorSelect = document.getElementById('indicator_id');
     if (!projectSelect || !areaSelect) {
         return;
     }
 
-    function filterAreas() {
-        var projectId = projectSelect.value === emptyValue ? '' : projectSelect.value;
-        var options = areaSelect.querySelectorAll('option[data-project-id]');
+    function filterByAttribute(select, attribute, parentId) {
+        var options = select.querySelectorAll('option[' + attribute + ']');
         var firstVisible = null;
         options.forEach(function (option) {
-            var match = !projectId || option.getAttribute('data-project-id') === projectId;
+            var match = !parentId || option.getAttribute(attribute) === parentId;
             option.hidden = !match;
             option.disabled = !match;
             if (match && !firstVisible) {
                 firstVisible = option;
             }
         });
-        var selected = areaSelect.options[areaSelect.selectedIndex];
+        var selected = select.options[select.selectedIndex];
         if (selected && selected.hidden && firstVisible) {
-            areaSelect.value = firstVisible.value;
+            select.value = firstVisible.value;
         }
-        jQuery(areaSelect).trigger('change.select2');
-        markPlaceholder(areaSelect);
+        jQuery(select).trigger('change.select2');
+        markPlaceholder(select);
+    }
+
+    function filterAreas() {
+        var projectId = projectSelect.value === emptyValue ? '' : projectSelect.value;
+        filterByAttribute(areaSelect, 'data-project-id', projectId);
+        if (indicatorSelect) {
+            var areaId = areaSelect.value === emptyValue ? '' : areaSelect.value;
+            filterByAttribute(indicatorSelect, 'data-thematic-area-id', areaId);
+        }
     }
 
     jQuery(projectSelect).on('change', filterAreas);
+    if (indicatorSelect) {
+        jQuery(areaSelect).on('change', function () {
+            var areaId = areaSelect.value === emptyValue ? '' : areaSelect.value;
+            filterByAttribute(indicatorSelect, 'data-thematic-area-id', areaId);
+        });
+    }
     filterAreas();
+
+    if (@json(! empty($autoSubmit))) {
+        jQuery(form).on('select2:select', 'select.form-control', function () {
+            form.submit();
+        });
+    }
 })();
 </script>

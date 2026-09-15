@@ -124,6 +124,9 @@ class GeneralReportPageTest extends TestCase
         $response->assertSee('Monitoring & Evaluation');
         $response->assertSee('Off track');
         $response->assertSee('id="report-achievement-chart"', false);
+        $response->assertSee("backgroundColor: '#3b82f6'", false);
+        $response->assertSee("hoverBackgroundColor: '#2563eb'", false);
+        $response->assertDontSee('rgba(59, 130, 246, 0.35)', false);
         $response->assertSee('id="report-status-chart"', false);
     }
 
