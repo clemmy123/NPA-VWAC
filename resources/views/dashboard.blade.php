@@ -129,7 +129,6 @@
 
     Chart.defaults.global.defaultFontColor = '#64748b';
     Chart.defaults.global.defaultFontFamily = 'Inter, sans-serif';
-    Chart.defaults.scale.gridLines.color = 'rgba(100, 116, 139, 0.12)';
 
     new Chart(canvas.getContext('2d'), {
         type: 'bar',
@@ -148,7 +147,7 @@
             legend: { display: true, position: 'bottom' },
             scales: {
                 xAxes: [{ ticks: { autoSkip: false }, gridLines: { display: false } }],
-                yAxes: [{ ticks: { beginAtZero: true, suggestedMax: 100, callback: function (value) { return value; } } }]
+                yAxes: [{ ticks: { beginAtZero: true, suggestedMax: 100, callback: function (value) { return value; } }, gridLines: { display: false } }]
             },
             tooltips: {
                 callbacks: {

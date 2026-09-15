@@ -4,17 +4,18 @@
     <!-- Brand (top of sidebar) -->
     <div class="sidebar-brand">
         <a href="{{ route('dashboard') }}" class="sidebar-brand-link">
-            <img class="brand-logo-sm" src="{{ asset('app-assets/logo.png') }}" alt="{{ config('app.name') }}">
+            <span class="brand-logo-wrap">
+                <img class="brand-logo-sm" src="{{ asset('app-assets/logo.png') }}" alt="{{ config('app.name') }}">
+            </span>
             <span class="brand-text">{{ config('app.name') }}</span>
         </a>
+        <a href="{{ route('dashboard') }}" class="sidebar-home">Home</a>
     </div>
 
     <!-- Navigation -->
     <div class="slimscroll-menu">
         <div id="sidebar-menu">
             <ul class="metismenu" id="side-menu">
-
-                <li class="menu-title">Navigation</li>
 
                 {{-- Dashboard --}}
                 <li class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">

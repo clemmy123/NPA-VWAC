@@ -11,11 +11,11 @@
   height: var(--topbar-h) !important;
   background: var(--surface) !important;
   border-bottom: 1px solid var(--border-soft) !important;
-  box-shadow: var(--shadow-sm) !important;
+  box-shadow: none !important;
   z-index: 1030 !important;
   display: flex !important;
   align-items: center !important;
-  padding: 0 20px !important;
+  padding: 0 24px !important;
   transition: left 0.25s ease;
 }
 
