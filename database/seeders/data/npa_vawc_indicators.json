@@ -1,0 +1,751 @@
+[
+  {
+    "sheet": "Thematic.1",
+    "thematic_area": "1. Economic Empowerment of Women",
+    "seq": 1,
+    "name": "Number of women with a bank account",
+    "description": "The proportion of women who own a bank account at a financial institution"
+  },
+  {
+    "sheet": "Thematic.1",
+    "thematic_area": "1. Economic Empowerment of Women",
+    "seq": 2,
+    "name": "Number of Community Microfinance Groups registered",
+    "description": "Total number of Community Microfinance Groups registered"
+  },
+  {
+    "sheet": "Thematic.1",
+    "thematic_area": "1. Economic Empowerment of Women",
+    "seq": 3,
+    "name": "Number of women owning National Identification Number",
+    "description": "Number of women who having National Identification Number"
+  },
+  {
+    "sheet": "Thematic.1",
+    "thematic_area": "1. Economic Empowerment of Women",
+    "seq": 4,
+    "name": "Number of Women Economic Empowerment platforms created",
+    "description": "Total number of Women Economic Empowerment platforms created"
+  },
+  {
+    "sheet": "Thematic.1",
+    "thematic_area": "1. Economic Empowerment of Women",
+    "seq": 5,
+    "name": "The number of women entrepreneur groups that have joined (registered) in economic empowerment platforms.",
+    "description": "The total number women entrepreneur groups that have joined (registered) in economic empowerment platforms."
+  },
+  {
+    "sheet": "Thematic.1",
+    "thematic_area": "1. Economic Empowerment of Women",
+    "seq": 6,
+    "name": "Amount of Loan disbursed to youth through Council's own source",
+    "description": "Total amount of loan disbursed to youth through Council's own source"
+  },
+  {
+    "sheet": "Thematic.1",
+    "thematic_area": "1. Economic Empowerment of Women",
+    "seq": 7,
+    "name": "Amount of Loan disbursed to PWD through Council's own source",
+    "description": "Total amount of loan disbursed to PWD through Council's own source"
+  },
+  {
+    "sheet": "Thematic.1",
+    "thematic_area": "1. Economic Empowerment of Women",
+    "seq": 8,
+    "name": "Amount of Loan disbursed to Women Groups through Council's own source",
+    "description": "Total amount of loan disbursed to Women Groups through Council's own source"
+  },
+  {
+    "sheet": "Thematic.1",
+    "thematic_area": "1. Economic Empowerment of Women",
+    "seq": 9,
+    "name": "Amount of enterprenuers groups regietered",
+    "description": ""
+  },
+  {
+    "sheet": "Thematic.1",
+    "thematic_area": "1. Economic Empowerment of Women",
+    "seq": 10,
+    "name": "Number of entrepreneurs groups accessing loan through Council own source",
+    "description": "The total number of entrepreneur groups that have received loans from council own-source funds to support business activities."
+  },
+  {
+    "sheet": "Thematic.1",
+    "thematic_area": "1. Economic Empowerment of Women",
+    "seq": 11,
+    "name": "Number of womens entrepreneurs who accessing soft loans through financial institutions(Banks)",
+    "description": ""
+  },
+  {
+    "sheet": "Thematic.1",
+    "thematic_area": "1. Economic Empowerment of Women",
+    "seq": 12,
+    "name": "Amount of loan disbursed to womens entrepreneurs through financial institutions(Banks)",
+    "description": ""
+  },
+  {
+    "sheet": "Thematic.1",
+    "thematic_area": "1. Economic Empowerment of Women",
+    "seq": 13,
+    "name": "Number of womens entrepreneurs who accessing loan through women Development Fund (WDF)",
+    "description": "Total number of womens entrepreneurs who accessing loan through women Development Fund (WDF)"
+  },
+  {
+    "sheet": "Thematic.1",
+    "thematic_area": "1. Economic Empowerment of Women",
+    "seq": 14,
+    "name": "Amount of loan disbursed to womens entrepreneurs through women Development Fund (WDF)",
+    "description": ""
+  },
+  {
+    "sheet": "Thematic.1",
+    "thematic_area": "1. Economic Empowerment of Women",
+    "seq": 15,
+    "name": "Number of small-scale traders accessing loans from MACHINGA Fund",
+    "description": "Total Number of small-scale entrepreneurs accessing loans from MACHINGA Fund"
+  },
+  {
+    "sheet": "Thematic.1",
+    "thematic_area": "1. Economic Empowerment of Women",
+    "seq": 16,
+    "name": "Number of small-scale traders registered in WBN - MIS",
+    "description": "Total number of small-scale traders registerd"
+  },
+  {
+    "sheet": "Thematic.1",
+    "thematic_area": "1. Economic Empowerment of Women",
+    "seq": 17,
+    "name": "Number of women’s groups that won tenders under the 30% public procurement special groups window",
+    "description": "Total Number of women’s groups that won tenders under the 30% public procurement special groups window"
+  },
+  {
+    "sheet": "Thematic.1",
+    "thematic_area": "1. Economic Empowerment of Women",
+    "seq": 18,
+    "name": "Number of women who own land (wenye hati, kimila)",
+    "description": "Total number of women who own land"
+  },
+  {
+    "sheet": "Thematic.1",
+    "thematic_area": "1. Economic Empowerment of Women",
+    "seq": 19,
+    "name": "Number of women who own houses",
+    "description": "Total number of women who own houses"
+  },
+  {
+    "sheet": "Thematic.1",
+    "thematic_area": "1. Economic Empowerment of Women",
+    "seq": 20,
+    "name": "Number of Women in leadership and decision making Positions disgragated by type",
+    "description": "Number of Women in leadership and decision making Positions disgragated by type"
+  },
+  {
+    "sheet": "Thematic.1",
+    "thematic_area": "1. Economic Empowerment of Women",
+    "seq": 21,
+    "name": "Number of women accessing Entrepreneurship training through government",
+    "description": "Total number of women accessing Entrepreneurship training, disaggregated by age and location (disadility deleted)"
+  },
+  {
+    "sheet": "Thematic.1",
+    "thematic_area": "1. Economic Empowerment of Women",
+    "seq": 22,
+    "name": "Number of beneficiaries of economic empowerment initiatives from International and Non Governmental Organisations",
+    "description": "Total number of beneficiaries of economic empowerment initiatitives including Entrepreneurship skills, loan management skills,Training on value addition in different sectors, entrepreneurship training and provision of equipment; access to loans"
+  },
+  {
+    "sheet": "Thematic.2",
+    "thematic_area": "2. Social Norms Change & Prevention of Harmful Practices",
+    "seq": 1,
+    "name": "Number of Community dialogue on social norms conducted",
+    "description": "Community dialogue conducted which align with the Guideline"
+  },
+  {
+    "sheet": "Thematic.2",
+    "thematic_area": "2. Social Norms Change & Prevention of Harmful Practices",
+    "seq": 2,
+    "name": "Number influencial people reached by Community dialogues",
+    "description": ""
+  },
+  {
+    "sheet": "Thematic.2",
+    "thematic_area": "2. Social Norms Change & Prevention of Harmful Practices",
+    "seq": 3,
+    "name": "Number of villages with strategy of eliminating harmful practies",
+    "description": ""
+  },
+  {
+    "sheet": "Thematic.2",
+    "thematic_area": "2. Social Norms Change & Prevention of Harmful Practices",
+    "seq": 4,
+    "name": "Number of Children engaged in early marriage",
+    "description": ""
+  },
+  {
+    "sheet": "Thematic.2",
+    "thematic_area": "2. Social Norms Change & Prevention of Harmful Practices",
+    "seq": 5,
+    "name": "Number of Children rescured from early marriage",
+    "description": ""
+  },
+  {
+    "sheet": "Thematic.2",
+    "thematic_area": "2. Social Norms Change & Prevention of Harmful Practices",
+    "seq": 6,
+    "name": "Number of FGM practitioner trained on Income Generation Activities",
+    "description": ""
+  },
+  {
+    "sheet": "Thematic.2",
+    "thematic_area": "2. Social Norms Change & Prevention of Harmful Practices",
+    "seq": 7,
+    "name": "Number of Children rescured from FGM",
+    "description": ""
+  },
+  {
+    "sheet": "Thematic.2",
+    "thematic_area": "2. Social Norms Change & Prevention of Harmful Practices",
+    "seq": 8,
+    "name": "Number of Male Champions developed",
+    "description": ""
+  },
+  {
+    "sheet": "Thematic.3.a",
+    "thematic_area": "3a. Access to Protection Services in Public Spaces",
+    "seq": 1,
+    "name": "Number of Gender Desks in public space",
+    "description": "This indicator measures the number of gender desk established and operating in public spaces"
+  },
+  {
+    "sheet": "Thematic.3.a",
+    "thematic_area": "3a. Access to Protection Services in Public Spaces",
+    "seq": 2,
+    "name": "Number of survivors served in public space gender desks",
+    "description": "This indicator measures the number of survivors served in public spaces gender desks"
+  },
+  {
+    "sheet": "Thematic.3.a",
+    "thematic_area": "3a. Access to Protection Services in Public Spaces",
+    "seq": 3,
+    "name": "GBV& VAC related By laws developed",
+    "description": "This indicator measures the total number of GBV& VAC related By laws developed in LGA's intending to protect communities against all forms of violance"
+  },
+  {
+    "sheet": "Thematic.3.a",
+    "thematic_area": "3a. Access to Protection Services in Public Spaces",
+    "seq": 4,
+    "name": "Social welfare desks developed in transport hubs",
+    "description": "This indicator measures the total number of social welfare desks developed in transport hubs for protection of women and children"
+  },
+  {
+    "sheet": "Thematic.3.a",
+    "thematic_area": "3a. Access to Protection Services in Public Spaces",
+    "seq": 5,
+    "name": "Number of survivors served in transport hubs",
+    "description": "This indicator measures the number of survivors served in public spaces gender desks"
+  },
+  {
+    "sheet": "Thematic.3.a",
+    "thematic_area": "3a. Access to Protection Services in Public Spaces",
+    "seq": 6,
+    "name": "Number of breast feeding room developed in public spaces",
+    "description": "This indicator measures the number of public spaces with breast feeding room"
+  },
+  {
+    "sheet": "Thematic.3.b",
+    "thematic_area": "3b. Legal, Policy & Digital/Online Child Protection",
+    "seq": 1,
+    "name": "Number of VAWC reported cases that occurred online",
+    "description": "The number of reported cases of VAWC that occurred through online platforms, such as social media, websites, or other digital spaces."
+  },
+  {
+    "sheet": "Thematic.3.b",
+    "thematic_area": "3b. Legal, Policy & Digital/Online Child Protection",
+    "seq": 2,
+    "name": "Number of systems developed",
+    "description": "The total number of systems designed to ensure the safety of media and online spaces, with a specific focus on protecting VAWC"
+  },
+  {
+    "sheet": "Thematic.3.b",
+    "thematic_area": "3b. Legal, Policy & Digital/Online Child Protection",
+    "seq": 3,
+    "name": "Number of Policies, Laws, strategies and guidelines reviewed, developed and enacted",
+    "description": "The total number of Policies, Laws and Strategies developed to ensure safety of online spaces, with a specific focus on protecting VAWC"
+  },
+  {
+    "sheet": "Thematic.3.b",
+    "thematic_area": "3b. Legal, Policy & Digital/Online Child Protection",
+    "seq": 4,
+    "name": "National Child Online Safety Task Force in place",
+    "description": "This indicator measures whether a formally established, government-recognized body (task force, committee, or multi-stakeholder platform) exists at the national level to coordinate, oversee, and implement policies, strategies, and actions that promote the safety of children in digital and online environments."
+  },
+  {
+    "sheet": "Thematic.3.b",
+    "thematic_area": "3b. Legal, Policy & Digital/Online Child Protection",
+    "seq": 5,
+    "name": "Dashboard to detect and counteract fake news and gender-based violence in place",
+    "description": "This indicator measures the existence, establishment, and operational functionality of a digital dashboard or platform designed to monitor, detect, analyze, and respond to instances of fake news and online content related to gender-based violence (GBV)"
+  },
+  {
+    "sheet": "Thematic.3.b",
+    "thematic_area": "3b. Legal, Policy & Digital/Online Child Protection",
+    "seq": 6,
+    "name": "Number of awareness programs conducted Number of people covered with awareness programs",
+    "description": "This indicator measures the total count of individuals who have participated in, attended, or been reached by awareness-raising programs, campaigns, or activities within a specified period."
+  },
+  {
+    "sheet": "Thematic.3.b",
+    "thematic_area": "3b. Legal, Policy & Digital/Online Child Protection",
+    "seq": 7,
+    "name": "Number of Public and Private Institutions integrate VAWC protection mechanisms in ICT within their policies and guidelines",
+    "description": "This indicator measures how many government institutions, private sector organizations, and agencies have formally mainstreamed Violence Against Women and Children (VAWC) prevention and response into their internal policies, strategies, codes of conduct, and operational guidelines"
+  },
+  {
+    "sheet": "Thematic.3.b",
+    "thematic_area": "3b. Legal, Policy & Digital/Online Child Protection",
+    "seq": 8,
+    "name": "Number of Legal and regulatory frameworks that protect journalists and Human Rights Defenders who report GBV",
+    "description": "This indicator measures the count of enacted laws, policies, regulations, or formal guidelines that provide protection and safeguards for journalists and Human Rights Defenders who report on GBV"
+  },
+  {
+    "sheet": "Thematic.3.b",
+    "thematic_area": "3b. Legal, Policy & Digital/Online Child Protection",
+    "seq": 9,
+    "name": "Number and type of awareness and outreach initiatives conducted eg through articles and media shows",
+    "description": "This indicator measures the count and variety of awareness-raising and outreach activities implemented within a given period"
+  },
+  {
+    "sheet": "Thematic.3.b",
+    "thematic_area": "3b. Legal, Policy & Digital/Online Child Protection",
+    "seq": 10,
+    "name": "Gender-Responsive National Media and Information Literacy Strategy in place",
+    "description": "This indicator measures the existence and operational status of a nationally adopted Media and Information Literacy (MIL) strategy that explicitly integrates gender-responsive principles"
+  },
+  {
+    "sheet": "Thematic.3.b",
+    "thematic_area": "3b. Legal, Policy & Digital/Online Child Protection",
+    "seq": 11,
+    "name": "Number and type of Media raising awareness about VAWC",
+    "description": "This indicator measures the count and categories of media outlets or platforms that actively disseminate content, campaigns, or programs to raise public awareness on Violence Against Women and Children (VAWC)"
+  },
+  {
+    "sheet": "Thematic.3.b",
+    "thematic_area": "3b. Legal, Policy & Digital/Online Child Protection",
+    "seq": 12,
+    "name": "Number of Participants",
+    "description": "The Indicator measures the count of targeted participants of the awareness campaigns that will be educated of the prevalance and impact of VAWC"
+  },
+  {
+    "sheet": "Thematic.4",
+    "thematic_area": "4. Early Childhood Development",
+    "seq": 1,
+    "name": "Number of community ECD centers Established",
+    "description": "This indicator refers to the total number of Early Childhood Development (ECD) centers that have been established through community initiatives, partnerships, or government support."
+  },
+  {
+    "sheet": "Thematic.4",
+    "thematic_area": "4. Early Childhood Development",
+    "seq": 2,
+    "name": "Number of Children in Community ECD Centers",
+    "description": "This indicator refers to the total number of children enrolled in community-based Early Childhood Development (ECD) including all children receiving early learning, care, and developmental support services."
+  },
+  {
+    "sheet": "Thematic.4",
+    "thematic_area": "4. Early Childhood Development",
+    "seq": 3,
+    "name": "Number of ECD registered",
+    "description": "This indicator refers to the total number of Early Childhood Development (ECD) centers that have been registered and accredited according to ECD registration guidelines"
+  },
+  {
+    "sheet": "Thematic.4",
+    "thematic_area": "4. Early Childhood Development",
+    "seq": 4,
+    "name": "Number of Children registered ECD Centers",
+    "description": "This indicator refers to the total number of children enrolled in Early Childhood Development (ECD) centers that have been registered and accredited according to ECD registration guidelines"
+  },
+  {
+    "sheet": "Thematic.4",
+    "thematic_area": "4. Early Childhood Development",
+    "seq": 5,
+    "name": "Number of parenting groups established and operationalized.",
+    "description": "This indicator refers to the total number of parenting groups established and operate in Tanzania Mainland."
+  },
+  {
+    "sheet": "Thematic.4",
+    "thematic_area": "4. Early Childhood Development",
+    "seq": 6,
+    "name": "Number of adolescents engaged in parenting programmes",
+    "description": "Refers to the total number of adolescents who have participated in parenting education or support programmes within a specified reporting period."
+  },
+  {
+    "sheet": "Thematic.4",
+    "thematic_area": "4. Early Childhood Development",
+    "seq": 7,
+    "name": "Number of parenting trainers/facilitators trainied by cadre",
+    "description": "This indicator measures the total number of individuals (trainers or facilitators) who have received f training on parenting education, support, or related topics"
+  },
+  {
+    "sheet": "Thematic.4",
+    "thematic_area": "4. Early Childhood Development",
+    "seq": 8,
+    "name": "Number of Quartely NMPG meeting conducted",
+    "description": "This indicator measures the total number of NMPG meetings that have been held and reflects the level of coordination, planning, and oversight parenting programs."
+  },
+  {
+    "sheet": "Thematic.4",
+    "thematic_area": "4. Early Childhood Development",
+    "seq": 9,
+    "name": "Number of Children Councils Established",
+    "description": "This indicators measures the total number of children councils established in Municipal council, Town councils and cities"
+  },
+  {
+    "sheet": "Thematic.4",
+    "thematic_area": "4. Early Childhood Development",
+    "seq": 10,
+    "name": "Number of children in Children Councils",
+    "description": "Number of children in children council"
+  },
+  {
+    "sheet": "Thematic.5",
+    "thematic_area": "5. Legal and Policy Framework / Access to Justice",
+    "seq": 1,
+    "name": "Number of Laws enacted or amended",
+    "description": "The total number of laws enacted or amended during the reporting period to strengthen the prevention of and response to violence against women and children (VAWC) and improve access to justice."
+  },
+  {
+    "sheet": "Thematic.5",
+    "thematic_area": "5. Legal and Policy Framework / Access to Justice",
+    "seq": 2,
+    "name": "Number of policies, strategies and guidelines developed or reviewed",
+    "description": "The total number of policies, strategies, and operational guidelines developed or revised to support the implementation of NPA-VAWC II interventions."
+  },
+  {
+    "sheet": "Thematic.5",
+    "thematic_area": "5. Legal and Policy Framework / Access to Justice",
+    "seq": 3,
+    "name": "Number of law enforcement officers and other personel trained on VAWC laws and gender-responsive justice",
+    "description": "The total number of law enforcement and justice sector personnel who completed training on VAWC laws, child protection, gender-responsive justice and survivor-centred service delivery during the reporting period."
+  },
+  {
+    "sheet": "Thematic.5",
+    "thematic_area": "5. Legal and Policy Framework / Access to Justice",
+    "seq": 4,
+    "name": "Number of registered Legal Aid Service Providers",
+    "description": "The total number of Legal Aid Service Providers and paralegals officially registered and authorized to provide legal aid services in accordance with the Legal Aid Act."
+  },
+  {
+    "sheet": "Thematic.5",
+    "thematic_area": "5. Legal and Policy Framework / Access to Justice",
+    "seq": 5,
+    "name": "Number of people reached with legal awareness campaigns and programme",
+    "description": "The total number of individuals reached through legal awareness and public education activities on rights, laws, prevention of VAWC and access to justice."
+  },
+  {
+    "sheet": "Thematic.5",
+    "thematic_area": "5. Legal and Policy Framework / Access to Justice",
+    "seq": 6,
+    "name": "Number of women and children provided with legal aid services",
+    "description": "The total number of women (18 years and above) and children (below 18 years) who received one or more legal aid services during the reporting period. Legal aid services include legal information, legal advice, legal representation, mediation, legal drafting, negotiation, referral, legal awareness, and other assistance provided in accordance with the Legal Aid Act"
+  },
+  {
+    "sheet": "Thematic.5",
+    "thematic_area": "5. Legal and Policy Framework / Access to Justice",
+    "seq": 7,
+    "name": "Number of women and children survivors of VWAC received legal aid services of legal aid services at one stop centres",
+    "description": "The total number of survivors, women and children, receive legal aid services at one-stop centres and othe centres"
+  },
+  {
+    "sheet": "Thematic.5",
+    "thematic_area": "5. Legal and Policy Framework / Access to Justice",
+    "seq": 8,
+    "name": "Number of functional Legal Aid Desks established",
+    "description": "The total number of Legal Aid Desks established and operational in Local Government Authorities according to the national legal aid operational standards."
+  },
+  {
+    "sheet": "Thematic.5",
+    "thematic_area": "5. Legal and Policy Framework / Access to Justice",
+    "seq": 9,
+    "name": "Percentage of VAWC cases determined/ concluded by courts",
+    "description": "The percentage of reported Violence Against Women and Children (VAWC) cases that were concluded by competent courts during the reporting period, regardless of the outcome"
+  },
+  {
+    "sheet": "Thematic.5",
+    "thematic_area": "5. Legal and Policy Framework / Access to Justice",
+    "seq": 10,
+    "name": "Number of periodic reports on VAWC submitted to national, regional and international human rights treaty bodies.",
+    "description": "The total number of periodic reports prepared, validated and officially submitted by the Government during the reporting period to national, regional and international human rights reporting mechanisms that include information on the implementation of commitments related to the prevention of and response to Violence Against Women and Children (VAWC)."
+  },
+  {
+    "sheet": "Thematic.5",
+    "thematic_area": "5. Legal and Policy Framework / Access to Justice",
+    "seq": 11,
+    "name": "Number of ICT systems/tools strengthened to support access to justice",
+    "description": "The total number of digital systems, databases or ICT tools developed, upgraded or operationalized to improve access to justice, case management and reporting."
+  },
+  {
+    "sheet": "Thematic.5",
+    "thematic_area": "5. Legal and Policy Framework / Access to Justice",
+    "seq": 12,
+    "name": "Number of coordination meetings conducted",
+    "description": "The total number of formal coordination meetings conducted during the reporting period to facilitate planning, implementation, monitoring, review and coordination of interventions related to the prevention and response to Violence Against Women and Children (VAWC) under NPA-VAWC II."
+  },
+  {
+    "sheet": "Thematic.6",
+    "thematic_area": "6. Response and Support Services",
+    "seq": 1,
+    "name": "Number of Women who have experienced violence and seek help",
+    "description": "Refers to the total number of women who have experienced any form of violence such as physical, sexual, psychological, or economic and have sought assistance or support services to police, healthcare providers, social services, legal aid, shelters and/or informal sources (e.g., family, friends, community leaders) desgregate by sex, type of vulnerability and disability status to all survivor"
+  },
+  {
+    "sheet": "Thematic.6",
+    "thematic_area": "6. Response and Support Services",
+    "seq": 2,
+    "name": "Number of children experienced sexual violence and seek help",
+    "description": "Refers to the total number of children (under the age of 18) who have experienced any form of sexual violence including sexual abuse, exploitation, assault, or harassment and have sought assistance or protection to police, child protection services, healthcare providers, teachers, NGOs or informal sources (e.g., family members, friends, trusted adults). desgregate by sex and disability status to all survivors"
+  },
+  {
+    "sheet": "Thematic.6",
+    "thematic_area": "6. Response and Support Services",
+    "seq": 3,
+    "name": "Number of children’s victims of violence who seek and received services",
+    "description": "Refers to the total number of women and children who have experienced any form of violence including physical, sexual, emotional/psychological, or economic and accessed and received at least one type of support service in response to the violence.Services include medical care, psychosocial support, legal aid, shelter, case management, and child protection services (this count for all type of violence therefore deseagregation is per type of violence, age, sex and disability status)"
+  },
+  {
+    "sheet": "Thematic.6",
+    "thematic_area": "6. Response and Support Services",
+    "seq": 4,
+    "name": "Number of healthcare facilities offering specialized VAWC services",
+    "description": "This indicator refers to the total number of health facilities that provide survivor-centered services specifically designed to address the needs of women and children who are victims of violence."
+  },
+  {
+    "sheet": "Thematic.6",
+    "thematic_area": "6. Response and Support Services",
+    "seq": 5,
+    "name": "Number of children placed in alternative care services",
+    "description": "This indicator refers to the total number of children who have been placed in alternative care- arrangements outside of their biological family due to various reasons such as neglect, abuse, abandonment, or inability of the family to care for the child.These care services include foster care, residential care, kinship care (with relatives), or other state- or community-supported care settings. desgregate by sex,type of service and disability status to all survivors"
+  },
+  {
+    "sheet": "Thematic.6",
+    "thematic_area": "6. Response and Support Services",
+    "seq": 6,
+    "name": "Number of frontline workers trained to deliver quality VAWC service",
+    "description": "This indicator refers to the total number of frontline workers (social workers, healthcare providers, police officers, legal personnel, educators, and community workers ) who have received training to effectively provide quality services related to the prevention, response, and management of violence against women and children (VAWC)."
+  },
+  {
+    "sheet": "Thematic.6",
+    "thematic_area": "6. Response and Support Services",
+    "seq": 7,
+    "name": "VAWC Number of data/inform ation manageme nt systems relevant for VAWC that are generating harmonized data and information",
+    "description": "This indicator measures the total number of data or information management systems designed to collect, process, and manage data related to VAWC."
+  },
+  {
+    "sheet": "Thematic.6",
+    "thematic_area": "6. Response and Support Services",
+    "seq": 8,
+    "name": "Number of Most Vulnerable Children identified,registered and service received",
+    "description": "This indicator refers to the number of children classified as Most Vulnerable Children (MVCs) who have been identified through established assessment criteria and have subsequently received support services. MVCs typically include children affected by(desegration) extreme poverty, abuse, neglect, disability, HIV/AIDS, displacement, or the loss of parental care."
+  },
+  {
+    "sheet": "Thematic.6",
+    "thematic_area": "6. Response and Support Services",
+    "seq": 9,
+    "name": "Number of Gender Desks formulated in market places",
+    "description": "This indicator reflects the number of established Gender Desks within marketplaces to serve as a points for addressing gender-related issues, include reporting GBV cases, providing information on available services, support the safety of women and other vulnerable groups."
+  },
+  {
+    "sheet": "Thematic.6",
+    "thematic_area": "6. Response and Support Services",
+    "seq": 10,
+    "name": "Number of Gender Desks formulated in middle and higher learning Institutions",
+    "description": "This indicator refers to the number of established Gender Desks within n middle and higher learning Institutions to serve as a points for addressing gender-related issues, include reporting GBV cases, providing information on available services to support GBV victims"
+  },
+  {
+    "sheet": "Thematic.6",
+    "thematic_area": "6. Response and Support Services",
+    "seq": 11,
+    "name": "Number of Safe Houses formally established",
+    "description": "This indicator measures the total number of Safe Houses that have been formally established and are operational to provide shelter, protection, and support services to individuals who are at risk of or have experienced violence, abuse, exploitation, or trafficking"
+  },
+  {
+    "sheet": "Thematic.6",
+    "thematic_area": "6. Response and Support Services",
+    "seq": 12,
+    "name": "Number of One Stop Center formulated",
+    "description": "Refers to the total number of One Stop Centers (OSCs) that have been established and functional to provide integrated and comprehensive services including medical care, psychosocial support, legal aid, and police assistance to GBV, VAWC and VAC victims"
+  },
+  {
+    "sheet": "Thematic.6",
+    "thematic_area": "6. Response and Support Services",
+    "seq": 13,
+    "name": "Number of persons trained to provide care for children with protection concerns",
+    "description": "This indicator mesures to the total number of individuals who have received formal training in order to care for and support children facing protection concerns."
+  },
+  {
+    "sheet": "Thematic.6",
+    "thematic_area": "6. Response and Support Services",
+    "seq": 14,
+    "name": "Number of children accompanied their mothers in prisons",
+    "description": "This indicator refers to the total number of children who are legally permitted to live with their mothers due to age limits defined by national laws or prison regulations"
+  },
+  {
+    "sheet": "Thematic.6",
+    "thematic_area": "6. Response and Support Services",
+    "seq": 15,
+    "name": "Number of people provided with Mental health and Psycho Social Care and Support",
+    "description": "This indicator measures the total number of individuals who have received psychosocial care and support services include counseling, psychological first aid, emotional support, referral services, and social support interventions provided by trained social welfare officers, health workers"
+  },
+  {
+    "sheet": "Thematic.7",
+    "thematic_area": "7. Child Protection in Schools",
+    "seq": 1,
+    "name": "Number of schools that established confidential and safe reporting mechanisms",
+    "description": "The number of schools that have established safe and confidential reporting mechanisms for cases of VAC, categorized by the type of mechanism used (e.g., suggestion boxes, trusted teacher, anonymous reporting systems)."
+  },
+  {
+    "sheet": "Thematic.7",
+    "thematic_area": "7. Child Protection in Schools",
+    "seq": 2,
+    "name": "Number of schools that established disability-friendly facilities",
+    "description": "Number of schools that have established facilities that are accessible and inclusive for students with disabilities, ensuring they have equal access to education."
+  },
+  {
+    "sheet": "Thematic.7",
+    "thematic_area": "7. Child Protection in Schools",
+    "seq": 3,
+    "name": "Number of schools with teaching and non- teaching staff trained on VAC prevention and response",
+    "description": "The number of Schoools where teaching and non-teaching staff have received training on the prevention and response to VAC."
+  },
+  {
+    "sheet": "Thematic.7",
+    "thematic_area": "7. Child Protection in Schools",
+    "seq": 4,
+    "name": "Number of schools with food programs for students in both primary and secondary schools",
+    "description": "The number of primary and secondary Schools that provide food programs to support students' nutritional needs"
+  },
+  {
+    "sheet": "Thematic.7",
+    "thematic_area": "7. Child Protection in Schools",
+    "seq": 5,
+    "name": "Number of schools with active child protection desks",
+    "description": "The number of Schools with trained teachers, students, system on Child Protection Desks"
+  },
+  {
+    "sheet": "Thematic.7",
+    "thematic_area": "7. Child Protection in Schools",
+    "seq": 6,
+    "name": "Number of school with WASH facilities",
+    "description": "Number of schools with Safe Toilets, Girl hygiene rooms, Safe drinking water and handwashing facilities"
+  },
+  {
+    "sheet": "Thematic.8",
+    "thematic_area": "8. Coordination, Monitoring and Evaluation",
+    "seq": 1,
+    "name": "Number of Region with Regional NPA VAWC",
+    "description": "Region wchich developed and launched Regional NPA VAWC"
+  },
+  {
+    "sheet": "Thematic.8",
+    "thematic_area": "8. Coordination, Monitoring and Evaluation",
+    "seq": 2,
+    "name": "Number of Women and Children Protection Commitee updated",
+    "description": "The women and children protection committee updated to incoparate Non State Actors as Co Chair ad per NPA VAWC II Guideline"
+  },
+  {
+    "sheet": "Thematic.8",
+    "thematic_area": "8. Coordination, Monitoring and Evaluation",
+    "seq": 3,
+    "name": "Number of Women and Children Protection Commitee trained",
+    "description": "The women and children protection committee trained by either Secretariat Members or ToTs based on Training manual"
+  },
+  {
+    "sheet": "Thematic.8",
+    "thematic_area": "8. Coordination, Monitoring and Evaluation",
+    "seq": 4,
+    "name": "Number of Minesterial Women and Children Protection Commitee Meeting Conducted",
+    "description": "Minesterial Women and Children Protection Commitee Meeting Conducted"
+  },
+  {
+    "sheet": "Thematic.8",
+    "thematic_area": "8. Coordination, Monitoring and Evaluation",
+    "seq": 5,
+    "name": "Number of Steering Women and Children Protection Commitee Meeting Conducted",
+    "description": "Steering Women and Children Protection Commitee Meeting Conducted"
+  },
+  {
+    "sheet": "Thematic.8",
+    "thematic_area": "8. Coordination, Monitoring and Evaluation",
+    "seq": 6,
+    "name": "Number of Technical Women and Children Protection Commitee Meeting Conducted",
+    "description": "Technical Women and Children Protection Commitee Meeting Conducted"
+  },
+  {
+    "sheet": "Thematic.8",
+    "thematic_area": "8. Coordination, Monitoring and Evaluation",
+    "seq": 7,
+    "name": "Number of NPA VAWC Secretariat meeting conducted",
+    "description": "Number of NPA VAWC Secretariat meeting conducted"
+  },
+  {
+    "sheet": "Thematic.8",
+    "thematic_area": "8. Coordination, Monitoring and Evaluation",
+    "seq": 8,
+    "name": "Number of Thematic Working Goups Meetings conducted",
+    "description": "Number of Thematic Working Goup conducted by thematic working groups"
+  },
+  {
+    "sheet": "Thematic.8",
+    "thematic_area": "8. Coordination, Monitoring and Evaluation",
+    "seq": 9,
+    "name": "Number of Regional Women and Children Protection Commitee Meeting Conducted",
+    "description": "Regional Women and Children Protection Commitee Meeting Conducted"
+  },
+  {
+    "sheet": "Thematic.8",
+    "thematic_area": "8. Coordination, Monitoring and Evaluation",
+    "seq": 10,
+    "name": "Number of Council Women and Children Protection Commitee Meeting Conducted",
+    "description": "Council Women and Children Protection Commitee Meeting Conducted"
+  },
+  {
+    "sheet": "Thematic.8",
+    "thematic_area": "8. Coordination, Monitoring and Evaluation",
+    "seq": 11,
+    "name": "Number of Ward Women and Children Protection Commitee Meeting Conducted",
+    "description": "Number of Ward Women and Children Protection Commitee Meeting Conducted"
+  },
+  {
+    "sheet": "Thematic.8",
+    "thematic_area": "8. Coordination, Monitoring and Evaluation",
+    "seq": 12,
+    "name": "Number of village/street Women and Children Protection Commitee Meeting Conducted",
+    "description": "Number of village/street Women and Children Protection Commitee Meeting Conducted"
+  },
+  {
+    "sheet": "Thematic.8",
+    "thematic_area": "8. Coordination, Monitoring and Evaluation",
+    "seq": 13,
+    "name": "Number of times NPA VAWC agenda discussed into RCC",
+    "description": "Number of times NPA VAWC agenda discussed into RCC"
+  },
+  {
+    "sheet": "Thematic.8",
+    "thematic_area": "8. Coordination, Monitoring and Evaluation",
+    "seq": 14,
+    "name": "Number of times NPA VAWC agenda discussed into DCC",
+    "description": "Number of times NPA VAWC agenda discussed into DCC"
+  },
+  {
+    "sheet": "Thematic.8",
+    "thematic_area": "8. Coordination, Monitoring and Evaluation",
+    "seq": 15,
+    "name": "Number of times NPA VAWC agenda discussed into WDC",
+    "description": "Number of times NPA VAWC agenda discussed into WDC"
+  },
+  {
+    "sheet": "Thematic.8",
+    "thematic_area": "8. Coordination, Monitoring and Evaluation",
+    "seq": 16,
+    "name": "Number of times NPA VAWC agenda discussed into VDC",
+    "description": "Number of times NPA VAWC agenda discussed into VDC"
+  }
+]
