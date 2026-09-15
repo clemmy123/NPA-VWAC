@@ -7,6 +7,7 @@ use App\Models\Indicator;
 use App\Models\IndicatorDataEntry;
 use App\Models\IndicatorTarget;
 use App\Models\Project;
+use App\Models\Region;
 use App\Models\ThematicArea;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
@@ -32,32 +33,78 @@ class DashboardTest extends TestCase
         return $user;
     }
 
-    public function test_dashboard_shows_target_vs_actual_for_the_current_financial_year(): void
+    public function test_dashboard_shows_plan_filters_summary_and_region_chart(): void
     {
         $admin = $this->userWithRole('Super Admin');
-        $financialYear = FinancialYear::factory()->create(['name' => '2026/27', 'is_current' => true]);
-        $project = Project::factory()->create(['name' => 'Community Sensitization']);
-        $thematicArea = ThematicArea::factory()->create(['project_id' => $project->id, 'name' => 'Prevention']);
-        $indicator = Indicator::factory()->create(['thematic_area_id' => $thematicArea->id, 'name' => 'Number of dialogues held', 'aggregation_method' => 'sum']);
-        IndicatorTarget::factory()->create(['indicator_id' => $indicator->id, 'financial_year_id' => $financialYear->id, 'target_value' => 100]);
-        IndicatorDataEntry::factory()->approved()->create(['indicator_id' => $indicator->id, 'financial_year_id' => $financialYear->id, 'actual_value' => 40]);
+        $financialYear = FinancialYear::factory()->create([
+            'name' => '2026/27',
+            'start_date' => '2026-07-01',
+            'end_date' => '2027-06-30',
+            'is_current' => true,
+        ]);
+        $project = Project::factory()->create([
+            'name' => 'NPA-VAWC',
+            'description' => 'A comprehensive program targeting leadership training, mentorship, and empowerment of women in rural and urban communities.',
+            'start_date' => '2025-01-01',
+            'end_date' => '2025-12-31',
+        ]);
+        $thematicArea = ThematicArea::factory()->create([
+            'project_id' => $project->id,
+            'name' => 'Household Economic Strengthening',
+            'description' => 'Increase women leadership and participation in local communities',
+        ]);
+        $indicator = Indicator::factory()->create([
+            'thematic_area_id' => $thematicArea->id,
+            'name' => 'Percentage of Households below the National Basic Needs Poverty Line',
+            'aggregation_method' => 'average',
+        ]);
+        IndicatorTarget::factory()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'target_value' => 25,
+        ]);
+        $dodoma = Region::factory()->create(['name' => 'Dodoma']);
+        IndicatorDataEntry::factory()->approved()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'location_level' => 'region',
+            'location_id' => $dodoma->region_id,
+            'actual_value' => 7.5,
+        ]);
 
         $response = $this->actingAs($admin)->get(route('dashboard'));
 
-        $response->assertOk();
-        $response->assertSee('Community Sensitization');
-        $response->assertSee('Prevention');
-        $response->assertSee('Number of dialogues held');
-        $response->assertSee('40');
-        $response->assertSee('100');
+        $response->assertSee('>Dashboard</h4>', false);
+        $response->assertSee('>General Overview</li>', false);
+        $response->assertSee('>Plan</label>', false);
+        $response->assertSee('>Thematic Area</label>', false);
+        $response->assertSee('>Indicator</label>', false);
+        $response->assertDontSee('>Filter</button>', false);
+        $response->assertDontSee('>Reset</a>', false);
+        $response->assertSee('NPA-VAWC');
+        $response->assertSee('Household Economic Strengthening');
+        $response->assertSee('Percentage of Households below the National Basic Needs Poverty Line');
+        $response->assertSee('Plan Period');
+        $response->assertSee('2026/27');
+        $response->assertSee('01 Jul 2026');
+        $response->assertSee('30 Jun 2027');
+        $response->assertDontSee('1/1/2025');
+        $response->assertDontSee('12/31/2025');
+        $response->assertSee('Main Target');
+        $response->assertSee('Increase women leadership and participation in local communities');
+        $response->assertSee('Plan Description');
+        $response->assertSee('30% reached');
+        $response->assertSee('Data by Region');
+        $response->assertSee('Dodoma');
+        $response->assertSee('id="dashboard-region-chart"', false);
     }
 
     public function test_dashboard_scopes_projects_to_the_users_assignments(): void
     {
         $pm = $this->userWithRole('Project Manager');
-        $financialYear = FinancialYear::factory()->create(['is_current' => true]);
+        FinancialYear::factory()->create(['is_current' => true]);
         $assigned = Project::factory()->create(['name' => 'My Project']);
-        $other = Project::factory()->create(['name' => 'Not My Project']);
+        Project::factory()->create(['name' => 'Not My Project']);
         $assigned->users()->attach($pm->id, ['is_active' => true]);
 
         $response = $this->actingAs($pm)->get(route('dashboard'));
@@ -67,20 +114,37 @@ class DashboardTest extends TestCase
         $response->assertDontSee('Not My Project');
     }
 
-    public function test_switching_financial_year_changes_the_figures_shown(): void
+    public function test_dashboard_switches_the_selected_indicator_from_the_query_string(): void
     {
         $admin = $this->userWithRole('Super Admin');
-        $thematicArea = ThematicArea::factory()->create();
-        $indicator = Indicator::factory()->create(['thematic_area_id' => $thematicArea->id, 'aggregation_method' => 'sum']);
-        $yearA = FinancialYear::factory()->create();
-        $yearB = FinancialYear::factory()->create();
-        IndicatorTarget::factory()->create(['indicator_id' => $indicator->id, 'financial_year_id' => $yearA->id, 'target_value' => 10]);
-        IndicatorTarget::factory()->create(['indicator_id' => $indicator->id, 'financial_year_id' => $yearB->id, 'target_value' => 999]);
+        $financialYear = FinancialYear::factory()->create(['is_current' => true]);
+        $project = Project::factory()->create();
+        $thematicArea = ThematicArea::factory()->create(['project_id' => $project->id]);
+        $first = Indicator::factory()->create([
+            'thematic_area_id' => $thematicArea->id,
+            'name' => 'Number of dialogues held',
+            'code' => 'HES-01',
+        ]);
+        $second = Indicator::factory()->create([
+            'thematic_area_id' => $thematicArea->id,
+            'name' => 'Number of Women-owned SMEs',
+            'code' => 'HES-03',
+        ]);
+        IndicatorTarget::factory()->create([
+            'indicator_id' => $second->id,
+            'financial_year_id' => $financialYear->id,
+            'target_value' => 500,
+        ]);
 
-        $response = $this->actingAs($admin)->get(route('dashboard', ['financial_year_id' => $yearB->id]));
+        $response = $this->actingAs($admin)->get(route('dashboard', [
+            'project_id' => $project->id,
+            'thematic_area_id' => $thematicArea->id,
+            'indicator_id' => $second->id,
+        ]));
 
         $response->assertOk();
-        $response->assertSee('999');
-        $response->assertDontSee('10.00');
+        $response->assertSee($first->name);
+        $response->assertSee($second->name);
+        $response->assertSee('value="'.$second->id.'"', false);
     }
 }
