@@ -91,7 +91,7 @@ class IndicatorController extends Controller
             'financialYears' => FinancialYear::query()->orderBy('name')->get(),
             'reportingPeriods' => ReportingPeriod::query()->orderBy('sequence')->get(),
             'dimensionOptions' => DimensionOption::query()->orderBy('name')->get(),
-            'users' => User::query()->orderBy('name')->get(),
+            'users' => User::query()->assignableDataEntry()->orderBy('name')->get(),
             'organizations' => Organization::query()->orderBy('name')->get(),
             'locationLevels' => AdminLocationLevel::levels(),
         ]);

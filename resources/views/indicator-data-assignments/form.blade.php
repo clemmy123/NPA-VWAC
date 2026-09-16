@@ -13,9 +13,9 @@
     </div>
 
     <div class="col-md-6 mb-3">
-        <label for="user_id" class="form-label">User</label>
+        <label for="user_id" class="form-label">Data Entry User</label>
         <select name="user_id" id="user_id" class="form-control select2 @error('user_id') is-invalid @enderror" required>
-            <option value="">Select a user…</option>
+            <option value="">Select a data entry user…</option>
             @foreach ($users as $availableUser)
             <option value="{{ $availableUser->id }}" @selected((int) old('user_id', $assignment?->user_id) === $availableUser->id)>{{ $availableUser->name }} ({{ $availableUser->email }})</option>
             @endforeach

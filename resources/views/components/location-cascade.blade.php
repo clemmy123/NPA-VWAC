@@ -51,11 +51,39 @@
     }
 
     function initCascade(root) {
-        var levelSelect = document.getElementById(root.dataset.levelSelect);
+        if (root.dataset.cascadeReady === '1') {
+            return;
+        }
+
+        var levelSelect = root.closest('form')
+            ? root.closest('form').querySelector('#' + root.dataset.levelSelect)
+            : document.getElementById(root.dataset.levelSelect);
         var hiddenInput = root.querySelector('input[type="hidden"]');
         var host = root.querySelector('.location-cascade-selects');
         var ancestorChain = JSON.parse(root.dataset.ancestorChain || '{}');
         var selects = [];
+
+        if (!levelSelect || !hiddenInput || !host) {
+            return;
+        }
+
+        root.dataset.cascadeReady = '1';
+
+        function bindChange(element, handler) {
+            if (window.jQuery) {
+                jQuery(element).off('change.locationCascade').on('change.locationCascade', handler);
+            } else {
+                element.addEventListener('change', handler);
+            }
+        }
+
+        function syncHiddenFromLastSelect() {
+            var last = selects.length ? selects[selects.length - 1] : null;
+            hiddenInput.value = last && last.value ? last.value : '';
+            if (! levelSelect.value) {
+                hiddenInput.value = '';
+            }
+        }
 
         function clearSelectsFrom(index) {
             for (var i = selects.length - 1; i >= index; i--) {
@@ -64,6 +92,23 @@
                 }
             }
             selects.length = index;
+        }
+
+        function onSelectChange(select, index, path) {
+            return function () {
+                clearSelectsFrom(index + 1);
+
+                if (index === path.length - 1) {
+                    hiddenInput.value = select.value;
+                    return;
+                }
+
+                hiddenInput.value = '';
+
+                if (select.value) {
+                    buildAndPopulate(index + 1, path, select.value, false);
+                }
+            };
         }
 
         function buildLevel(level, index, path) {
@@ -79,21 +124,7 @@
             wrapper.appendChild(select);
             host.appendChild(wrapper);
             selects[index] = select;
-
-            select.addEventListener('change', function () {
-                clearSelectsFrom(index + 1);
-
-                if (index === path.length - 1) {
-                    hiddenInput.value = select.value;
-                    return;
-                }
-
-                hiddenInput.value = '';
-
-                if (select.value) {
-                    buildAndPopulate(index + 1, path, select.value, false);
-                }
-            });
+            bindChange(select, onSelectChange(select, index, path));
 
             return select;
         }
@@ -115,6 +146,8 @@
                 } else if (window.jQuery) {
                     jQuery(select).select2({ width: '100%', placeholder: 'Select ' + LABELS[level] + '…' });
                 }
+
+                bindChange(select, onSelectChange(select, index, path));
 
                 if (index === path.length - 1) {
                     hiddenInput.value = preset ? preset.id : (select.value || '');
@@ -139,7 +172,14 @@
             buildAndPopulate(0, pathToLevel(targetLevel), null, usePreset);
         }
 
-        levelSelect.addEventListener('change', function () { rebuild(false); });
+        bindChange(levelSelect, function () { rebuild(false); });
+
+        var form = root.closest('form');
+        if (form && form.dataset.locationCascadeSubmit !== '1') {
+            form.dataset.locationCascadeSubmit = '1';
+            form.addEventListener('submit', syncHiddenFromLastSelect);
+        }
+
         root.addEventListener('location-cascade:set', function (event) {
             ancestorChain = event.detail && event.detail.ancestorChain ? event.detail.ancestorChain : {};
             rebuild(true);
@@ -150,7 +190,11 @@
         }
     }
 
-    document.querySelectorAll('.location-cascade').forEach(initCascade);
+    window.initLocationCascades = function (root) {
+        (root || document).querySelectorAll('.location-cascade').forEach(initCascade);
+    };
+
+    window.initLocationCascades(document);
 })();
 </script>
 @endpush
