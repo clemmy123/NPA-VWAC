@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\ResolvesReportPeriod;
 use App\Models\FinancialYear;
 use App\Models\Indicator;
-use App\Models\IndicatorDataAssignment;
 use App\Models\IndicatorDataEntry;
 use App\Models\Organization;
 use App\Services\IndicatorPerformanceService;
@@ -92,16 +91,6 @@ class DashboardController extends Controller
             $progressPercent = $performance['achievement_percent'];
         }
 
-        $visibleCollections = IndicatorDataEntry::query()
-            ->with(['indicator', 'enteredBy'])
-            ->when($financialYear, fn ($query) => $query->where('financial_year_id', $financialYear->id))
-            ->when(! $request->user()->can('indicator.view-all'), fn ($query) => $query->where('entered_by', $request->user()->id))
-            ->when($request->user()->can('indicator.view-all'), fn ($query) => $query->where(function ($visible) use ($request): void {
-                $visible->where('entered_by', $request->user()->id)->orWhereNotIn('status', ['draft', 'rejected']);
-            }))
-            ->latest('entry_date')
-            ->get();
-
         return view('dashboard', [
             'projects' => $projects,
             'thematicAreas' => $thematicAreas,
@@ -113,8 +102,6 @@ class DashboardController extends Controller
             'performance' => $performance,
             'breakdown' => $breakdown,
             'progressPercent' => $progressPercent,
-            'collectionCounts' => $visibleCollections->countBy('status'),
-            'recentCollections' => $visibleCollections->take(5),
         ]);
     }
 
