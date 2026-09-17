@@ -173,18 +173,133 @@
 document.addEventListener('DOMContentLoaded', function () {
     var project = document.getElementById('project_id');
     var thematic = document.getElementById('thematic_area_id');
-    var options = Array.from(thematic.querySelectorAll('option[data-project-id]')).map(function (option) { return option.cloneNode(true); });
-    var savedThematicId = @json((string) old('thematic_area_id', $indicator?->thematic_area_id ?? ''));
-    function rebuildThematics(selected) {
-        thematic.replaceChildren(new Option(project.value ? 'Select a thematic area…' : 'Select a project first…', ''));
-        options.forEach(function (option) {
-            if (option.dataset.projectId === project.value) thematic.appendChild(option.cloneNode(true));
-        });
-        thematic.disabled = !project.value;
-        thematic.value = Array.from(thematic.options).some(function (option) { return option.value === selected; }) ? selected : '';
-        if (window.jQuery) jQuery(thematic).trigger('change.select2');
+
+    if (!project || !thematic) {
+        return;
     }
-    project.addEventListener('change', function () { rebuildThematics(''); });
+
+    /*
+     * Keep a master copy of all thematic areas.
+     * Once we filter the <select>, removed options would otherwise be lost.
+     */
+    var thematicOptions = Array.from(
+        thematic.querySelectorAll('option[data-project-id]')
+    ).map(function (option) {
+        return option.cloneNode(true);
+    });
+
+    var savedThematicId = @json(
+        (string) old(
+            'thematic_area_id',
+            $indicator?->thematic_area_id ?? ''
+        )
+    );
+
+    function refreshSelect2(element) {
+        if (!window.jQuery || !jQuery.fn.select2) {
+            return;
+        }
+
+        var $element = jQuery(element);
+
+        /*
+         * Select2 already exists because the main application initializes
+         * .select2 fields globally.
+         */
+        if ($element.hasClass('select2-hidden-accessible')) {
+            $element.trigger('change.select2');
+            return;
+        }
+
+        $element.select2({
+            width: '100%'
+        });
+    }
+
+    function rebuildThematics(selectedId) {
+        var projectId = String(project.value || '');
+
+        /*
+         * Clear the existing thematic-area options.
+         */
+        thematic.innerHTML = '';
+
+        var placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = projectId
+            ? 'Select a thematic area…'
+            : 'Select a project first…';
+
+        thematic.appendChild(placeholder);
+
+        /*
+         * Put back only thematic areas belonging to the selected project.
+         */
+        if (projectId) {
+            thematicOptions.forEach(function (originalOption) {
+                if (
+                    String(originalOption.dataset.projectId) === projectId
+                ) {
+                    thematic.appendChild(
+                        originalOption.cloneNode(true)
+                    );
+                }
+            });
+        }
+
+        thematic.disabled = !projectId;
+
+        /*
+         * Restore selected thematic area when editing or after validation
+         * failure, but only if it belongs to the selected project.
+         */
+        var exists = Array.from(thematic.options).some(
+            function (option) {
+                return (
+                    selectedId &&
+                    String(option.value) === String(selectedId)
+                );
+            }
+        );
+
+        thematic.value = exists ? String(selectedId) : '';
+
+        refreshSelect2(thematic);
+    }
+
+    function projectChanged() {
+        /*
+         * User changed project manually, therefore don't retain the thematic
+         * area belonging to the previous project.
+         */
+        rebuildThematics('');
+    }
+
+    /*
+     * Native select change.
+     */
+    project.addEventListener('change', projectChanged);
+
+    /*
+     * Select2 event.
+     */
+    if (window.jQuery) {
+        jQuery(project)
+            .off('select2:select.indicatorThematic')
+            .on('select2:select.indicatorThematic', function () {
+                rebuildThematics('');
+            });
+
+        jQuery(project)
+            .off('select2:clear.indicatorThematic')
+            .on('select2:clear.indicatorThematic', function () {
+                rebuildThematics('');
+            });
+    }
+
+    /*
+     * Initial page load / edit / validation failure.
+     */
     rebuildThematics(savedThematicId);
 });
 </script>
