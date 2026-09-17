@@ -1,4 +1,4 @@
-<div class="table-card d-none d-md-block">
+<div class="table-card d-none d-md-block" id="results">
     <table class="table mb-0">
         <thead>
             <tr>
@@ -11,7 +11,7 @@
             </tr>
         </thead>
         <tbody>
-            @forelse ($rows as $row)
+            @forelse ($rowPaginator as $row)
             @php($perf = $row['performance'])
             <tr>
                 <td>
@@ -57,10 +57,15 @@
             @endforelse
         </tbody>
     </table>
+    @if ($rowPaginator->hasPages())
+    <div class="px-3 py-2 border-top">
+        {{ $rowPaginator->links() }}
+    </div>
+    @endif
 </div>
 
 <div class="d-md-none">
-    @forelse ($rows as $row)
+    @forelse ($rowPaginator as $row)
     @php($perf = $row['performance'])
     <div class="mob-card">
         <div class="mob-card-top">
@@ -83,4 +88,9 @@
         <p>No indicators in this thematic area.</p>
     </div>
     @endforelse
+    @if ($rowPaginator->hasPages())
+    <div class="mt-3">
+        {{ $rowPaginator->links() }}
+    </div>
+    @endif
 </div>

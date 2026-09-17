@@ -215,7 +215,16 @@
             <span class="fw-600">{{ $assignment->user?->name ?? '—' }}</span>
             <span class="s-badge {{ $assignment->is_active ? 's-active' : 's-inactive' }}">{{ $assignment->is_active ? 'Active' : 'Inactive' }}</span>
         </div>
-        <div class="mob-card-meta"><span>{{ $assignment->organization?->name ?? '—' }}</span></div>
+        <div class="mob-card-meta">
+            <span>{{ $assignment->organization?->name ?? '—' }}</span>
+            <span>
+                @if ($assignment->location_level)
+                    {{ ucfirst(str_replace('_', ' ', $assignment->location_level)) }}: {{ $assignment->locationName() ?? '#'.$assignment->location_id }}
+                @else
+                    All locations
+                @endif
+            </span>
+        </div>
         <div class="mob-card-footer">
             <a href="{{ route('indicator-data-assignments.edit', $assignment) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
             <form action="{{ route('indicator-data-assignments.destroy', $assignment) }}" method="POST" class="d-inline"

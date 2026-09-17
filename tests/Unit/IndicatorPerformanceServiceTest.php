@@ -8,6 +8,7 @@ use App\Models\IndicatorDataEntry;
 use App\Models\IndicatorTarget;
 use App\Models\Organization;
 use App\Models\ReportingPeriod;
+use App\Models\ThematicArea;
 use App\Services\IndicatorPerformanceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -288,5 +289,67 @@ class IndicatorPerformanceServiceTest extends TestCase
         $this->assertSame('danger', $result['alerts'][0]['level']);
         $this->assertSame('Off track', $result['alerts'][0]['title']);
         $this->assertTrue(collect($result['alerts'])->contains(fn (array $alert): bool => $alert['title'] === 'No approved actuals'));
+        $this->assertSame(1, $result['alert_summary']['off_track']);
+        $this->assertSame(1, $result['alert_summary']['at_risk']);
+        $this->assertSame(1, $result['alert_summary']['no_actuals']);
+        $this->assertSame('Average achievement by thematic area', $result['chart']['title']);
+    }
+
+    public function test_analyse_averages_achievement_by_thematic_area(): void
+    {
+        $household = ThematicArea::factory()->create(['name' => 'Household Economic Strengthening']);
+        $protection = ThematicArea::factory()->create(['name' => 'Child Protection']);
+
+        $result = $this->service->analyse([
+            [
+                'indicator' => Indicator::factory()->create(['thematic_area_id' => $household->id, 'name' => 'Savings groups', 'code' => 'HES-01']),
+                'performance' => ['target_value' => 100.0, 'actual_value' => 20.0, 'achievement_percent' => 20.0, 'aggregation_method' => 'sum'],
+            ],
+            [
+                'indicator' => Indicator::factory()->create(['thematic_area_id' => $household->id, 'name' => 'Grants', 'code' => 'HES-02']),
+                'performance' => ['target_value' => 100.0, 'actual_value' => 40.0, 'achievement_percent' => 40.0, 'aggregation_method' => 'sum'],
+            ],
+            [
+                'indicator' => Indicator::factory()->create(['thematic_area_id' => $protection->id, 'name' => 'Cases managed', 'code' => 'CP-01']),
+                'performance' => ['target_value' => 100.0, 'actual_value' => 80.0, 'achievement_percent' => 80.0, 'aggregation_method' => 'sum'],
+            ],
+        ]);
+
+        $this->assertSame('Average achievement by thematic area', $result['chart']['title']);
+        $this->assertSame(['Household Economic Strengthening', 'Child Protection'], $result['chart']['labels']);
+        $this->assertSame([30.0, 80.0], $result['chart']['values']);
+        $this->assertSame(2, $result['alert_summary']['off_track']);
+        $this->assertSame(1, $result['alert_summary']['at_risk']);
+    }
+
+    public function test_analyse_caps_a_single_area_chart_to_the_lowest_indicators(): void
+    {
+        $area = ThematicArea::factory()->create();
+        $rows = [];
+
+        for ($index = 1; $index <= 14; $index++) {
+            $rows[] = [
+                'indicator' => Indicator::factory()->create([
+                    'thematic_area_id' => $area->id,
+                    'name' => 'Indicator '.$index,
+                    'code' => sprintf('X-%02d', $index),
+                ]),
+                'performance' => [
+                    'target_value' => 100.0,
+                    'actual_value' => (float) ($index * 10),
+                    'achievement_percent' => (float) ($index * 10),
+                    'aggregation_method' => 'sum',
+                ],
+            ];
+        }
+
+        $result = $this->service->analyse($rows);
+
+        $this->assertSame('Lowest achievement', $result['chart']['title']);
+        $this->assertCount(12, $result['chart']['labels']);
+        $this->assertSame('X-01 · Indicator 1', $result['chart']['labels'][0]);
+        $this->assertSame(10.0, $result['chart']['values'][0]);
+        $this->assertSame('X-12 · Indicator 12', $result['chart']['labels'][11]);
+        $this->assertFalse(in_array('X-14 · Indicator 14', $result['chart']['labels'], true));
     }
 }

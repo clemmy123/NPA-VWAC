@@ -73,6 +73,13 @@
         <div class="mob-card-meta">
             <span><i class="mdi mdi-account-outline"></i> {{ $assignment->user?->name ?? '—' }}</span>
             <span><i class="mdi mdi-bank-outline"></i> {{ $assignment->organization?->name ?? '—' }}</span>
+            <span><i class="mdi mdi-map-marker-outline"></i>
+                @if ($assignment->location_level)
+                    {{ ucfirst(str_replace('_', ' ', $assignment->location_level)) }}: {{ $assignment->locationName() ?? '#'.$assignment->location_id }}
+                @else
+                    All locations
+                @endif
+            </span>
         </div>
         <div class="mob-card-footer">
             <a href="{{ route('indicator-data-assignments.edit', $assignment) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>

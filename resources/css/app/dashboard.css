@@ -74,8 +74,7 @@
   border-top: 1px solid var(--divider-faint);
 }
 
-.dash-progress-label,
-.dash-progress-pct {
+.dash-progress-label {
   font-size: 0.92rem;
   font-weight: 700;
   color: var(--heading-dark);

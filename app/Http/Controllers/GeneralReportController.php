@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\PaginatesReportRows;
 use App\Http\Controllers\Concerns\ResolvesReportPeriod;
 use App\Models\FinancialYear;
 use App\Models\Indicator;
@@ -19,6 +20,7 @@ use Illuminate\View\View;
 
 class GeneralReportController extends Controller
 {
+    use PaginatesReportRows;
     use ResolvesReportPeriod;
 
     public const array FREQUENCIES = ['monthly', 'quarterly', 'yearly'];
@@ -34,6 +36,7 @@ class GeneralReportController extends Controller
             'financial_year_id' => ['nullable', 'integer', 'exists:financial_years,id'],
             'project_id' => ['nullable', 'integer', 'exists:projects,id'],
             'thematic_area_id' => ['nullable', 'integer', 'exists:thematic_areas,id'],
+            'indicator_id' => ['nullable', 'integer', 'exists:indicators,id'],
             'indicator_id' => ['nullable', 'integer', 'exists:indicators,id'],
             'apply' => ['nullable', 'boolean'],
         ]);
@@ -93,12 +96,12 @@ class GeneralReportController extends Controller
         $analysis = null;
 
         if ($applied && $areasToAnalyse->isNotEmpty() && $selectedFinancialYear) {
-            $indicators = Indicator::query()->with(['unitOfMeasure', 'thematicArea'])
+            $indicatorQuery = Indicator::query()->with(['unitOfMeasure', 'thematicArea'])
                 ->whereIn('thematic_area_id', $areasToAnalyse->pluck('id'))
                 ->when($selectedIndicator, fn ($query) => $query->whereKey($selectedIndicator->id))
                 ->orderBy('code')->orderBy('name')->get();
 
-            foreach ($indicators as $indicator) {
+            foreach ($indicatorList as $indicator) {
                 $rows[] = [
                     'indicator' => $indicator,
                     'performance' => $this->performanceService->summarize(
@@ -127,6 +130,7 @@ class GeneralReportController extends Controller
             'applied' => $applied,
             'projects' => $projects,
             'thematicAreas' => $thematicAreas,
+            'indicators' => $indicators,
             'selectedProject' => $selectedProject,
             'selectedThematicArea' => $selectedThematicArea,
             'reportIndicators' => $reportIndicators,
@@ -138,6 +142,7 @@ class GeneralReportController extends Controller
             'periodLabel' => $periodLabel,
             'rows' => $rows,
             'analysis' => $analysis,
+            'rowPaginator' => $this->paginateRows($request, $rows),
         ]);
     }
 

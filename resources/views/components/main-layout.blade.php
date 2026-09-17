@@ -186,6 +186,10 @@
                 });
             }
 
+            if (window.initLocationCascades) {
+                window.initLocationCascades(body);
+            }
+
             bootstrap.Modal.getOrCreateInstance(modalEl).show();
         });
     </script>

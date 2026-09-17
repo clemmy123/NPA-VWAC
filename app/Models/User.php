@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -119,6 +120,14 @@ class User extends Authenticatable
         return $this->belongsToMany(ThematicArea::class, 'thematic_area_users')
             ->withPivot(['is_active'])
             ->withTimestamps();
+    }
+
+    /**
+     * Users who can be assigned to key in indicator data.
+     */
+    public function scopeAssignableDataEntry(Builder $query): Builder
+    {
+        return $query->role('Data Entry User');
     }
 
     public function indicatorAssignments()

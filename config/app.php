@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'NPA-VWAC'),
+    'name' => env('APP_NAME', 'JAMII FUATILIA'),
 
     /*
     |--------------------------------------------------------------------------

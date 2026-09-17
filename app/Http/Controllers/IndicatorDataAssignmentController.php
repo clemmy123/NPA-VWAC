@@ -109,7 +109,7 @@ class IndicatorDataAssignmentController extends Controller
 
         return [
             'indicators' => $indicatorQuery->get(),
-            'users' => User::query()->role('Data Entry User')->where('id', '!=', $actor->id)->where('status', 'active')->orderBy('name')->get(),
+            'users' => User::query()->assignableDataEntry()->role('Data Entry User')->where('id', '!=', $actor->id)->where('status', 'active')->orderBy('name')->get(),
             'organizations' => Organization::query()->orderBy('name')->get(),
             'locationLevels' => AdminLocationLevel::levels(),
             'delegatedCollector' => $delegatedCollector,
@@ -122,7 +122,16 @@ class IndicatorDataAssignmentController extends Controller
     {
         $data = $request->validate([
             'indicator_id' => ['required', 'integer', 'exists:indicators,id'],
-            'user_id' => ['required', 'integer', 'exists:users,id'],
+            'user_id' => [
+                'required',
+                'integer',
+                'exists:users,id',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (! User::query()->whereKey($value)->role('Data Entry User')->exists()) {
+                        $fail('Only data entry users can be assigned to report on an indicator.');
+                    }
+                },
+            ],
             'location_level' => ['nullable', 'string', 'in:'.implode(',', AdminLocationLevel::levels()), 'required_with:location_id'],
             'location_id' => ['nullable', 'integer', 'required_with:location_level'],
             'organization_id' => ['nullable', 'integer', 'exists:organizations,id'],
