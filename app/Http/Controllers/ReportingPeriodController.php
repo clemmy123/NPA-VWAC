@@ -10,7 +10,7 @@ use Illuminate\View\View;
 
 class ReportingPeriodController extends Controller
 {
-    public const array PERIOD_TYPES = ['quarter', 'semi_annual', 'annual'];
+    public const array PERIOD_TYPES = ['week', 'month', 'quarter', 'semi_annual', 'annual'];
 
     public function index(Request $request): View
     {

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\IndicatorTarget;
+use App\Models\FinancialYear;
 use App\Models\ReportingPeriod;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -36,6 +37,14 @@ class StoreIndicatorTargetRequest extends FormRequest
 
             $financialYearId = $this->input('financial_year_id');
             $reportingPeriodId = $this->input('reporting_period_id');
+            $currentYear = FinancialYear::query()->where('is_current', true)->first()
+                ?? FinancialYear::query()->whereDate('start_date', '<=', today())->whereDate('end_date', '>=', today())->first();
+
+            if (! $currentYear || (int) $financialYearId !== (int) $currentYear->id) {
+                $validator->errors()->add('financial_year_id', 'New targets can only be set for the current financial year.');
+
+                return;
+            }
 
             if ($reportingPeriodId) {
                 $reportingPeriod = ReportingPeriod::find($reportingPeriodId);

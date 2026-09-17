@@ -29,11 +29,12 @@ class GeneralReportController extends Controller
     {
         $data = $request->validate([
             'frequency' => ['nullable', 'in:'.implode(',', self::FREQUENCIES)],
-            'month' => ['nullable', 'date'],
+            'month' => ['nullable', 'date', 'before_or_equal:today'],
             'reporting_period_id' => ['nullable', 'integer', 'exists:reporting_periods,id'],
             'financial_year_id' => ['nullable', 'integer', 'exists:financial_years,id'],
             'project_id' => ['nullable', 'integer', 'exists:projects,id'],
             'thematic_area_id' => ['nullable', 'integer', 'exists:thematic_areas,id'],
+            'indicator_id' => ['nullable', 'integer', 'exists:indicators,id'],
             'apply' => ['nullable', 'boolean'],
         ]);
 
@@ -54,6 +55,9 @@ class GeneralReportController extends Controller
 
         $selectedThematicArea = $areasForPlan->firstWhere('id', (int) ($data['thematic_area_id'] ?? 0));
         $areasToAnalyse = $selectedThematicArea ? collect([$selectedThematicArea]) : $areasForPlan;
+        $reportIndicators = Indicator::query()->whereIn('thematic_area_id', $areasToAnalyse->pluck('id'))
+            ->orderBy('code')->orderBy('name')->get();
+        $selectedIndicator = $reportIndicators->firstWhere('id', (int) ($data['indicator_id'] ?? 0));
 
         $month = isset($data['month']) ? Carbon::parse($data['month'])->startOfMonth() : now()->startOfMonth();
         $financialYears = FinancialYear::query()->where('is_active', true)
@@ -91,6 +95,7 @@ class GeneralReportController extends Controller
         if ($applied && $areasToAnalyse->isNotEmpty() && $selectedFinancialYear) {
             $indicators = Indicator::query()->with(['unitOfMeasure', 'thematicArea'])
                 ->whereIn('thematic_area_id', $areasToAnalyse->pluck('id'))
+                ->when($selectedIndicator, fn ($query) => $query->whereKey($selectedIndicator->id))
                 ->orderBy('code')->orderBy('name')->get();
 
             foreach ($indicators as $indicator) {
@@ -124,6 +129,8 @@ class GeneralReportController extends Controller
             'thematicAreas' => $thematicAreas,
             'selectedProject' => $selectedProject,
             'selectedThematicArea' => $selectedThematicArea,
+            'reportIndicators' => $reportIndicators,
+            'selectedIndicator' => $selectedIndicator,
             'financialYears' => $financialYears,
             'reportingPeriods' => $reportingPeriods,
             'selectedFinancialYear' => $selectedFinancialYear,

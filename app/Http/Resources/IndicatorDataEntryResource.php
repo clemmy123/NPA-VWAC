@@ -22,6 +22,7 @@ class IndicatorDataEntryResource extends JsonResource
             'location_id' => $this->location_id,
             'organization_id' => $this->organization_id,
             'actual_value' => $this->actual_value,
+            'actual_text' => $this->actual_text,
             'budget_allocated' => $this->budget_allocated,
             'budget_used' => $this->budget_used,
             'currency' => $this->currency,
@@ -39,6 +40,16 @@ class IndicatorDataEntryResource extends JsonResource
                 'dimension_option_ids' => $row->relationLoaded('dimensionOptions')
                     ? $row->dimensionOptions->pluck('id')->all()
                     : [],
+            ])),
+            'activities' => $this->whenLoaded('activities', fn () => $this->activities->map(fn ($activity) => [
+                'id' => $activity->id,
+                'name' => $activity->name,
+                'description' => $activity->description,
+                'participants_total' => $activity->participants_total,
+                'women' => $activity->women,
+                'men' => $activity->men,
+                'children' => $activity->children,
+                'other' => $activity->other,
             ])),
             'expenses' => $this->whenLoaded('expenses', fn () => $this->expenses->map(fn ($expense) => [
                 'id' => $expense->id,

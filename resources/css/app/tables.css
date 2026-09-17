@@ -8,8 +8,15 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   /* NO overflow:hidden — it clips action dropdowns */
   margin-bottom: 20px;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.table-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-card-hover);
 }
 
 /* Clip only the top corners via the header row */
@@ -43,7 +50,11 @@
 
 .table-card .table tbody tr {
   border-bottom: 1px solid var(--divider-faint) !important;
-  transition: background 0.1s;
+  transition: background-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.table-card .table tbody tr:nth-child(even) {
+  background: var(--surface-faint);
 }
 
 .table-card .table tbody tr:last-child {
@@ -51,7 +62,8 @@
 }
 
 .table-card .table tbody tr:hover {
-  background: var(--surface-muted) !important;
+  background: var(--nav-active-bg) !important;
+  box-shadow: inset 3px 0 0 var(--nav-active-accent);
 }
 
 .table-card .table tbody td,
@@ -120,6 +132,12 @@
   background: var(--accent-bg);
   border-color: var(--accent-border-hover);
   color: var(--accent-text);
+  transform: translateY(-1px);
+}
+
+.btn-icon:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .btn-icon.danger:hover {

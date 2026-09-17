@@ -32,7 +32,7 @@ class IndicatorDataEntriesPageTest extends TestCase
     public function test_authorized_user_sees_the_data_entries_table_page(): void
     {
         $user = $this->userWithRole('Super Admin');
-        $entry = IndicatorDataEntry::factory()->create();
+        $entry = IndicatorDataEntry::factory()->create(['entered_by' => $user->id]);
 
         $response = $this->actingAs($user)->get(route('indicator-data-entries.index'));
 
@@ -40,7 +40,34 @@ class IndicatorDataEntriesPageTest extends TestCase
         $response->assertSee('Data Collections');
         $response->assertSee('table-card', false);
         $response->assertSee($entry->indicator->name);
-        $response->assertSee(route('indicator-data-entries.create'), false);
+        $response->assertSee('id="collectionEditorModal"', false);
+        $response->assertDontSee(route('indicator-data-entries.create'), false);
+    }
+
+    public function test_manager_sees_submitted_entries_but_not_another_users_drafts(): void
+    {
+        $manager = $this->userWithRole('Thematic Manager');
+        $collector = $this->userWithRole('Data Entry User');
+        $draftIndicator = Indicator::factory()->create(['name' => 'Private draft indicator']);
+        $submittedIndicator = Indicator::factory()->create(['name' => 'Submitted review indicator']);
+        $financialYear = FinancialYear::factory()->create();
+        IndicatorDataEntry::factory()->create([
+            'indicator_id' => $draftIndicator->id,
+            'financial_year_id' => $financialYear->id,
+            'entered_by' => $collector->id,
+            'status' => 'draft',
+        ]);
+        IndicatorDataEntry::factory()->submitted()->create([
+            'indicator_id' => $submittedIndicator->id,
+            'financial_year_id' => $financialYear->id,
+            'entered_by' => $collector->id,
+        ]);
+
+        $response = $this->actingAs($manager)->get(route('indicator-data-entries.index'));
+
+        $response->assertOk();
+        $response->assertDontSee('Private draft indicator');
+        $response->assertSee('Submitted review indicator');
     }
 
     public function test_unauthorized_user_is_forbidden_from_the_data_entries_create_page(): void

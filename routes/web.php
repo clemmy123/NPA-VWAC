@@ -133,6 +133,8 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
         ->middleware('can:thematic-area.create')->name('thematic-areas.create');
     Route::get('thematic-areas/{thematic_area}/edit', [ThematicAreaController::class, 'edit'])
         ->middleware('can:thematic-area.update')->name('thematic-areas.edit');
+    Route::patch('thematic-areas/{thematic_area}/disable', [ThematicAreaController::class, 'disable'])
+        ->middleware('can:thematic-area.update')->name('thematic-areas.disable');
 
     Route::apiResource('thematic-areas', ThematicAreaController::class)
         ->middlewareFor('index', 'can:thematic-area.view')
@@ -150,6 +152,8 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
         ->middleware('can:indicator.create')->name('indicators.create');
     Route::get('indicators/{indicator}/edit', [IndicatorController::class, 'edit'])
         ->middleware('can:indicator.update')->name('indicators.edit');
+    Route::patch('indicators/{indicator}/disable', [IndicatorController::class, 'disable'])
+        ->middleware('can:indicator.update')->name('indicators.disable');
 
     Route::apiResource('indicators', IndicatorController::class)
         ->middlewareFor('index', 'can:indicator.view')
@@ -194,8 +198,14 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
         ->middlewareFor('update', 'can:indicator.set-target')
         ->middlewareFor('destroy', 'can:indicator.set-target');
 
+    Route::resource('indicator-data-assignments', IndicatorDataAssignmentController::class)
+        ->except(['show'])
+        ->middleware('can:indicator.assign-user');
+
     Route::get('indicator-data-entries/create', [IndicatorDataEntryController::class, 'create'])
         ->middleware('can:indicator-data.create')->name('indicator-data-entries.create');
+    Route::post('indicator-data-entries/start', [IndicatorDataEntryController::class, 'start'])
+        ->middleware('can:indicator-data.create')->name('indicator-data-entries.start');
     Route::get('indicator-data-entries/{indicator_data_entry}/edit', [IndicatorDataEntryController::class, 'edit'])
         ->middleware('can:indicator-data.update')->name('indicator-data-entries.edit');
 
@@ -278,12 +288,4 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
     // Indicator data assignments: who (which user/organization) reports on which
     // indicator, optionally scoped to a location — this is what lets an
     // organization's own user key in data for only the indicators they own.
-    Route::get('indicator-data-assignments/create', [IndicatorDataAssignmentController::class, 'create'])
-        ->middleware('can:indicator.assign-user')->name('indicator-data-assignments.create');
-    Route::get('indicator-data-assignments/{indicator_data_assignment}/edit', [IndicatorDataAssignmentController::class, 'edit'])
-        ->middleware('can:indicator.assign-user')->name('indicator-data-assignments.edit');
-
-    Route::resource('indicator-data-assignments', IndicatorDataAssignmentController::class)
-        ->except(['create', 'edit', 'show'])
-        ->middleware('can:indicator.assign-user');
 });

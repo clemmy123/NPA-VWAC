@@ -26,7 +26,7 @@
         <div class="col-md-4 mb-2"><span class="text-muted small">Project</span><div>{{ $thematicArea->project?->name ?? '—' }}</div></div>
         <div class="col-md-4 mb-2"><span class="text-muted small">Status</span><div>
             <span class="s-badge {{ match ($thematicArea->status) {
-                'active' => 's-active', 'completed' => 's-received', 'closed' => 's-inactive', default => 's-default',
+                'active' => 's-active', 'completed' => 's-received', 'closed', 'inactive' => 's-inactive', default => 's-default',
             } }}">{{ ucfirst($thematicArea->status) }}</span>
         </div></div>
         @if ($thematicArea->description)
@@ -112,22 +112,21 @@
                 <td>{{ $indicator->reporting_frequency ? ucfirst($indicator->reporting_frequency) : '—' }}</td>
                 <td>
                     <span class="s-badge {{ match ($indicator->status) {
-                        'active' => 's-active', 'completed' => 's-received', 'closed' => 's-inactive', default => 's-default',
+                        'active' => 's-active', 'completed' => 's-received', 'closed', 'inactive' => 's-inactive', default => 's-default',
                     } }}">{{ ucfirst($indicator->status) }}</span>
                 </td>
                 <td>
                     @can('indicator.update')
                     <a href="{{ route('indicators.edit', $indicator) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
                     @endcan
-                    @can('indicator.delete')
-                    <form action="{{ route('indicators.destroy', $indicator) }}" method="POST" class="d-inline"
-                          onsubmit="return confirm('Delete indicator &quot;{{ $indicator->name }}&quot;?');">
+                    @if ($indicator->status === 'active')
+                    <form action="{{ route('indicators.disable', $indicator) }}" method="POST" class="d-inline" onsubmit="return confirm('Disable this indicator?');">
                         @csrf
-                        @method('DELETE')
+                        @method('PATCH')
                         <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                        <button type="submit" class="btn-icon danger" title="Delete"><i class="mdi mdi-trash-can-outline"></i></button>
+                        <button type="submit" class="btn-icon danger" title="Disable"><i class="mdi mdi-cancel"></i></button>
                     </form>
-                    @endcan
+                    @endif
                 </td>
             </tr>
             @empty
@@ -143,7 +142,7 @@
         <div class="mob-card-top">
             <a href="{{ route('indicators.show', $indicator) }}" class="fw-600">{{ $indicator->name }}</a>
             <span class="s-badge {{ match ($indicator->status) {
-                'active' => 's-active', 'completed' => 's-received', 'closed' => 's-inactive', default => 's-default',
+                'active' => 's-active', 'completed' => 's-received', 'closed', 'inactive' => 's-inactive', default => 's-default',
             } }}">{{ ucfirst($indicator->status) }}</span>
         </div>
         <div class="mob-card-body"><p class="mob-card-title"><span class="ref-pill">{{ $indicator->code }}</span></p></div>
@@ -151,15 +150,14 @@
             @can('indicator.update')
             <a href="{{ route('indicators.edit', $indicator) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
             @endcan
-            @can('indicator.delete')
-            <form action="{{ route('indicators.destroy', $indicator) }}" method="POST" class="d-inline"
-                  onsubmit="return confirm('Delete indicator &quot;{{ $indicator->name }}&quot;?');">
+            @if ($indicator->status === 'active')
+            <form action="{{ route('indicators.disable', $indicator) }}" method="POST" class="d-inline" onsubmit="return confirm('Disable this indicator?');">
                 @csrf
-                @method('DELETE')
+                @method('PATCH')
                 <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                <button type="submit" class="btn-icon danger" title="Delete"><i class="mdi mdi-trash-can-outline"></i></button>
+                <button type="submit" class="btn-icon danger" title="Disable"><i class="mdi mdi-cancel"></i></button>
             </form>
-            @endcan
+            @endif
         </div>
     </div>
     @empty

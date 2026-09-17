@@ -6,7 +6,9 @@ use App\Models\FinancialYear;
 use App\Models\Indicator;
 use App\Models\IndicatorDataAssignment;
 use App\Models\IndicatorDataEntry;
+use App\Models\MeasurementType;
 use App\Models\Region;
+use App\Models\ReportingPeriod;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -25,6 +27,7 @@ class IndicatorDataEntryConfigValidationTest extends TestCase
 
     private function assignedDataEntryUser(Indicator $indicator): User
     {
+        $indicator->update(['status' => 'active']);
         $user = User::factory()->create();
         $user->assignRole('Data Entry User');
         IndicatorDataAssignment::factory()->create([
@@ -67,7 +70,7 @@ class IndicatorDataEntryConfigValidationTest extends TestCase
         $response->assertUnprocessable()->assertJsonValidationErrors('activity_name');
     }
 
-    public function test_creating_an_entry_requires_budget_allocated_when_the_indicator_has_budget_implication(): void
+    public function test_budget_can_be_left_empty_when_the_indicator_has_budget_implication(): void
     {
         $indicator = Indicator::factory()->create(['has_budget_implication' => true]);
         $financialYear = FinancialYear::factory()->started()->create();
@@ -79,7 +82,11 @@ class IndicatorDataEntryConfigValidationTest extends TestCase
             'entry_date' => now()->toDateString(),
         ]);
 
-        $response->assertUnprocessable()->assertJsonValidationErrors('budget_allocated');
+        $response->assertCreated();
+        $this->assertDatabaseHas('indicator_data_entries', [
+            'indicator_id' => $indicator->id,
+            'budget_allocated' => null,
+        ]);
     }
 
     public function test_creating_an_entry_succeeds_when_all_required_config_fields_are_present(): void
@@ -157,5 +164,102 @@ class IndicatorDataEntryConfigValidationTest extends TestCase
         ]);
 
         $response->assertOk();
+    }
+
+    public function test_text_measurement_stores_text_instead_of_a_numeric_actual(): void
+    {
+        $measurement = MeasurementType::factory()->create(['code' => 'text', 'name' => 'Text']);
+        $indicator = Indicator::factory()->create(['measurement_type_id' => $measurement->id]);
+        $financialYear = FinancialYear::factory()->started()->create();
+        $entrant = $this->assignedDataEntryUser($indicator);
+
+        $this->actingAs($entrant)->postJson('/indicator-data-entries', [
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'entry_date' => now()->toDateString(),
+            'actual_text' => 'Implementation is progressing according to plan.',
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('indicator_data_entries', [
+            'indicator_id' => $indicator->id,
+            'actual_text' => 'Implementation is progressing according to plan.',
+            'actual_value' => null,
+        ]);
+    }
+
+    public function test_monthly_indicator_requires_a_configured_month_period(): void
+    {
+        $indicator = Indicator::factory()->create(['reporting_frequency' => 'monthly']);
+        $financialYear = FinancialYear::factory()->started()->create();
+        ReportingPeriod::factory()->create([
+            'financial_year_id' => $financialYear->id,
+            'code' => 'M01',
+            'period_type' => 'month',
+            'start_date' => now()->startOfMonth(),
+            'end_date' => now()->endOfMonth(),
+        ]);
+        $entrant = $this->assignedDataEntryUser($indicator);
+
+        $this->actingAs($entrant)->postJson('/indicator-data-entries', [
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'entry_date' => now()->toDateString(),
+        ])->assertUnprocessable()->assertJsonValidationErrors('reporting_period_id');
+    }
+
+    public function test_start_collection_creates_today_draft_and_then_opens_indicator_fields(): void
+    {
+        $indicator = Indicator::factory()->create(['status' => 'active']);
+        $financialYear = FinancialYear::factory()->create([
+            'start_date' => now()->subMonth(),
+            'end_date' => now()->addMonths(11),
+            'is_active' => true,
+        ]);
+        $entrant = $this->assignedDataEntryUser($indicator);
+
+        $response = $this->actingAs($entrant)->post(route('indicator-data-entries.start'), [
+            'project_id' => $indicator->thematicArea->project_id,
+            'thematic_area_id' => $indicator->thematic_area_id,
+            'indicator_id' => $indicator->id,
+        ]);
+
+        $entry = IndicatorDataEntry::query()->latest('id')->firstOrFail();
+        $response->assertRedirect(route('indicator-data-entries.edit', $entry));
+        $this->assertSame($financialYear->id, $entry->financial_year_id);
+        $this->assertSame(now()->toDateString(), $entry->entry_date->toDateString());
+    }
+
+    public function test_start_collection_rejects_an_indicator_from_another_thematic_area(): void
+    {
+        $indicator = Indicator::factory()->create(['status' => 'active']);
+        $otherIndicator = Indicator::factory()->create(['status' => 'active']);
+        $entrant = $this->assignedDataEntryUser($indicator);
+
+        $this->actingAs($entrant)->post(route('indicator-data-entries.start'), [
+            'project_id' => $otherIndicator->thematicArea->project_id,
+            'thematic_area_id' => $otherIndicator->thematic_area_id,
+            'indicator_id' => $indicator->id,
+        ])->assertSessionHasErrors('indicator_id');
+
+        $this->assertDatabaseCount('indicator_data_entries', 0);
+    }
+
+    public function test_collection_can_save_multiple_activity_participant_breakdowns(): void
+    {
+        $indicator = Indicator::factory()->create(['requires_activity' => true]);
+        $financialYear = FinancialYear::factory()->started()->create();
+        $entrant = $this->assignedDataEntryUser($indicator);
+
+        $this->actingAs($entrant)->postJson('/indicator-data-entries', [
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'activities' => [
+                ['name' => 'Community dialogue', 'participants_total' => 30, 'women' => 12, 'men' => 8, 'children' => 9, 'other' => 1],
+                ['name' => 'School session', 'participants_total' => 20, 'women' => 4, 'men' => 3, 'children' => 13, 'other' => 0],
+            ],
+        ])->assertCreated();
+
+        $this->assertDatabaseCount('indicator_data_entry_activities', 2);
+        $this->assertDatabaseHas('indicator_data_entry_activities', ['name' => 'Community dialogue', 'women' => 12, 'children' => 9]);
     }
 }

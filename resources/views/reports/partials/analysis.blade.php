@@ -19,22 +19,22 @@
     </div>
     <div class="me-kpi">
         <div class="me-kpi-label">Average achievement</div>
-        <div class="me-kpi-value">{{ $analysis['average_achievement'] === null ? '—' : rtrim(rtrim(number_format($analysis['average_achievement'], 1), '0'), '.').'%' }}</div>
+        <div class="me-kpi-value">{{ $analysis['average_achievement'] === null ? '—' : \App\Support\DisplayNumber::format($analysis['average_achievement']).'%' }}</div>
         <div class="me-kpi-meta">of scored indicators</div>
     </div>
     <div class="me-kpi is-on-track">
         <div class="me-kpi-label">On track</div>
-        <div class="me-kpi-value">{{ rtrim(rtrim(number_format($analysis['on_track_percent'], 1), '0'), '.') }}%</div>
+        <div class="me-kpi-value">{{ \App\Support\DisplayNumber::format($analysis['on_track_percent']) }}%</div>
         <div class="me-kpi-meta">{{ $analysis['on_track'] }} at or above target</div>
     </div>
     <div class="me-kpi is-at-risk">
         <div class="me-kpi-label">At risk</div>
-        <div class="me-kpi-value">{{ rtrim(rtrim(number_format($analysis['at_risk_percent'], 1), '0'), '.') }}%</div>
+        <div class="me-kpi-value">{{ \App\Support\DisplayNumber::format($analysis['at_risk_percent']) }}%</div>
         <div class="me-kpi-meta">{{ $analysis['at_risk'] }} between 50% and 99%</div>
     </div>
     <div class="me-kpi is-off-track">
         <div class="me-kpi-label">Off track</div>
-        <div class="me-kpi-value">{{ rtrim(rtrim(number_format($analysis['off_track_percent'], 1), '0'), '.') }}%</div>
+        <div class="me-kpi-value">{{ \App\Support\DisplayNumber::format($analysis['off_track_percent']) }}%</div>
         <div class="me-kpi-meta">{{ $analysis['off_track'] }} below 50%</div>
     </div>
 </div>

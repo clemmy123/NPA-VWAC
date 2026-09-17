@@ -10,6 +10,7 @@ use App\Models\FinancialYear;
 use App\Models\Indicator;
 use App\Models\MeasurementType;
 use App\Models\Organization;
+use App\Models\Project;
 use App\Models\ReportingPeriod;
 use App\Models\ThematicArea;
 use App\Models\UnitOfMeasure;
@@ -22,7 +23,7 @@ use Illuminate\View\View;
 
 class IndicatorController extends Controller
 {
-    public const array STATUS_OPTIONS = ['draft', 'active', 'completed', 'closed'];
+    public const array STATUS_OPTIONS = ['draft', 'active', 'inactive', 'completed', 'closed'];
 
     /**
      * Columns that are NOT NULL with a DB-level default. The validation
@@ -38,10 +39,16 @@ class IndicatorController extends Controller
     public function index(Request $request): JsonResponse|View
     {
         $user = $request->user();
+        $projectId = $request->integer('project_id');
+        $thematicAreaId = $request->integer('thematic_area_id');
+        $visibleAreaIds = $user->hasRole('Super Admin') ? null : $user->visibleThematicAreaIds();
 
         $indicators = Indicator::query()
-            ->with(['interventions', 'thematicArea'])
-            ->when($request->integer('thematic_area_id'), fn ($query, $thematicAreaId) => $query->where('thematic_area_id', $thematicAreaId))
+            ->with(['interventions', 'thematicArea.project'])
+            ->when($projectId && $thematicAreaId, fn ($query) => $query
+                ->where('thematic_area_id', $thematicAreaId)
+                ->whereHas('thematicArea', fn ($areas) => $areas->where('project_id', $projectId)))
+            ->when(! $request->wantsJson() && (! $projectId || ! $thematicAreaId), fn ($query) => $query->whereRaw('1 = 0'))
             ->when(! $user->hasRole('Super Admin'), fn ($query) => $query->whereIn('id', $this->visibleIndicatorIds($user)))
             ->latest('id')
             ->paginate($request->integer('per_page', 15));
@@ -50,7 +57,13 @@ class IndicatorController extends Controller
             return response()->json(IndicatorResource::collection($indicators)->response()->getData(true));
         }
 
-        return view('indicators.index', ['indicators' => $indicators]);
+        return view('indicators.index', [
+            'indicators' => $indicators,
+            'projects' => Project::query()->when(! $user->hasRole('Super Admin'), fn ($query) => $query->whereIn('id', $user->visibleProjectIds()))->orderBy('name')->get(),
+            'thematicAreas' => ThematicArea::query()->when($visibleAreaIds !== null, fn ($query) => $query->whereIn('id', $visibleAreaIds))->orderBy('name')->get(),
+            'selectedProjectId' => $projectId,
+            'selectedThematicAreaId' => $thematicAreaId,
+        ]);
     }
 
     public function create(Request $request): View
@@ -61,7 +74,9 @@ class IndicatorController extends Controller
     public function store(StoreIndicatorRequest $request): JsonResponse|RedirectResponse
     {
         $this->authorizeThematicArea($request->user(), (int) $request->validated('thematic_area_id'));
-        $indicator = Indicator::create($this->withoutNullDefaults($request->validated()) + ['created_by' => $request->user()->id]);
+        $data = $request->validated();
+        unset($data['project_id']);
+        $indicator = Indicator::create($this->withoutNullDefaults($data) + ['created_by' => $request->user()->id]);
 
         if ($request->wantsJson()) {
             return (new IndicatorResource($indicator))->response()->setStatusCode(201);
@@ -110,7 +125,9 @@ class IndicatorController extends Controller
         if ($request->validated('thematic_area_id')) {
             $this->authorizeThematicArea($request->user(), (int) $request->validated('thematic_area_id'));
         }
-        $indicator->update($this->withoutNullDefaults($request->validated()));
+        $data = $request->validated();
+        unset($data['project_id']);
+        $indicator->update($this->withoutNullDefaults($data));
 
         if ($request->wantsJson()) {
             return new IndicatorResource($indicator);
@@ -129,6 +146,14 @@ class IndicatorController extends Controller
         }
 
         return $this->redirectBackOrTo($request, 'indicators.index')->with('success', "Indicator \"{$indicator->name}\" deleted.");
+    }
+
+    public function disable(Request $request, Indicator $indicator): RedirectResponse
+    {
+        $this->authorizeIndicator($request->user(), $indicator);
+        $indicator->update(['status' => 'inactive']);
+
+        return back()->with('success', "Indicator \"{$indicator->name}\" disabled.");
     }
 
     /**
@@ -153,8 +178,11 @@ class IndicatorController extends Controller
 
         return [
             'statusOptions' => self::STATUS_OPTIONS,
-            'thematicAreas' => ThematicArea::query()
+            'thematicAreas' => ThematicArea::query()->with('project')
                 ->when(! $user->hasRole('Super Admin') && $visibleAreaIds !== [], fn ($query) => $query->whereIn('id', $visibleAreaIds))
+                ->orderBy('name')->get(),
+            'projects' => Project::query()
+                ->when(! $user->hasRole('Super Admin'), fn ($query) => $query->whereIn('id', $user->visibleProjectIds()))
                 ->orderBy('name')->get(),
             'measurementTypes' => MeasurementType::query()->orderBy('name')->get(),
             'unitsOfMeasure' => UnitOfMeasure::query()->orderBy('name')->get(),

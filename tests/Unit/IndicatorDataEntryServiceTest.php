@@ -29,6 +29,7 @@ class IndicatorDataEntryServiceTest extends TestCase
 
     private function assignedUser(Indicator $indicator): User
     {
+        $indicator->update(['status' => 'active']);
         $user = User::factory()->create();
         $user->assignRole('Data Entry User');
         IndicatorDataAssignment::factory()->create([
@@ -41,7 +42,7 @@ class IndicatorDataEntryServiceTest extends TestCase
         return $user;
     }
 
-    public function test_create_rejects_a_user_with_no_assignment_for_the_indicator(): void
+    public function test_create_rejects_a_user_without_an_indicator_assignment(): void
     {
         $indicator = Indicator::factory()->create();
         $financialYear = FinancialYear::factory()->create();
@@ -55,6 +56,7 @@ class IndicatorDataEntryServiceTest extends TestCase
             'financial_year_id' => $financialYear->id,
             'entry_date' => now()->toDateString(),
         ], [], [], [], $user);
+
     }
 
     public function test_create_saves_a_draft_entry_for_an_assigned_user(): void

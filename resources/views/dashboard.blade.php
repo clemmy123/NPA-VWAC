@@ -11,7 +11,28 @@
             </ol>
         </nav>
     </div>
+    @can('indicator-data.create')
+    <a href="{{ route('indicator-data-entries.index') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-clipboard-plus-outline"></i> Collect Data</a>
+    @endcan
 </div>
+
+<div class="row g-3 mb-3">
+    <div class="col-xl-3 col-md-6"><div class="dash-stat h-100"><span class="dash-stat-icon is-blue"><i class="mdi mdi-clipboard-text-outline"></i></span><div><div class="dash-stat-label">Visible collections</div><div class="dash-stat-value">{{ $collectionCounts->sum() }}</div></div></div></div>
+    <div class="col-xl-3 col-md-6"><div class="dash-stat h-100"><span class="dash-stat-icon is-orange"><i class="mdi mdi-file-edit-outline"></i></span><div><div class="dash-stat-label">Draft</div><div class="dash-stat-value">{{ $collectionCounts->get('draft', 0) }}</div></div></div></div>
+    <div class="col-xl-3 col-md-6"><div class="dash-stat h-100"><span class="dash-stat-icon is-purple"><i class="mdi mdi-clock-check-outline"></i></span><div><div class="dash-stat-label">Awaiting review</div><div class="dash-stat-value">{{ $collectionCounts->get('submitted', 0) + $collectionCounts->get('pending_approval', 0) }}</div></div></div></div>
+    <div class="col-xl-3 col-md-6"><div class="dash-stat h-100"><span class="dash-stat-icon is-green"><i class="mdi mdi-check-decagram-outline"></i></span><div><div class="dash-stat-label">Approved</div><div class="dash-stat-value">{{ $collectionCounts->get('approved', 0) }}</div></div></div></div>
+</div>
+
+@if ($recentCollections->isNotEmpty())
+<div class="chart-card mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-2"><div class="chart-card-title mb-0">Recent data collections</div><a href="{{ route('indicator-data-entries.index') }}" class="small">View workspace</a></div>
+    <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Indicator</th><th>Date</th><th>Result</th><th>Status</th></tr></thead><tbody>
+    @foreach ($recentCollections as $collection)
+        <tr><td>{{ $collection->indicator?->name ?? '—' }}</td><td>{{ $collection->entry_date?->format('d M Y') ?? '—' }}</td><td>{{ $collection->actual_text ?: \App\Support\DisplayNumber::format($collection->actual_value) }}</td><td><span class="s-badge {{ $collection->status === 'approved' ? 's-active' : 's-default' }}">{{ ucfirst(str_replace('_', ' ', $collection->status)) }}</span></td></tr>
+    @endforeach
+    </tbody></table></div>
+</div>
+@endif
 
 @if ($projects->isEmpty())
 <div class="chart-card">
@@ -115,11 +136,24 @@
             <thead><tr><th>Administrative hierarchy</th><th class="text-end">Approved actual</th></tr></thead>
             <tbody>
             @foreach ($breakdown['rows'] as $row)
-                <tr><td>{{ $row['path'] }}</td><td class="text-end">{{ number_format($row['value'], 2) }}</td></tr>
+                <tr><td>{{ $row['path'] }}</td><td class="text-end">{{ \App\Support\DisplayNumber::format($row['value']) }}</td></tr>
             @endforeach
             </tbody>
         </table>
     </div>
+    @foreach (($breakdown['rollups'] ?? []) as $rollup)
+    <div class="table-responsive mt-3">
+        <div class="fw-semibold mb-1">{{ ucfirst(str_replace('_', ' ', $rollup['level'])) }} summary</div>
+        <table class="table table-sm mb-0">
+            <thead><tr><th>Location</th><th class="text-end">Approved actual</th></tr></thead>
+            <tbody>
+            @foreach ($rollup['rows'] as $rollupRow)
+                <tr><td>{{ $rollupRow['name'] }}</td><td class="text-end">{{ \App\Support\DisplayNumber::format($rollupRow['value']) }}</td></tr>
+            @endforeach
+            </tbody>
+        </table>
+    </div>
+    @endforeach
     @endif
     @endif
 </div>

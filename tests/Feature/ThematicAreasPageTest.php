@@ -33,12 +33,22 @@ class ThematicAreasPageTest extends TestCase
         $user = $this->userWithRole('Super Admin');
         $thematicArea = ThematicArea::factory()->create(['name' => 'Child Protection']);
 
-        $response = $this->actingAs($user)->get(route('thematic-areas.index'));
+        $response = $this->actingAs($user)->get(route('thematic-areas.index', ['project_id' => $thematicArea->project_id]));
 
         $response->assertOk();
         $response->assertSee('table-card', false);
         $response->assertSee($thematicArea->name);
         $response->assertSee(route('thematic-areas.create'), false);
+    }
+
+    public function test_thematic_areas_are_hidden_until_a_project_is_selected(): void
+    {
+        $user = $this->userWithRole('Super Admin');
+        $thematicArea = ThematicArea::factory()->create(['name' => 'Must be filtered']);
+
+        $this->actingAs($user)->get(route('thematic-areas.index'))
+            ->assertOk()
+            ->assertDontSee($thematicArea->name);
     }
 
     public function test_unauthorized_user_is_forbidden_from_the_thematic_areas_page(): void
@@ -80,14 +90,16 @@ class ThematicAreasPageTest extends TestCase
         $this->assertDatabaseHas('thematic_areas', ['id' => $thematicArea->id, 'name' => 'Renamed Area']);
     }
 
-    public function test_authorized_user_can_delete_a_thematic_area_via_the_web_form(): void
+    public function test_authorized_user_can_disable_a_thematic_area_via_the_web_form(): void
     {
         $user = $this->userWithRole('Super Admin');
         $thematicArea = ThematicArea::factory()->create();
 
-        $response = $this->actingAs($user)->delete(route('thematic-areas.destroy', $thematicArea));
+        $response = $this->actingAs($user)
+            ->from(route('thematic-areas.index'))
+            ->patch(route('thematic-areas.disable', $thematicArea));
 
         $response->assertRedirect(route('thematic-areas.index'));
-        $this->assertSoftDeleted($thematicArea);
+        $this->assertDatabaseHas('thematic_areas', ['id' => $thematicArea->id, 'status' => 'inactive']);
     }
 }

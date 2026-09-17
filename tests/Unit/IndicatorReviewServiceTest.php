@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Models\Indicator;
 use App\Models\IndicatorDataEntry;
 use App\Models\IndicatorDimension;
+use App\Models\IndicatorApprovalAssignment;
 use App\Models\User;
 use App\Services\IndicatorReviewService;
 use Database\Seeders\RolePermissionSeeder;
@@ -106,5 +107,35 @@ class IndicatorReviewServiceTest extends TestCase
             'action' => 'rejected',
             'comment' => 'Please fix.',
         ]);
+    }
+
+    public function test_ward_entry_follows_ward_council_district_region_approval_chain(): void
+    {
+        $region = \App\Models\Region::factory()->create();
+        $district = \App\Models\District::factory()->create(['region_id' => $region->region_id]);
+        $council = \App\Models\Council::factory()->create(['district_id' => $district->district_id]);
+        $division = \App\Models\Division::factory()->create(['council_id' => $council->council_id]);
+        $ward = \App\Models\Ward::factory()->create(['division_id' => $division->division_id]);
+        $indicator = Indicator::factory()->create(['requires_hierarchical_approval' => true]);
+        $owner = User::factory()->create();
+        $entry = IndicatorDataEntry::factory()->create([
+            'indicator_id' => $indicator->id,
+            'entered_by' => $owner->id,
+            'location_level' => 'ward',
+            'location_id' => $ward->ward_id,
+            'status' => 'draft',
+        ]);
+
+        $submitted = $this->service->submit($entry, $owner);
+        $this->assertSame('pending_approval', $submitted->status);
+        $this->assertSame(['ward', 'council', 'district', 'region'], $submitted->approvalSteps()->pluck('location_level')->all());
+
+        foreach ([['ward', $ward->ward_id], ['council', $council->council_id], ['district', $district->district_id], ['region', $region->region_id]] as $index => [$level, $id]) {
+            $approver = User::factory()->create();
+            $approver->assignRole('Data Approver');
+            IndicatorApprovalAssignment::create(['user_id' => $approver->id, 'location_level' => $level, 'location_id' => $id, 'is_active' => true]);
+            $submitted = $this->service->approve($submitted->fresh(), $approver, 'Approved at '.$level);
+            $this->assertSame($index === 3 ? 'approved' : 'pending_approval', $submitted->status);
+        }
     }
 }

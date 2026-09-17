@@ -135,6 +135,11 @@ class User extends Authenticatable
 
     }
 
+    public function approvalAssignments()
+    {
+        return $this->hasMany(IndicatorApprovalAssignment::class);
+    }
+
     /** @return list<int> */
     public function assignedProjectIds(): array
     {
@@ -160,6 +165,23 @@ class User extends Authenticatable
         return array_values(array_unique([...$viaProjects, ...$this->assignedThematicAreaIds()]));
     }
 
+    /** @return list<int> */
+    public function visibleProjectIds(): array
+    {
+        $viaThematicAreas = ThematicArea::query()
+            ->whereIn('id', $this->assignedThematicAreaIds())
+            ->pluck('project_id')->all();
+        $viaIndicators = Indicator::query()
+            ->whereIn('id', $this->assignedIndicatorIds())
+            ->whereHas('thematicArea')
+            ->with('thematicArea:id,project_id')
+            ->get()->pluck('thematicArea.project_id')->filter()->all();
+
+        return array_values(array_unique(array_map('intval', [
+            ...$this->assignedProjectIds(), ...$viaThematicAreas, ...$viaIndicators,
+        ])));
+    }
+
     /**
      * Indicators this user is scoped to report on: those with an active
      * IndicatorDataAssignment naming this user directly, or naming this
@@ -173,16 +195,17 @@ class User extends Authenticatable
     {
         return IndicatorDataAssignment::query()
             ->where('is_active', true)
-            ->where(function ($query) {
+            ->whereHas('indicator', fn ($query) => $query->where('status', 'active'))
+            ->where(function ($query): void {
                 $query->where('user_id', $this->id);
 
                 if ($this->organization_id !== null) {
                     $query->orWhere('organization_id', $this->organization_id);
                 }
             })
+            ->distinct()
             ->pluck('indicator_id')
-            ->unique()
-            ->values()
+            ->map(fn ($id): int => (int) $id)
             ->all();
     }
 }

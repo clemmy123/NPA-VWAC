@@ -36,7 +36,7 @@ class BaselineTargetControllersTest extends TestCase
     {
         $user = $this->userWithRole('Thematic Manager');
         $indicator = Indicator::factory()->create();
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->current()->create();
 
         $response = $this->actingAs($user)->postJson('/indicator-baselines', [
             'indicator_id' => $indicator->id,
@@ -68,7 +68,7 @@ class BaselineTargetControllersTest extends TestCase
     {
         $user = $this->userWithRole('Thematic Manager');
         $indicator = Indicator::factory()->create();
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->current()->create();
 
         $this->actingAs($user)->postJson('/indicator-baselines', [
             'indicator_id' => $indicator->id,
@@ -133,7 +133,7 @@ class BaselineTargetControllersTest extends TestCase
     {
         $user = $this->userWithRole('Thematic Manager');
         $indicator = Indicator::factory()->create();
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->current()->create();
 
         $response = $this->actingAs($user)->postJson('/indicator-targets', [
             'indicator_id' => $indicator->id,
@@ -165,7 +165,7 @@ class BaselineTargetControllersTest extends TestCase
         // were not actually protected by the old unique constraint.
         $user = $this->userWithRole('Thematic Manager');
         $indicator = Indicator::factory()->create();
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->current()->create();
 
         $this->actingAs($user)->postJson('/indicator-targets', [
             'indicator_id' => $indicator->id,
@@ -186,7 +186,7 @@ class BaselineTargetControllersTest extends TestCase
     {
         $user = $this->userWithRole('Thematic Manager');
         $indicator = Indicator::factory()->create();
-        $financialYearA = FinancialYear::factory()->create();
+        $financialYearA = FinancialYear::factory()->current()->create();
         $financialYearB = FinancialYear::factory()->create();
         $periodInB = ReportingPeriod::factory()->create(['financial_year_id' => $financialYearB->id]);
 
@@ -204,7 +204,7 @@ class BaselineTargetControllersTest extends TestCase
     {
         $user = $this->userWithRole('Thematic Manager');
         $indicator = Indicator::factory()->create();
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->current()->create();
         $optionA = DimensionOption::factory()->create();
         $optionB = DimensionOption::factory()->create();
 
@@ -229,7 +229,7 @@ class BaselineTargetControllersTest extends TestCase
     {
         $user = $this->userWithRole('Thematic Manager');
         $indicator = Indicator::factory()->create();
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->current()->create();
         $option = DimensionOption::factory()->create();
 
         $this->actingAs($user)->postJson('/indicator-targets', [

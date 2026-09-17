@@ -28,7 +28,7 @@
     <div class="col-md-6 mb-3">
         <label for="baseline_value" class="form-label">Baseline Value</label>
         <input type="number" step="0.0001" name="baseline_value" id="baseline_value" class="form-control @error('baseline_value') is-invalid @enderror"
-               value="{{ old('baseline_value', $baseline?->baseline_value) }}" required>
+               value="{{ old('baseline_value', \App\Support\DisplayNumber::input($baseline?->baseline_value)) }}" required>
         @error('baseline_value')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 

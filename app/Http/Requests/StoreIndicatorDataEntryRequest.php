@@ -13,6 +13,36 @@ use Illuminate\Validation\Rule;
 
 class StoreIndicatorDataEntryRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $today = now()->startOfDay();
+        $financialYear = FinancialYear::query()
+            ->where('is_active', true)
+            ->whereDate('start_date', '<=', $today)
+            ->whereDate('end_date', '>=', $today)
+            ->first();
+        $indicator = $this->filled('indicator_id') ? Indicator::find($this->input('indicator_id')) : null;
+        $periodType = $indicator ? (['weekly' => 'week', 'monthly' => 'month', 'quarterly' => 'quarter', 'biannual' => 'semi_annual', 'annual' => 'annual'][$indicator->reporting_frequency] ?? null) : null;
+        $period = ($financialYear && $periodType) ? ReportingPeriod::query()
+            ->where('financial_year_id', $financialYear->id)->where('period_type', $periodType)
+            ->whereDate('start_date', '<=', $today)->whereDate('end_date', '>=', $today)->first() : null;
+
+        $automatic = [
+            'entry_date' => $this->user()?->can('indicator-data.override-period') && $this->filled('entry_date') ? $this->input('entry_date') : $today->toDateString(),
+            'organization_id' => $this->user()?->organization_id ?? $this->input('organization_id'),
+        ];
+        if (! $this->filled('financial_year_id') && $financialYear) {
+            $automatic['financial_year_id'] = $financialYear->id;
+        }
+        if (! $this->filled('reporting_period_id') && $period) {
+            $automatic['reporting_period_id'] = $period->id;
+        }
+        if ($this->filled('location_id') && $indicator?->requires_location && $indicator->reporting_location_level) {
+            $automatic['location_level'] = $indicator->reporting_location_level;
+        }
+        $this->merge($automatic);
+    }
+
     public function authorize(): bool
     {
         return true;
@@ -31,10 +61,20 @@ class StoreIndicatorDataEntryRequest extends FormRequest
             'location_id' => ['nullable', 'integer', 'required_with:location_level'],
             'organization_id' => ['nullable', 'integer', 'exists:organizations,id'],
             'actual_value' => ['nullable', 'numeric'],
+            'actual_text' => ['nullable', 'string'],
             'budget_allocated' => ['nullable', 'numeric'],
             'budget_used' => ['nullable', 'numeric'],
             'currency' => ['nullable', 'string', 'size:3'],
             'remarks' => ['nullable', 'string'],
+
+            'activities' => ['nullable', 'array'],
+            'activities.*.name' => ['required', 'string', 'max:255'],
+            'activities.*.description' => ['nullable', 'string'],
+            'activities.*.participants_total' => ['required', 'integer', 'min:0'],
+            'activities.*.women' => ['nullable', 'integer', 'min:0'],
+            'activities.*.men' => ['nullable', 'integer', 'min:0'],
+            'activities.*.children' => ['nullable', 'integer', 'min:0'],
+            'activities.*.other' => ['nullable', 'integer', 'min:0'],
 
             'rows' => ['nullable', 'array'],
             'rows.*.label' => ['nullable', 'string', 'max:255'],
@@ -90,12 +130,6 @@ class StoreIndicatorDataEntryRequest extends FormRequest
             if ($financialYear && $financialYear->start_date->gt($today)) {
                 $validator->errors()->add('financial_year_id', 'You cannot enter data for a future financial year.');
             }
-            if ($financialYear && $this->filled('entry_date')) {
-                $entryDate = Carbon::parse($this->input('entry_date'));
-                if (! $entryDate->betweenIncluded($financialYear->start_date, $financialYear->end_date)) {
-                    $validator->errors()->add('entry_date', 'The entry date must fall within the selected financial year.');
-                }
-            }
         }
 
         if (! $validator->errors()->has('reporting_period_id') && $this->filled('reporting_period_id')) {
@@ -126,23 +160,33 @@ class StoreIndicatorDataEntryRequest extends FormRequest
             $validator->errors()->add('location_level', 'This indicator must stop at the '.str_replace('_', ' ', $indicator->reporting_location_level).' level.');
         }
 
-        if ($indicator->requires_activity && ! $this->filled('activity_name')) {
-            $validator->errors()->add('activity_name', 'This indicator requires an activity name.');
+        if ($indicator->requires_activity && empty($this->input('activities', [])) && ! $this->filled('activity_name')) {
+            $validator->errors()->add('activities', 'Add at least one activity for this indicator.');
+            $validator->errors()->add('activity_name', 'This indicator requires at least one activity.');
         }
 
-        if ($indicator->has_budget_implication && ! $this->filled('budget_allocated')) {
-            $validator->errors()->add('budget_allocated', 'This indicator requires a budget allocated amount.');
-        }
-
-        if ($indicator->requires_evidence && ! $this->hasFile('evidence')) {
-            $validator->errors()->add('evidence', 'This indicator requires supporting evidence to be attached.');
-        }
-
-        $periodTypes = ['quarterly' => 'quarter', 'biannual' => 'semi_annual', 'annual' => 'annual'];
+        $periodTypes = ['weekly' => 'week', 'monthly' => 'month', 'quarterly' => 'quarter', 'biannual' => 'semi_annual', 'annual' => 'annual'];
         $requiredPeriodType = $periodTypes[$indicator->reporting_frequency] ?? null;
         $period = $this->filled('reporting_period_id') ? ReportingPeriod::find($this->input('reporting_period_id')) : null;
+        $periodIsConfigured = $requiredPeriodType !== null && ReportingPeriod::query()
+            ->where('financial_year_id', $this->input('financial_year_id'))
+            ->where('period_type', $requiredPeriodType)->where('is_active', true)->exists();
+        if ($periodIsConfigured && ! $period) {
+            $validator->errors()->add('reporting_period_id', 'Select the '.$indicator->reporting_frequency.' reporting period.');
+        }
         if ($period && $requiredPeriodType !== $period->period_type) {
             $validator->errors()->add('reporting_period_id', 'The reporting period does not match this indicator frequency.');
+        }
+        if (! $this->user()?->can('indicator-data.override-period') && $period && $this->filled('entry_date') && ! Carbon::parse($this->input('entry_date'))->betweenIncluded($period->start_date, $period->end_date)) {
+            $validator->errors()->add('entry_date', 'The entry date must fall inside the selected reporting period.');
+        }
+
+        if (in_array($indicator->measurementType?->code, ['text', 'qualitative'], true) && $this->filled('actual_value')) {
+            $validator->errors()->add('actual_value', 'This indicator accepts a text response, not a numeric value.');
+        }
+
+        if (! in_array($indicator->measurementType?->code, ['text', 'qualitative'], true) && $this->filled('actual_text')) {
+            $validator->errors()->add('actual_text', 'This indicator requires a numeric or Yes/No response.');
         }
 
         if ($this->filled('actual_value')) {

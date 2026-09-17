@@ -41,6 +41,7 @@ class IndicatorDataEntryEvidenceTest extends TestCase
 
     private function assignedDataEntryUser(Indicator $indicator): User
     {
+        $indicator->update(['status' => 'active']);
         $user = User::factory()->create();
         $user->assignRole('Data Entry User');
         IndicatorDataAssignment::factory()->create([
@@ -53,7 +54,7 @@ class IndicatorDataEntryEvidenceTest extends TestCase
         return $user;
     }
 
-    public function test_creating_an_entry_requires_evidence_when_the_indicator_requires_it(): void
+    public function test_evidence_can_be_left_empty_when_the_indicator_supports_it(): void
     {
         $indicator = Indicator::factory()->create(['requires_evidence' => true]);
         $financialYear = FinancialYear::factory()->started()->create();
@@ -65,7 +66,8 @@ class IndicatorDataEntryEvidenceTest extends TestCase
             'entry_date' => now()->toDateString(),
         ]);
 
-        $response->assertSessionHasErrors('evidence');
+        $response->assertRedirect(route('indicator-data-entries.index'));
+        $response->assertSessionDoesntHaveErrors();
     }
 
     public function test_uploading_evidence_attaches_it_to_the_entry(): void

@@ -213,4 +213,19 @@ class AdminLocationLevel
             fn (string $candidate): bool => in_array($level, self::pathToLevel($candidate), true),
         ));
     }
+
+    /** @return list<string> */
+    public static function delegationChildLevels(string $level): array
+    {
+        return match ($level) {
+            'region' => ['district'],
+            'district' => ['council'],
+            'council' => ['division', 'ward'],
+            'division' => ['township', 'ward'],
+            'township' => ['ward'],
+            'ward' => ['village_mtaa'],
+            'village_mtaa' => ['kitongoji'],
+            default => [],
+        };
+    }
 }

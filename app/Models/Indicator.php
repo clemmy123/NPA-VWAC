@@ -43,6 +43,8 @@ class Indicator extends Model
 
         'requires_evidence',
 
+        'requires_hierarchical_approval',
+
         'status',
 
         'created_by',
@@ -60,6 +62,8 @@ class Indicator extends Model
             'has_budget_implication' => 'boolean',
 
             'requires_evidence' => 'boolean',
+
+            'requires_hierarchical_approval' => 'boolean',
 
         ];
     }

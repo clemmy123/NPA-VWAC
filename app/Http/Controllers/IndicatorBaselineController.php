@@ -33,7 +33,7 @@ class IndicatorBaselineController extends Controller
 
     public function create(): View
     {
-        return view('indicator-baselines.create', $this->formData());
+        return view('indicator-baselines.create', $this->formData(true));
     }
 
     public function store(StoreIndicatorBaselineRequest $request): JsonResponse|RedirectResponse
@@ -80,10 +80,14 @@ class IndicatorBaselineController extends Controller
     }
 
     /** @return array<string, mixed> */
-    private function formData(): array
+    private function formData(bool $onlyEligible = false): array
     {
         return [
-            'indicators' => Indicator::query()->orderBy('name')->get(),
+            'indicators' => Indicator::query()
+                ->when($onlyEligible, fn ($query) => $query
+                    ->whereDoesntHave('baselines')
+                    ->whereDoesntHave('entries'))
+                ->orderBy('name')->get(),
             'financialYears' => FinancialYear::query()->orderBy('name')->get(),
             'organizations' => Organization::query()->orderBy('name')->get(),
         ];

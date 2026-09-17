@@ -166,6 +166,16 @@ select.pb-input + .select2-container .select2-selection--single .select2-selecti
   overflow: visible;
 }
 
+.location-cascade-selects {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+}
+
+.location-cascade-field {
+  margin-bottom: 0 !important;
+}
+
 .form-control-sm + .select2-container .select2-selection--single,
 .location-cascade .select2-container .select2-selection--single {
   height: 32px;

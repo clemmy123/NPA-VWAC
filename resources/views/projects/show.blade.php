@@ -109,22 +109,21 @@
                 <td><a href="{{ route('thematic-areas.show', $thematicArea) }}">{{ $thematicArea->name }}</a></td>
                 <td>
                     <span class="s-badge {{ match ($thematicArea->status) {
-                        'active' => 's-active', 'completed' => 's-received', 'closed' => 's-inactive', default => 's-default',
+                        'active' => 's-active', 'completed' => 's-received', 'closed', 'inactive' => 's-inactive', default => 's-default',
                     } }}">{{ ucfirst($thematicArea->status) }}</span>
                 </td>
                 <td>
                     @can('thematic-area.update')
                     <a href="{{ route('thematic-areas.edit', $thematicArea) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
                     @endcan
-                    @can('thematic-area.delete')
-                    <form action="{{ route('thematic-areas.destroy', $thematicArea) }}" method="POST" class="d-inline"
-                          onsubmit="return confirm('Delete thematic area &quot;{{ $thematicArea->name }}&quot;?');">
+                    @if ($thematicArea->status === 'active')
+                    <form action="{{ route('thematic-areas.disable', $thematicArea) }}" method="POST" class="d-inline" onsubmit="return confirm('Disable this thematic area?');">
                         @csrf
-                        @method('DELETE')
+                        @method('PATCH')
                         <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                        <button type="submit" class="btn-icon danger" title="Delete"><i class="mdi mdi-trash-can-outline"></i></button>
+                        <button type="submit" class="btn-icon danger" title="Disable"><i class="mdi mdi-cancel"></i></button>
                     </form>
-                    @endcan
+                    @endif
                 </td>
             </tr>
             @empty
@@ -140,22 +139,21 @@
         <div class="mob-card-top">
             <a href="{{ route('thematic-areas.show', $thematicArea) }}" class="fw-600">{{ $thematicArea->name }}</a>
             <span class="s-badge {{ match ($thematicArea->status) {
-                'active' => 's-active', 'completed' => 's-received', 'closed' => 's-inactive', default => 's-default',
+                'active' => 's-active', 'completed' => 's-received', 'closed', 'inactive' => 's-inactive', default => 's-default',
             } }}">{{ ucfirst($thematicArea->status) }}</span>
         </div>
         <div class="mob-card-footer">
             @can('thematic-area.update')
             <a href="{{ route('thematic-areas.edit', $thematicArea) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
             @endcan
-            @can('thematic-area.delete')
-            <form action="{{ route('thematic-areas.destroy', $thematicArea) }}" method="POST" class="d-inline"
-                  onsubmit="return confirm('Delete thematic area &quot;{{ $thematicArea->name }}&quot;?');">
+            @if ($thematicArea->status === 'active')
+            <form action="{{ route('thematic-areas.disable', $thematicArea) }}" method="POST" class="d-inline" onsubmit="return confirm('Disable this thematic area?');">
                 @csrf
-                @method('DELETE')
+                @method('PATCH')
                 <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                <button type="submit" class="btn-icon danger" title="Delete"><i class="mdi mdi-trash-can-outline"></i></button>
+                <button type="submit" class="btn-icon danger" title="Disable"><i class="mdi mdi-cancel"></i></button>
             </form>
-            @endcan
+            @endif
         </div>
     </div>
     @empty

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\IndicatorBaseline;
+use App\Models\IndicatorDataEntry;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -32,17 +33,14 @@ class StoreIndicatorBaselineRequest extends FormRequest
                 return;
             }
 
-            $duplicate = IndicatorBaseline::query()
-                ->where('indicator_id', $this->input('indicator_id'))
-                ->when(
-                    $this->input('financial_year_id'),
-                    fn ($query, $financialYearId) => $query->where('financial_year_id', $financialYearId),
-                    fn ($query) => $query->whereNull('financial_year_id'),
-                )
-                ->exists();
+            $duplicate = IndicatorBaseline::query()->where('indicator_id', $this->input('indicator_id'))->exists();
 
             if ($duplicate) {
-                $validator->errors()->add('financial_year_id', 'A baseline already exists for this indicator and financial year.');
+                $validator->errors()->add('financial_year_id', 'This indicator already has its initial baseline.');
+            }
+
+            if (IndicatorDataEntry::query()->where('indicator_id', $this->input('indicator_id'))->exists()) {
+                $validator->errors()->add('indicator_id', 'A baseline cannot be added after data collection has started. Use previous collected results for comparison.');
             }
         });
     }

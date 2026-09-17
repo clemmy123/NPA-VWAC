@@ -11,11 +11,43 @@
         'description' => $expense->description,
         'amount' => $expense->amount,
     ])->all() ?? []);
+    $existingActivities = old('activities', $entry?->activities?->map(fn ($activity) => [
+        'name' => $activity->name,
+        'description' => $activity->description,
+        'participants_total' => $activity->participants_total,
+        'women' => $activity->women,
+        'men' => $activity->men,
+        'children' => $activity->children,
+        'other' => $activity->other,
+    ])->all() ?? []);
 @endphp
 
 <div class="row">
     <div class="col-md-6 mb-3">
         <label for="indicator_id" class="form-label">Indicator</label>
+        @if ($entry)
+        <input type="hidden" name="indicator_id" id="indicator_id" value="{{ $entry->indicator_id }}"
+               data-requires-location="{{ $entry->indicator->requires_location ? '1' : '0' }}"
+               data-reporting-location-level="{{ $entry->indicator->reporting_location_level }}"
+               data-requires-activity="{{ $entry->indicator->requires_activity ? '1' : '0' }}"
+               data-has-budget-implication="{{ $entry->indicator->has_budget_implication ? '1' : '0' }}"
+               data-requires-evidence="{{ $entry->indicator->requires_evidence ? '1' : '0' }}"
+               data-collection-scope="{{ $entry->indicator->collection_scope }}"
+               data-has-dimensions="{{ $entry->indicator->dimensions->isNotEmpty() ? '1' : '0' }}"
+               data-reporting-frequency="{{ $entry->indicator->reporting_frequency }}"
+               data-collection-mode="{{ $entry->indicator->collection_mode }}"
+               data-aggregation-method="{{ $entry->indicator->aggregation_method }}"
+               data-measurement-type="{{ $entry->indicator->measurementType?->code }}"
+               data-unit-name="{{ $entry->indicator->unitOfMeasure?->name }}"
+               data-unit-symbol="{{ $entry->indicator->unitOfMeasure?->symbol }}">
+        <div class="border rounded bg-light px-3 py-2 lh-base text-break" aria-readonly="true">
+            @if ($entry->indicator?->code)
+                <span class="fw-semibold">{{ $entry->indicator->code }}</span>
+                <span class="text-muted mx-1">&middot;</span>
+            @endif
+            <span>{{ $entry->indicator?->name }}</span>
+        </div>
+        @else
         <select name="indicator_id" id="indicator_id" class="form-control select2 @error('indicator_id') is-invalid @enderror" required>
             <option value="">Select an indicator…</option>
             @foreach ($indicators as $indicator)
@@ -36,11 +68,12 @@
                     @selected((int) old('indicator_id', $entry?->indicator_id) === $indicator->id)>{{ $indicator->name }}</option>
             @endforeach
         </select>
+        @endif
         @error('indicator_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
         <p class="text-muted small mb-0 mt-1" id="indicator-config-hint"></p>
     </div>
 
-    <div class="col-md-6 mb-3">
+    <div class="col-md-6 mb-3 d-none">
         <label for="financial_year_id" class="form-label">Financial Year</label>
         <select name="financial_year_id" id="financial_year_id" class="form-control @error('financial_year_id') is-invalid @enderror" required>
             <option value="">Select a financial year…</option>
@@ -51,7 +84,7 @@
         @error('financial_year_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
-    <div class="col-md-6 mb-3 js-reporting-period-field">
+    <div class="col-md-6 mb-3 js-reporting-period-field d-none">
         <label for="reporting_period_id" class="form-label">Reporting Period</label>
         <select name="reporting_period_id" id="reporting_period_id" class="form-control @error('reporting_period_id') is-invalid @enderror">
             <option value="">—</option>
@@ -62,21 +95,21 @@
         @error('reporting_period_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
-    <div class="col-md-6 mb-3 js-activity-field">
+    <div class="col-md-6 mb-3 js-entry-date-field d-none">
         <label for="entry_date" class="form-label">Entry Date</label>
         <input type="date" name="entry_date" id="entry_date" class="form-control @error('entry_date') is-invalid @enderror"
                value="{{ old('entry_date', $entry?->entry_date?->toDateString() ?? now()->toDateString()) }}" max="{{ now()->toDateString() }}" required>
         @error('entry_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
-    <div class="col-md-6 mb-3 js-organization-field">
+    <div class="col-md-6 mb-3 js-activity-field d-none">
         <label for="activity_name" class="form-label">Activity Name <span class="text-danger d-none js-activity-required-mark">*</span></label>
         <input type="text" name="activity_name" id="activity_name" class="form-control @error('activity_name') is-invalid @enderror"
                value="{{ old('activity_name', $entry?->activity_name) }}" maxlength="255">
         @error('activity_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
-    <div class="col-md-6 mb-3">
+    <div class="col-md-6 mb-3 js-organization-field d-none">
         <label for="organization_id" class="form-label">Organization</label>
         <select name="organization_id" id="organization_id" class="form-control select2 @error('organization_id') is-invalid @enderror">
             <option value="">—</option>
@@ -87,57 +120,51 @@
         @error('organization_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
-    <div class="col-12 mb-3 js-activity-field">
+    <div class="col-12 mb-3 js-activity-field d-none">
         <label for="activity_description" class="form-label">Activity Description</label>
         <textarea name="activity_description" id="activity_description" rows="2"
                   class="form-control @error('activity_description') is-invalid @enderror">{{ old('activity_description', $entry?->activity_description) }}</textarea>
         @error('activity_description')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
-    <div class="col-md-3 mb-3 js-location-field">
-        <label for="location_level" class="form-label">Location Level <span class="text-danger d-none js-location-required-mark">*</span></label>
-        <select name="location_level" id="location_level" class="form-control @error('location_level') is-invalid @enderror">
-            <option value="">—</option>
-            @foreach ($locationLevels as $level)
-            <option value="{{ $level }}" @selected(old('location_level', $entry?->location_level) === $level)>{{ ucfirst(str_replace('_', ' ', $level)) }}</option>
-            @endforeach
-        </select>
-        @error('location_level')<div class="invalid-feedback">{{ $message }}</div>@enderror
-    </div>
-
-    <div class="col-md-5 mb-3 js-location-field">
-        <label class="form-label">Location</label>
+    <div class="col-12 mb-3 js-location-field">
+        <input type="hidden" name="location_level" id="location_level" value="{{ old('location_level', $entry?->location_level) }}">
+        <label class="form-label" id="location-label">Reporting Location</label>
         @include('components.location-cascade', [
             'currentId' => old('location_id', $entry?->location_id),
             'ancestorChain' => $locationAncestorChain ?? [],
+            'targetLevel' => old('location_level', $entry?->location_level),
         ])
+        @error('location_level')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
         @error('location_id')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
-        <p class="text-muted small mb-0 mt-1">Pick a Location Level above, then narrow down to the exact place.</p>
     </div>
 
     <div class="col-md-4 mb-3 js-actual-field">
         <label for="actual_value" class="form-label" id="actual-value-label">Actual Value</label>
         <input type="number" step="0.0001" name="actual_value" id="actual_value" class="form-control @error('actual_value') is-invalid @enderror"
-               value="{{ old('actual_value', $entry?->actual_value) }}">
-        <select id="actual_value_yes_no" class="form-control d-none">
+               value="{{ old('actual_value', \App\Support\DisplayNumber::input($entry?->actual_value)) }}">
+        <select id="actual_value_yes_no" class="form-control d-none" data-no-select2 hidden disabled>
             <option value="">Select…</option>
             <option value="1">Yes</option>
             <option value="0">No</option>
         </select>
+        <textarea name="actual_text" id="actual_text" rows="3" class="form-control d-none @error('actual_text') is-invalid @enderror" hidden disabled
+                  placeholder="Enter the text response">{{ old('actual_text', $entry?->actual_text) }}</textarea>
         @error('actual_value')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        @error('actual_text')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
     <div class="col-md-4 mb-3 js-budget-field">
-        <label for="budget_allocated" class="form-label">Budget Allocated <span class="text-danger d-none js-budget-required-mark">*</span></label>
+        <label for="budget_allocated" class="form-label">Budget Allocated <span class="text-muted small">(optional)</span></label>
         <input type="number" step="0.01" name="budget_allocated" id="budget_allocated" class="form-control @error('budget_allocated') is-invalid @enderror"
-               value="{{ old('budget_allocated', $entry?->budget_allocated) }}">
+               value="{{ old('budget_allocated', \App\Support\DisplayNumber::input($entry?->budget_allocated, 2)) }}">
         @error('budget_allocated')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
     <div class="col-md-4 mb-3 js-budget-field">
         <label for="budget_used" class="form-label">Budget Used</label>
         <input type="number" step="0.01" name="budget_used" id="budget_used" class="form-control @error('budget_used') is-invalid @enderror"
-               value="{{ old('budget_used', $entry?->budget_used) }}">
+               value="{{ old('budget_used', \App\Support\DisplayNumber::input($entry?->budget_used, 2)) }}">
         @error('budget_used')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
@@ -154,6 +181,18 @@
                   class="form-control @error('remarks') is-invalid @enderror">{{ old('remarks', $entry?->remarks) }}</textarea>
         @error('remarks')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
+</div>
+
+<div class="mb-4 js-activities-section">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <div>
+            <label class="form-label mb-0">Activities</label>
+            <p class="text-muted small mb-0">Add every activity and its participant breakdown.</p>
+        </div>
+        <button type="button" id="add-activity-btn" class="btn btn-outline-secondary btn-sm"><i class="mdi mdi-plus"></i> Add Activity</button>
+    </div>
+    <div id="activities-list"></div>
+    @error('activities')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
 </div>
 
 {{-- Disaggregated rows --}}
@@ -193,7 +232,7 @@
 
 {{-- Evidence --}}
 <div class="mb-4 js-evidence-section">
-    <label class="form-label">Evidence <span class="text-danger d-none js-evidence-required-mark">*</span></label>
+    <label class="form-label">Evidence <span class="text-muted small">(optional)</span></label>
 
     @if ($existingEvidence->isNotEmpty())
     <table class="table table-sm mb-2">
@@ -235,14 +274,16 @@
 (function () {
     var initialRows = @json($existingRows);
     var initialExpenses = @json($existingExpenses);
+    var initialActivities = @json($existingActivities);
     var assignmentScopes = @json($assignmentScopes);
     var dimensionConfig = @json($dimensionConfig ?? []);
     var rowIndex = 0;
     var expenseIndex = 0;
+    var activityIndex = 0;
 
     function applyIndicatorConfig() {
         var select = document.getElementById('indicator_id');
-        var option = select.options[select.selectedIndex];
+        var option = select.tagName === 'SELECT' ? select.options[select.selectedIndex] : select;
         var hint = document.getElementById('indicator-config-hint');
 
         var requiresLocation = option && option.dataset.requiresLocation === '1';
@@ -265,27 +306,28 @@
         }
 
         toggleFields('.js-location-field', requiresLocation);
-        toggleFields('.js-activity-field', requiresActivity);
+        toggleFields('.js-activities-section', requiresActivity);
         toggleFields('.js-budget-field', hasBudgetImplication);
         toggleFields('.js-evidence-section', requiresEvidence);
         toggleFields('.js-dimensions-section', hasDimensions);
-        toggleFields('.js-organization-field', collectionScope === 'institutional' || collectionScope === 'mixed' || Boolean(assignmentScope && assignmentScope.organization_id));
-        toggleFields('.js-reporting-period-field', ['quarterly', 'biannual', 'annual'].indexOf(reportingFrequency) !== -1);
 
-        document.querySelectorAll('.js-location-required-mark').forEach(function (el) { el.classList.toggle('d-none', ! requiresLocation); });
         document.querySelectorAll('.js-activity-required-mark').forEach(function (el) { el.classList.toggle('d-none', ! requiresActivity); });
-        document.querySelectorAll('.js-budget-required-mark').forEach(function (el) { el.classList.toggle('d-none', ! hasBudgetImplication); });
-        document.querySelectorAll('.js-evidence-required-mark').forEach(function (el) { el.classList.toggle('d-none', ! requiresEvidence); });
 
-        document.getElementById('location_level').required = requiresLocation;
-        document.getElementById('activity_name').required = requiresActivity;
-        document.getElementById('budget_allocated').required = hasBudgetImplication;
+        document.getElementById('activity_name').required = false;
+        document.getElementById('budget_allocated').required = false;
 
         var locationLevel = document.getElementById('location_level');
-        if (requiresLocation && reportingLocationLevel && locationLevel.value !== reportingLocationLevel) {
-            locationLevel.value = reportingLocationLevel;
-            locationLevel.dispatchEvent(new Event('change'));
+        var locationId = document.getElementById('location_id');
+        locationLevel.disabled = ! requiresLocation;
+        locationId.disabled = ! requiresLocation;
+        if (! requiresLocation) {
+            locationLevel.value = '';
+            locationId.value = '';
         }
+        locationLevel.value = requiresLocation ? reportingLocationLevel : '';
+        document.getElementById('location-label').textContent = reportingLocationLevel
+            ? 'Reporting Location (' + reportingLocationLevel.replaceAll('_', ' ').replace(/\b\w/g, function (letter) { return letter.toUpperCase(); }) + ')'
+            : 'Reporting Location';
 
         var organization = document.getElementById('organization_id');
         if (assignmentScope && assignmentScope.organization_id) {
@@ -296,20 +338,19 @@
             organization.removeAttribute('data-assignment-locked');
         }
 
-        Array.from(locationLevel.options).forEach(function (candidate) {
-            candidate.disabled = Boolean(reportingLocationLevel) && candidate.value !== reportingLocationLevel;
-        });
         Array.from(organization.options).forEach(function (candidate) {
             candidate.disabled = Boolean(assignmentScope && assignmentScope.organization_id)
                 && candidate.value !== String(assignmentScope.organization_id);
         });
-        if (assignmentScope && assignmentScope.location_id) {
-            var cascade = document.querySelector('.location-cascade');
-            if (cascade) {
-                cascade.dispatchEvent(new CustomEvent('location-cascade:set', {
-                    detail: { ancestorChain: assignmentScope.location_chain || {} }
-                }));
-            }
+        var cascade = document.querySelector('.location-cascade');
+        if (cascade && requiresLocation) {
+            cascade.dispatchEvent(new CustomEvent('location-cascade:set', {
+                detail: {
+                    targetLevel: reportingLocationLevel,
+                    ancestorChain: assignmentScope && assignmentScope.location_id ? (assignmentScope.location_chain || {}) : @json($locationAncestorChain ?? []),
+                    lockedThroughLevel: assignmentScope && assignmentScope.location_id ? assignmentScope.location_level : null
+                }
+            }));
         }
 
         configurePeriodChoices(reportingFrequency);
@@ -318,8 +359,8 @@
         var notes = [];
         if (requiresLocation) { notes.push('reporting location'); }
         if (requiresActivity) { notes.push('activity name'); }
-        if (hasBudgetImplication) { notes.push('budget allocated'); }
-        if (requiresEvidence) { notes.push('supporting evidence'); }
+        if (hasBudgetImplication) { notes.push('budget details available'); }
+        if (requiresEvidence) { notes.push('evidence upload available'); }
 
         var behavior = collectionMode ? ('Collection: ' + collectionMode + '; aggregation: ' + aggregationMethod + '; frequency: ' + reportingFrequency + '.') : '';
         hint.textContent = (notes.length ? ('Required: ' + notes.join(', ') + '. ') : '') + behavior;
@@ -328,8 +369,11 @@
     function configurePeriodChoices(reportingFrequency) {
         var periodSelect = document.getElementById('reporting_period_id');
         var financialYearId = document.getElementById('financial_year_id').value;
-        var requiredType = { quarterly: 'quarter', biannual: 'semi_annual', annual: 'annual' }[reportingFrequency] || null;
+        var requiredType = { weekly: 'week', monthly: 'month', quarterly: 'quarter', biannual: 'semi_annual', annual: 'annual' }[reportingFrequency] || null;
         var firstAllowed = null;
+        var currentAllowed = null;
+        var lastAllowed = null;
+        var today = '{{ now()->toDateString() }}';
 
         Array.from(periodSelect.options).forEach(function (period) {
             if (! period.value) { return; }
@@ -339,31 +383,61 @@
             period.hidden = ! allowed;
             period.disabled = ! allowed;
             if (allowed && ! firstAllowed) { firstAllowed = period; }
+            if (allowed) {
+                lastAllowed = period;
+                if (period.dataset.startDate <= today && period.dataset.endDate >= today) { currentAllowed = period; }
+            }
         });
         var selected = periodSelect.options[periodSelect.selectedIndex];
-        if (selected && selected.disabled) { periodSelect.value = firstAllowed ? firstAllowed.value : ''; }
+        if (! selected || ! selected.value || selected.disabled) {
+            var preferred = currentAllowed || lastAllowed || firstAllowed;
+            periodSelect.value = preferred ? preferred.value : '';
+        }
         periodSelect.required = Boolean(requiredType);
 
         var yearOption = document.getElementById('financial_year_id').selectedOptions[0];
         var entryDate = document.getElementById('entry_date');
-        var today = '{{ now()->toDateString() }}';
         if (yearOption && yearOption.value) {
             entryDate.min = yearOption.dataset.startDate || '';
             entryDate.max = yearOption.dataset.endDate && yearOption.dataset.endDate < today ? yearOption.dataset.endDate : today;
+        }
+        syncEntryDateToPeriod();
+    }
+
+    function syncEntryDateToPeriod() {
+        var period = document.getElementById('reporting_period_id').selectedOptions[0];
+        var entryDate = document.getElementById('entry_date');
+        var today = '{{ now()->toDateString() }}';
+        if (! period || ! period.value) { return; }
+
+        entryDate.min = period.dataset.startDate;
+        entryDate.max = period.dataset.endDate < today ? period.dataset.endDate : today;
+        if (! entryDate.value || entryDate.value < entryDate.min || entryDate.value > entryDate.max) {
+            entryDate.value = entryDate.max;
         }
     }
 
     function configureActualValue(measurementType, unitName, unitSymbol) {
         var input = document.getElementById('actual_value');
         var yesNo = document.getElementById('actual_value_yes_no');
+        var textInput = document.getElementById('actual_text');
         var label = document.getElementById('actual-value-label');
+        var isText = measurementType === 'text' || measurementType === 'qualitative';
+        var isYesNo = measurementType === 'yes_no';
         label.textContent = 'Actual Value' + (unitName ? ' (' + unitName + (unitSymbol ? ' - ' + unitSymbol : '') + ')' : '');
-        input.classList.toggle('d-none', measurementType === 'yes_no');
-        yesNo.classList.toggle('d-none', measurementType !== 'yes_no');
+        input.classList.toggle('d-none', isYesNo || isText);
+        input.hidden = isYesNo || isText;
+        input.disabled = isText;
+        yesNo.classList.toggle('d-none', ! isYesNo);
+        yesNo.hidden = ! isYesNo;
+        yesNo.disabled = ! isYesNo;
+        textInput.classList.toggle('d-none', ! isText);
+        textInput.hidden = ! isText;
+        textInput.disabled = ! isText;
         input.step = measurementType === 'count' ? '1' : (measurementType === 'currency' ? '0.01' : '0.0001');
         input.min = ['count', 'percentage', 'currency'].indexOf(measurementType) !== -1 ? '0' : '';
         input.max = measurementType === 'percentage' ? '100' : '';
-        if (measurementType === 'yes_no') { yesNo.value = input.value; }
+        if (isYesNo) { yesNo.value = input.value; }
     }
 
     document.getElementById('indicator_id').addEventListener('change', function () {
@@ -371,12 +445,17 @@
         renderConfiguredRows(true);
     });
     var indicatorSelect = document.getElementById('indicator_id');
-    if (! indicatorSelect.value && indicatorSelect.options.length === 2) {
+    var financialYearSelect = document.getElementById('financial_year_id');
+    if (! financialYearSelect.value && financialYearSelect.options.length > 1) {
+        financialYearSelect.selectedIndex = 1;
+    }
+    if (indicatorSelect.tagName === 'SELECT' && ! indicatorSelect.value && indicatorSelect.options.length === 2) {
         indicatorSelect.selectedIndex = 1;
         indicatorSelect.dispatchEvent(new Event('change'));
     }
     applyIndicatorConfig();
     document.getElementById('financial_year_id').addEventListener('change', applyIndicatorConfig);
+    document.getElementById('reporting_period_id').addEventListener('change', syncEntryDateToPeriod);
     document.getElementById('actual_value_yes_no').addEventListener('change', function () {
         document.getElementById('actual_value').value = this.value;
     });
@@ -418,6 +497,29 @@
         toggleHint('expenses-tbody', 'expenses-empty-hint');
     }
 
+    function addActivity(data) {
+        data = data || {};
+        var i = activityIndex++;
+        var card = document.createElement('div');
+        card.className = 'border rounded p-3 mb-2 activity-card';
+        card.innerHTML =
+            '<div class="d-flex justify-content-between"><strong>Activity ' + (i + 1) + '</strong><button type="button" class="btn-icon danger btn-remove-activity" title="Remove"><i class="mdi mdi-trash-can-outline"></i></button></div>' +
+            '<div class="row">' +
+            '<div class="col-md-6 mb-2"><label class="form-label small">Activity name</label><input type="text" class="form-control" name="activities[' + i + '][name]" required></div>' +
+            '<div class="col-md-6 mb-2"><label class="form-label small">Description</label><input type="text" class="form-control" name="activities[' + i + '][description]"></div>' +
+            '<div class="col-md-2 mb-2"><label class="form-label small">Total participants</label><input type="number" min="0" class="form-control" name="activities[' + i + '][participants_total]" required></div>' +
+            '<div class="col-md-2 mb-2"><label class="form-label small">Women</label><input type="number" min="0" class="form-control" name="activities[' + i + '][women]"></div>' +
+            '<div class="col-md-2 mb-2"><label class="form-label small">Men</label><input type="number" min="0" class="form-control" name="activities[' + i + '][men]"></div>' +
+            '<div class="col-md-2 mb-2"><label class="form-label small">Children</label><input type="number" min="0" class="form-control" name="activities[' + i + '][children]"></div>' +
+            '<div class="col-md-2 mb-2"><label class="form-label small">Other</label><input type="number" min="0" class="form-control" name="activities[' + i + '][other]"></div>' +
+            '</div>';
+        var values = { name: '', description: '', participants_total: 0, women: 0, men: 0, children: 0, other: 0 };
+        Object.keys(values).forEach(function (field) {
+            card.querySelector('[name="activities[' + i + '][' + field + ']"]').value = data[field] ?? values[field];
+        });
+        document.getElementById('activities-list').appendChild(card);
+    }
+
     function renderConfiguredRows(force) {
         var indicatorId = document.getElementById('indicator_id').value;
         var dimensions = dimensionConfig[indicatorId] || [];
@@ -441,6 +543,7 @@
 
     document.getElementById('add-row-btn').addEventListener('click', function () { addRow(); });
     document.getElementById('add-expense-btn').addEventListener('click', function () { addExpense(); });
+    document.getElementById('add-activity-btn').addEventListener('click', function () { addActivity(); });
 
     document.getElementById('rows-tbody').addEventListener('click', function (e) {
         if (e.target.closest('.btn-remove-row')) {
@@ -456,8 +559,16 @@
         }
     });
 
+    document.getElementById('activities-list').addEventListener('click', function (e) {
+        if (e.target.closest('.btn-remove-activity')) {
+            e.target.closest('.activity-card').remove();
+        }
+    });
+
     initialRows.forEach(addRow);
     initialExpenses.forEach(addExpense);
+    initialActivities.forEach(addActivity);
+    if (! initialActivities.length && document.getElementById('indicator_id').dataset.requiresActivity === '1') { addActivity(); }
     renderConfiguredRows(false);
     toggleHint('rows-tbody', 'rows-empty-hint');
     toggleHint('expenses-tbody', 'expenses-empty-hint');

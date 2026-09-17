@@ -1,6 +1,7 @@
 @php
     $user = $user ?? null;
     $currentRole = old('role', $user?->roles?->first()?->name);
+    $approvalAssignment = $approvalAssignment ?? null;
 @endphp
 
 <div class="row">
@@ -65,6 +66,27 @@
             <option value="inactive" @selected(old('status', $user?->status) === 'inactive')>Inactive</option>
         </select>
         @error('status')<div class="invalid-feedback">{{ $message }}</div>@enderror
+    </div>
+
+    <div class="col-12"><hr><h6>Approval Area</h6><p class="text-muted small">Required only for the Data Approver role.</p></div>
+    <div class="col-md-4 mb-3">
+        <label for="approval_location_level" class="form-label">Approval Level</label>
+        <select name="approval_location_level" id="approval_location_level" class="form-control">
+            <option value="">—</option>
+            @foreach ($locationLevels as $level)
+            <option value="{{ $level }}" @selected(old('approval_location_level', $approvalAssignment?->location_level ?? null) === $level)>{{ ucfirst($level) }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div class="col-md-8 mb-3">
+        <label class="form-label">Approval Location</label>
+        @include('components.location-cascade', [
+            'levelSelectId' => 'approval_location_level',
+            'fieldName' => 'approval_location_id',
+            'fieldId' => 'approval_location_id',
+            'currentId' => old('approval_location_id', $approvalAssignment?->location_id ?? null),
+            'ancestorChain' => $approvalLocationChain ?? [],
+        ])
     </div>
 
     <div class="col-md-6 mb-3">

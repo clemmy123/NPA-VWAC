@@ -34,6 +34,7 @@ class RolePermissionSeeder extends Seeder
         $pm = Role::firstOrCreate(['name' => 'Project Manager', 'guard_name' => 'web']);
         $tm = Role::firstOrCreate(['name' => 'Thematic Manager', 'guard_name' => 'web']);
         $de = Role::firstOrCreate(['name' => 'Data Entry User', 'guard_name' => 'web']);
+        $approver = Role::firstOrCreate(['name' => 'Data Approver', 'guard_name' => 'web']);
 
         $super->syncPermissions(Permission::all());
 
@@ -54,12 +55,16 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // Data Entry Users deliberately do NOT get 'indicator.view-all' or
-        // 'indicator-data.override-period': they only see indicators/entries
-        // they're assigned to (App\Models\User::assignedIndicatorIds()) and can
-        // only key in data for the current or a past-unfilled reporting period.
+        // 'indicator-data.override-period'. Collection metadata is derived by
+        // the system and each user manages entries within their own scope.
         $de->syncPermissions([
             'indicator.view', 'intervention.view',
             'indicator-data.view', 'indicator-data.create', 'indicator-data.update', 'indicator-data.submit',
+        ]);
+
+        $approver->syncPermissions([
+            'indicator.view', 'indicator-data.view', 'indicator-data.review',
+            'indicator-data.approve', 'indicator-data.return', 'report.view', 'report.export',
         ]);
     }
 }

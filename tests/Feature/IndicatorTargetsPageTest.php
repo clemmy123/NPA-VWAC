@@ -55,7 +55,7 @@ class IndicatorTargetsPageTest extends TestCase
     {
         $user = $this->userWithRole('Super Admin');
         $indicator = Indicator::factory()->create();
-        $financialYear = FinancialYear::factory()->create();
+        $financialYear = FinancialYear::factory()->current()->create();
 
         $response = $this->actingAs($user)->post(route('indicator-targets.store'), [
             'indicator_id' => $indicator->id,

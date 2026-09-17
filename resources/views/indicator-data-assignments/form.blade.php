@@ -1,5 +1,17 @@
 @php($assignment = $assignment ?? null)
 
+@if ($delegatedCollector ?? false)
+<div class="alert alert-info">
+    You may assign another data collector to the next administrative level inside your own assigned area. The indicator and parent area determine the locations available below.
+</div>
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label for="delegation_parent_scope" class="form-label">My Parent Assignment</label>
+        <select id="delegation_parent_scope" class="form-control"></select>
+    </div>
+</div>
+@endif
+
 <div class="row">
     <div class="col-md-6 mb-3">
         <label for="indicator_id" class="form-label">Indicator</label>
@@ -52,7 +64,13 @@
             'ancestorChain' => $locationAncestorChain ?? [],
         ])
         @error('location_id')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
-        <small class="text-muted">Leave Location Level and Location both blank for an unrestricted (all-locations) assignment.</small>
+        <small class="text-muted">
+            @if ($delegatedCollector ?? false)
+                Select a location directly below your assigned parent area.
+            @else
+                Leave Location Level and Location both blank for an unrestricted (all-locations) assignment.
+            @endif
+        </small>
     </div>
 
     <div class="col-12 mb-3">
@@ -64,3 +82,60 @@
         </div>
     </div>
 </div>
+
+@if ($delegatedCollector ?? false)
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var scopesByIndicator = @json($delegationScopes ?? []);
+    var indicator = document.getElementById('indicator_id');
+    var parentScope = document.getElementById('delegation_parent_scope');
+    var locationLevel = document.getElementById('location_level');
+    var organization = document.getElementById('organization_id');
+    var cascade = document.querySelector('.location-cascade');
+
+    function applyScope() {
+        var scopes = scopesByIndicator[String(indicator.value)] || scopesByIndicator[indicator.value] || [];
+        parentScope.innerHTML = scopes.map(function (scope, index) {
+            return '<option value="' + index + '">' + (scope.label || scope.level) + '</option>';
+        }).join('');
+
+        var scope = scopes[Number(parentScope.value || 0)];
+        Array.from(locationLevel.options).forEach(function (option) {
+            option.disabled = ! scope || ! scope.child_levels.includes(option.value);
+        });
+
+        if (! scope) {
+            locationLevel.value = '';
+            return;
+        }
+
+        if (! scope.child_levels.includes(locationLevel.value)) {
+            locationLevel.value = scope.child_levels[0] || '';
+        }
+
+        if (scope.organization_id) {
+            organization.value = String(scope.organization_id);
+            organization.disabled = true;
+        } else {
+            organization.disabled = false;
+        }
+
+        locationLevel.dispatchEvent(new Event('change'));
+        cascade.dispatchEvent(new CustomEvent('location-cascade:set', { detail: {
+            ancestorChain: scope.ancestor_chain,
+            lockedThroughLevel: scope.level
+        }}));
+    }
+
+    indicator.addEventListener('change', applyScope);
+    parentScope.addEventListener('change', applyScope);
+    applyScope();
+
+    indicator.closest('form').addEventListener('submit', function () {
+        organization.disabled = false;
+    });
+});
+</script>
+@endpush
+@endif

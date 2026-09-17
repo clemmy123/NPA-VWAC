@@ -55,7 +55,7 @@ class IndicatorTargetController extends Controller
 
     public function edit(IndicatorTarget $indicatorTarget): View
     {
-        return view('indicator-targets.edit', ['target' => $indicatorTarget] + $this->formData());
+        return view('indicator-targets.edit', ['target' => $indicatorTarget] + $this->formData($indicatorTarget->financial_year_id));
     }
 
     public function update(UpdateIndicatorTargetRequest $request, IndicatorTarget $indicatorTarget): JsonResponse|RedirectResponse|IndicatorTargetResource
@@ -81,12 +81,18 @@ class IndicatorTargetController extends Controller
     }
 
     /** @return array<string, mixed> */
-    private function formData(): array
+    private function formData(?int $selectedFinancialYearId = null): array
     {
+        $currentYear = FinancialYear::query()->where('is_current', true)->first()
+            ?? FinancialYear::query()->whereDate('start_date', '<=', today())->whereDate('end_date', '>=', today())->first();
+        $formYear = $selectedFinancialYearId
+            ? FinancialYear::query()->find($selectedFinancialYearId)
+            : $currentYear;
+
         return [
             'indicators' => Indicator::query()->orderBy('name')->get(),
-            'financialYears' => FinancialYear::query()->orderBy('name')->get(),
-            'reportingPeriods' => ReportingPeriod::query()->orderBy('sequence')->get(),
+            'financialYears' => $formYear ? collect([$formYear]) : collect(),
+            'reportingPeriods' => ReportingPeriod::query()->when($formYear, fn ($query) => $query->where('financial_year_id', $formYear->id), fn ($query) => $query->whereRaw('1 = 0'))->orderBy('sequence')->get(),
             'dimensionOptions' => DimensionOption::query()->orderBy('name')->get(),
         ];
     }

@@ -128,7 +128,7 @@ class PlanBuilderControllerTest extends TestCase
         $response->assertSee('value="18"', false);
     }
 
-    public function test_the_target_financial_year_can_be_chosen_per_indicator(): void
+    public function test_a_new_target_is_restricted_to_the_current_financial_year(): void
     {
         $tm = $this->userWithRole('Thematic Manager');
         $thematicArea = ThematicArea::factory()->create();
@@ -150,11 +150,11 @@ class PlanBuilderControllerTest extends TestCase
             'target_value' => 25,
         ]);
 
-        $response->assertCreated();
-        $this->assertDatabaseHas('indicator_targets', [
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['financial_year_id']);
+        $this->assertDatabaseMissing('indicator_targets', [
             'indicator_id' => $indicator->id,
             'financial_year_id' => $otherYear->id,
-            'target_value' => 25,
         ]);
     }
 

@@ -37,7 +37,7 @@
                 <td>{{ ($baselines->firstItem() ?? 1) + $loop->index }}</td>
                 <td>{{ $baseline->indicator?->name ?? '—' }}</td>
                 <td>{{ $baseline->financialYear?->name ?? '—' }}</td>
-                <td>{{ rtrim(rtrim(number_format((float) $baseline->baseline_value, 4), '0'), '.') }}</td>
+                <td>{{ \App\Support\DisplayNumber::format($baseline->baseline_value) }}</td>
                 <td>{{ $baseline->baseline_date?->format('d M Y') ?? '—' }}</td>
                 <td>{{ $baseline->organization?->name ?? '—' }}</td>
                 <td>
@@ -77,7 +77,7 @@
     <div class="mob-card">
         <div class="mob-card-top">
             <span class="fw-600">{{ $baseline->indicator?->name ?? '—' }}</span>
-            <span class="s-badge s-default">{{ rtrim(rtrim(number_format((float) $baseline->baseline_value, 4), '0'), '.') }}</span>
+            <span class="s-badge s-default">{{ \App\Support\DisplayNumber::format($baseline->baseline_value) }}</span>
         </div>
         <div class="mob-card-meta">
             <span><i class="mdi mdi-calendar-outline"></i> {{ $baseline->financialYear?->name ?? '—' }}</span>

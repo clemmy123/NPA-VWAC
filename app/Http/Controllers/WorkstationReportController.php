@@ -26,7 +26,7 @@ class WorkstationReportController extends Controller
     {
         $data = $request->validate([
             'frequency' => ['nullable', 'in:'.implode(',', self::FREQUENCIES)],
-            'month' => ['nullable', 'date'],
+            'month' => ['nullable', 'date', 'before_or_equal:today'],
             'reporting_period_id' => ['nullable', 'integer', 'exists:reporting_periods,id'],
             'financial_year_id' => ['nullable', 'integer', 'exists:financial_years,id'],
             'organization_type_id' => ['nullable', 'integer', 'exists:organization_types,id'],

@@ -55,6 +55,8 @@ class IndicatorDataEntry extends Model implements HasMedia
 
         'actual_value',
 
+        'actual_text',
+
         'budget_allocated',
 
         'budget_used',
@@ -131,11 +133,21 @@ class IndicatorDataEntry extends Model implements HasMedia
 
     }
 
+    public function activities()
+    {
+        return $this->hasMany(IndicatorDataEntryActivity::class);
+    }
+
     public function reviews()
     {
 
         return $this->hasMany(IndicatorDataReview::class);
 
+    }
+
+    public function approvalSteps()
+    {
+        return $this->hasMany(IndicatorDataEntryApproval::class)->orderBy('sequence');
     }
 
     public function organization()

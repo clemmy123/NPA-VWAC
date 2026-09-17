@@ -32,7 +32,8 @@
         }
 
         root.querySelectorAll('select.form-control, select.pb-input').forEach(function (select) {
-            if (select.multiple || select.classList.contains('org-loc-select')) {
+            if (select.multiple || select.classList.contains('org-loc-select')
+                || select.hidden || select.disabled || select.hasAttribute('data-no-select2')) {
                 return;
             }
             window.initAppSelect2(select, extra);

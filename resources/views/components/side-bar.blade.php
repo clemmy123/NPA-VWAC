@@ -115,16 +115,6 @@
                 </li>
                 @endcan
 
-                {{-- Indicator data assignments --}}
-                @can('indicator.assign-user')
-                <li class="{{ request()->routeIs('indicator-data-assignments.*') ? 'active' : '' }}">
-                    <a href="{{ route('indicator-data-assignments.index') }}">
-                        <i class="bi bi-person-check"></i>
-                        <span>Data Assignments</span>
-                    </a>
-                </li>
-                @endcan
-
                 {{-- Reports --}}
                 @can('report.view')
                 @php($reportsActive = request()->routeIs('reports.*'))

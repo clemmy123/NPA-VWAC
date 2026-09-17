@@ -70,7 +70,7 @@ class ProjectThematicAreaScopingTest extends TestCase
         $other = ThematicArea::factory()->create(['name' => 'Other Theme']);
         $assigned->users()->attach($tm->id, ['is_active' => true]);
 
-        $response = $this->actingAs($tm)->get(route('thematic-areas.index'));
+        $response = $this->actingAs($tm)->get(route('thematic-areas.index', ['project_id' => $assigned->project_id]));
 
         $response->assertOk();
         $response->assertSee('Assigned Theme');
@@ -85,7 +85,7 @@ class ProjectThematicAreaScopingTest extends TestCase
         $thematicArea = ThematicArea::factory()->create(['project_id' => $project->id, 'name' => 'Under My Project']);
         $unrelated = ThematicArea::factory()->create(['name' => 'Unrelated Theme']);
 
-        $response = $this->actingAs($pm)->get(route('thematic-areas.index'));
+        $response = $this->actingAs($pm)->get(route('thematic-areas.index', ['project_id' => $project->id]));
 
         $response->assertOk();
         $response->assertSee('Under My Project');

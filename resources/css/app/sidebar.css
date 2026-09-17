@@ -15,22 +15,22 @@
   border-right: 1px solid var(--border-soft) !important;
   box-shadow: none !important;
   z-index: 1040 !important;
-  overflow-y: auto;
+  overflow-y: hidden;
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
   transition: transform 0.25s ease, width 0.25s ease;
 }
 
-.left-side-menu::-webkit-scrollbar {
+.slimscroll-menu::-webkit-scrollbar {
   width: 3px;
 }
 
-.left-side-menu::-webkit-scrollbar-track {
+.slimscroll-menu::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.left-side-menu::-webkit-scrollbar-thumb {
+.slimscroll-menu::-webkit-scrollbar-thumb {
   background: var(--border-strong);
   border-radius: 3px;
 }
@@ -126,7 +126,24 @@
 /* NAV — full-width rows with dividers */
 .slimscroll-menu {
   flex: 1;
+  min-height: 0;
+  height: auto !important;
   padding: 4px 0 20px;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+.left-side-menu > .slimScrollDiv {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  overflow: hidden !important;
+}
+
+.left-side-menu > .slimScrollDiv > .slimscroll-menu {
+  height: 100% !important;
 }
 
 #sidebar-menu ul {

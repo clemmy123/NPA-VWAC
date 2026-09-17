@@ -3,20 +3,31 @@
     // These four map to NOT NULL columns with DB-level defaults (see the
     // indicators migration), so unlike the genuinely nullable fields below,
     // they must never submit a blank/null value.
-    $collectionModes = ['progressive', 'manual', 'system', 'mixed'];
+    $collectionModes = ['progressive', 'periodic', 'snapshot'];
     $aggregationMethods = ['sum', 'average', 'latest', 'count', 'max', 'min'];
     $reportingFrequencies = ['daily', 'weekly', 'monthly', 'quarterly', 'biannual', 'annual'];
-    $collectionScopes = ['national', 'individual', 'aggregate'];
-    $locationLevels = ['national', 'region', 'district', 'ward', 'village', 'facility'];
+    $collectionScopes = ['national', 'geographic', 'institutional', 'mixed'];
+    $locationLevels = ['region', 'district', 'council', 'division', 'township', 'ward', 'village_mtaa', 'kitongoji'];
 @endphp
 
 <div class="row">
+    <div class="col-md-6 mb-3">
+        <label for="project_id" class="form-label">Project</label>
+        <select name="project_id" id="project_id" class="form-control select2 @error('project_id') is-invalid @enderror" required>
+            <option value="">Select a project…</option>
+            @foreach ($projects as $project)
+            <option value="{{ $project->id }}" @selected((int) old('project_id', $indicator?->thematicArea?->project_id) === $project->id)>{{ $project->name }}</option>
+            @endforeach
+        </select>
+        @error('project_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+    </div>
+
     <div class="col-md-6 mb-3">
         <label for="thematic_area_id" class="form-label">Thematic Area</label>
         <select name="thematic_area_id" id="thematic_area_id" class="form-control select2 @error('thematic_area_id') is-invalid @enderror" required>
             <option value="">Select a thematic area…</option>
             @foreach ($thematicAreas as $thematicArea)
-            <option value="{{ $thematicArea->id }}" @selected((int) old('thematic_area_id', $indicator?->thematic_area_id) === $thematicArea->id)>{{ $thematicArea->name }}</option>
+            <option value="{{ $thematicArea->id }}" data-project-id="{{ $thematicArea->project_id }}" @selected((int) old('thematic_area_id', $indicator?->thematic_area_id) === $thematicArea->id)>{{ $thematicArea->name }}</option>
             @endforeach
         </select>
         @error('thematic_area_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -106,7 +117,7 @@
         <select name="reporting_location_level" id="reporting_location_level" class="form-control">
             <option value="">—</option>
             @foreach ($locationLevels as $option)
-            <option value="{{ $option }}" @selected(old('reporting_location_level', $indicator?->reporting_location_level) === $option)>{{ ucfirst($option) }}</option>
+            <option value="{{ $option }}" @selected(old('reporting_location_level', $indicator?->reporting_location_level) === $option)>{{ ucfirst(str_replace('_', '/', $option)) }}</option>
             @endforeach
         </select>
     </div>
@@ -147,6 +158,34 @@
                        @checked(old('requires_evidence', $indicator?->requires_evidence))>
                 <label for="requires_evidence" class="form-check-label">Requires Evidence</label>
             </div>
+            <div class="form-check">
+                <input type="hidden" name="requires_hierarchical_approval" value="0">
+                <input type="checkbox" name="requires_hierarchical_approval" id="requires_hierarchical_approval" value="1" class="form-check-input"
+                       @checked(old('requires_hierarchical_approval', $indicator?->requires_hierarchical_approval))>
+                <label for="requires_hierarchical_approval" class="form-check-label">Requires Hierarchical Approval</label>
+            </div>
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var project = document.getElementById('project_id');
+    var thematic = document.getElementById('thematic_area_id');
+    var options = Array.from(thematic.querySelectorAll('option[data-project-id]')).map(function (option) { return option.cloneNode(true); });
+    var savedThematicId = @json((string) old('thematic_area_id', $indicator?->thematic_area_id ?? ''));
+    function rebuildThematics(selected) {
+        thematic.replaceChildren(new Option(project.value ? 'Select a thematic area…' : 'Select a project first…', ''));
+        options.forEach(function (option) {
+            if (option.dataset.projectId === project.value) thematic.appendChild(option.cloneNode(true));
+        });
+        thematic.disabled = !project.value;
+        thematic.value = Array.from(thematic.options).some(function (option) { return option.value === selected; }) ? selected : '';
+        if (window.jQuery) jQuery(thematic).trigger('change.select2');
+    }
+    project.addEventListener('change', function () { rebuildThematics(''); });
+    rebuildThematics(savedThematicId);
+});
+</script>
+@endpush

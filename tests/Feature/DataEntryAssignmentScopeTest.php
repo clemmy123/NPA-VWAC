@@ -6,6 +6,7 @@ use App\Models\FinancialYear;
 use App\Models\Indicator;
 use App\Models\IndicatorDataAssignment;
 use App\Models\Organization;
+use App\Models\Project;
 use App\Models\ReportingPeriod;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
@@ -23,10 +24,10 @@ class DataEntryAssignmentScopeTest extends TestCase
         $this->seed(RolePermissionSeeder::class);
     }
 
-    public function test_a_data_entry_user_only_sees_indicators_they_are_assigned_to(): void
+    public function test_a_data_entry_user_sees_only_assigned_active_indicators(): void
     {
-        $assignedIndicator = Indicator::factory()->create();
-        $otherIndicator = Indicator::factory()->create();
+        $assignedIndicator = Indicator::factory()->create(['status' => 'active']);
+        $otherIndicator = Indicator::factory()->create(['status' => 'active']);
 
         $user = User::factory()->create();
         $user->assignRole('Data Entry User');
@@ -47,7 +48,7 @@ class DataEntryAssignmentScopeTest extends TestCase
     public function test_a_data_entry_user_sees_indicators_assigned_to_their_organization(): void
     {
         $organization = Organization::factory()->create();
-        $indicator = Indicator::factory()->create();
+        $indicator = Indicator::factory()->create(['status' => 'active']);
 
         $user = User::factory()->create(['organization_id' => $organization->id]);
         $user->assignRole('Data Entry User');
@@ -63,9 +64,9 @@ class DataEntryAssignmentScopeTest extends TestCase
         $this->assertContains($indicator->id, $ids);
     }
 
-    public function test_a_data_entry_user_cannot_view_an_indicator_they_are_not_assigned_to(): void
+    public function test_a_data_entry_user_cannot_view_an_active_indicator_without_assignment(): void
     {
-        $indicator = Indicator::factory()->create();
+        $indicator = Indicator::factory()->create(['status' => 'active']);
 
         $user = User::factory()->create();
         $user->assignRole('Data Entry User');
@@ -73,10 +74,10 @@ class DataEntryAssignmentScopeTest extends TestCase
         $this->actingAs($user)->getJson("/indicators/{$indicator->id}")->assertForbidden();
     }
 
-    public function test_the_new_entry_forms_indicator_dropdown_is_scoped_to_the_data_entry_users_assignments(): void
+    public function test_the_new_entry_form_lists_only_assigned_active_indicators(): void
     {
-        $assignedIndicator = Indicator::factory()->create(['name' => 'Assigned Indicator']);
-        $otherIndicator = Indicator::factory()->create(['name' => 'Someone Elses Indicator']);
+        $assignedIndicator = Indicator::factory()->create(['name' => 'Assigned Indicator', 'status' => 'active']);
+        $otherIndicator = Indicator::factory()->create(['name' => 'Someone Elses Indicator', 'status' => 'active']);
 
         $user = User::factory()->create();
         $user->assignRole('Data Entry User');
@@ -92,9 +93,27 @@ class DataEntryAssignmentScopeTest extends TestCase
         $response->assertDontSee('Someone Elses Indicator');
     }
 
+    public function test_collection_form_hides_projects_without_collectable_indicators(): void
+    {
+        $indicator = Indicator::factory()->create(['status' => 'active']);
+        $projectWithoutIndicator = Project::factory()->create(['name' => 'Visible planning project']);
+        $user = User::factory()->create();
+        $user->assignRole('Data Entry User');
+        $user->projects()->attach($projectWithoutIndicator->id, ['is_active' => true]);
+        IndicatorDataAssignment::factory()->create([
+            'indicator_id' => $indicator->id,
+            'user_id' => $user->id,
+        ]);
+
+        $response = $this->actingAs($user)->get('/indicator-data-entries/create');
+
+        $response->assertOk();
+        $response->assertDontSee('Visible planning project');
+    }
+
     public function test_a_thematic_manager_sees_every_indicator_without_needing_an_assignment(): void
     {
-        $indicator = Indicator::factory()->create();
+        $indicator = Indicator::factory()->create(['status' => 'active']);
 
         $user = User::factory()->create();
         $user->assignRole('Thematic Manager');
@@ -156,11 +175,11 @@ class DataEntryAssignmentScopeTest extends TestCase
         $response->assertCreated();
     }
 
-    public function test_an_organization_assignment_cannot_be_used_to_submit_for_another_organization(): void
+    public function test_collection_organization_is_taken_from_the_user_profile(): void
     {
         $assignedOrganization = Organization::factory()->create();
         $otherOrganization = Organization::factory()->create();
-        $indicator = Indicator::factory()->create(['collection_scope' => 'institutional']);
+        $indicator = Indicator::factory()->create(['collection_scope' => 'institutional', 'status' => 'active']);
         $financialYear = FinancialYear::factory()->started()->create();
         $user = User::factory()->create(['organization_id' => $assignedOrganization->id]);
         $user->assignRole('Data Entry User');
@@ -175,7 +194,12 @@ class DataEntryAssignmentScopeTest extends TestCase
             'financial_year_id' => $financialYear->id,
             'entry_date' => now()->toDateString(),
             'organization_id' => $otherOrganization->id,
-        ])->assertForbidden();
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('indicator_data_entries', [
+            'indicator_id' => $indicator->id,
+            'organization_id' => $assignedOrganization->id,
+        ]);
 
         $this->actingAs($user)->postJson('/indicator-data-entries', [
             'indicator_id' => $indicator->id,
@@ -185,11 +209,12 @@ class DataEntryAssignmentScopeTest extends TestCase
         ])->assertCreated();
     }
 
-    public function test_indicator_reporting_level_is_enforced(): void
+    public function test_indicator_reporting_level_is_derived_and_the_location_must_match_it(): void
     {
         $indicator = Indicator::factory()->create([
             'requires_location' => true,
             'reporting_location_level' => 'council',
+            'status' => 'active',
         ]);
         $financialYear = FinancialYear::factory()->started()->create();
         $user = User::factory()->create();
@@ -205,10 +230,10 @@ class DataEntryAssignmentScopeTest extends TestCase
             'entry_date' => now()->toDateString(),
             'location_level' => 'region',
             'location_id' => \App\Models\Region::factory()->create()->region_id,
-        ])->assertJsonValidationErrors('location_level');
+        ])->assertJsonValidationErrors('location_id');
     }
 
-    public function test_a_council_scoped_user_can_submit_data_down_to_street_level(): void
+    public function test_a_council_scoped_user_can_submit_a_street_level_indicator_within_their_council(): void
     {
         $council = \App\Models\Council::factory()->create();
         $division = \App\Models\Division::factory()->create(['council_id' => $council->council_id]);
@@ -216,7 +241,8 @@ class DataEntryAssignmentScopeTest extends TestCase
         $street = \App\Models\VillageMtaa::factory()->create(['ward_id' => $ward->ward_id, 'type' => 'mtaa']);
         $indicator = Indicator::factory()->create([
             'requires_location' => true,
-            'reporting_location_level' => 'council',
+            'reporting_location_level' => 'village_mtaa',
+            'status' => 'active',
         ]);
         $financialYear = FinancialYear::factory()->started()->create();
         $user = User::factory()->create();
@@ -236,5 +262,46 @@ class DataEntryAssignmentScopeTest extends TestCase
             'location_id' => $street->village_mtaa_id,
             'actual_value' => 12,
         ])->assertCreated();
+    }
+
+    public function test_financial_years_are_not_shown_on_the_indicator_first_collection_form(): void
+    {
+        $indicator = Indicator::factory()->create(['status' => 'active']);
+        $user = User::factory()->create();
+        $user->assignRole('Data Entry User');
+        IndicatorDataAssignment::factory()->create(['indicator_id' => $indicator->id, 'user_id' => $user->id]);
+        FinancialYear::factory()->create([
+            'name' => 'Future FY',
+            'start_date' => now()->addYear()->startOfYear(),
+            'end_date' => now()->addYear()->endOfYear(),
+        ]);
+        FinancialYear::factory()->create([
+            'name' => 'Available FY',
+            'start_date' => now()->subMonth(),
+            'end_date' => now()->addMonths(11),
+        ]);
+
+        $this->actingAs($user)->get('/indicator-data-entries/create')
+            ->assertOk()
+            ->assertSee($indicator->name)
+            ->assertDontSee('Available FY')
+            ->assertDontSee('Future FY');
+    }
+
+    public function test_percentage_measurement_rejects_values_above_one_hundred(): void
+    {
+        $measurement = \App\Models\MeasurementType::factory()->create(['code' => 'percentage']);
+        $indicator = Indicator::factory()->create(['measurement_type_id' => $measurement->id]);
+        $financialYear = FinancialYear::factory()->started()->create();
+        $user = User::factory()->create();
+        $user->assignRole('Data Entry User');
+        IndicatorDataAssignment::factory()->create(['indicator_id' => $indicator->id, 'user_id' => $user->id]);
+
+        $this->actingAs($user)->postJson('/indicator-data-entries', [
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'entry_date' => now()->toDateString(),
+            'actual_value' => 101,
+        ])->assertJsonValidationErrors('actual_value');
     }
 }

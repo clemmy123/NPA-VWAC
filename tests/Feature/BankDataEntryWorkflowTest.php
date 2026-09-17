@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\FinancialYear;
 use App\Models\Indicator;
+use App\Models\IndicatorDataAssignment;
 use App\Models\Organization;
 use App\Models\OrganizationType;
 use App\Models\User;
@@ -29,7 +30,7 @@ class BankDataEntryWorkflowTest extends TestCase
         $this->seed(RolePermissionSeeder::class);
     }
 
-    public function test_a_bank_user_can_be_provisioned_and_report_only_on_their_assigned_indicator(): void
+    public function test_a_bank_user_can_report_only_on_an_organization_assigned_indicator(): void
     {
         $admin = User::factory()->create();
         $admin->assignRole('Super Admin');
@@ -54,16 +55,15 @@ class BankDataEntryWorkflowTest extends TestCase
         ])->assertRedirect(route('users.index'));
         $bankUser = User::where('email', 'reporter@nmb.example.test')->firstOrFail();
 
-        // 3. Super Admin assigns the bank user to exactly one indicator.
-        $assignedIndicator = Indicator::factory()->create(['name' => 'Loans disbursed to women']);
-        $unassignedIndicator = Indicator::factory()->create(['name' => 'Unrelated indicator']);
-        $financialYear = FinancialYear::factory()->started()->create();
-
-        $this->actingAs($admin)->post(route('indicator-data-assignments.store'), [
+        // 3. Assign one active indicator to the bank organization.
+        $assignedIndicator = Indicator::factory()->create(['name' => 'Loans disbursed to women', 'status' => 'active']);
+        $unassignedIndicator = Indicator::factory()->create(['name' => 'Unrelated indicator', 'status' => 'active']);
+        IndicatorDataAssignment::factory()->create([
             'indicator_id' => $assignedIndicator->id,
-            'user_id' => $bankUser->id,
+            'user_id' => $admin->id,
             'organization_id' => $bank->id,
-        ])->assertRedirect(route('indicator-data-assignments.index'));
+        ]);
+        $financialYear = FinancialYear::factory()->started()->create();
 
         // 4. The bank user signs in through the separate local-login page, not Jumuishi.
         // actingAs() persists for the rest of the test unless the guard is explicitly
@@ -92,7 +92,7 @@ class BankDataEntryWorkflowTest extends TestCase
             'status' => 'draft',
         ]);
 
-        // 6. ...but not for an indicator they were never assigned.
+        // 6. An unassigned indicator cannot be submitted manually.
         $this->actingAs($bankUser)->post(route('indicator-data-entries.store'), [
             'indicator_id' => $unassignedIndicator->id,
             'financial_year_id' => $financialYear->id,

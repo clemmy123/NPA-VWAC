@@ -7,8 +7,10 @@ use App\Models\Indicator;
 use App\Models\IndicatorDataEntry;
 use App\Models\IndicatorTarget;
 use App\Models\ReportingPeriod;
+use App\Support\AdminLocationLevel;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 
 class IndicatorPerformanceService
 {
@@ -22,7 +24,8 @@ class IndicatorPerformanceService
      * `$organizationId` limits actuals to one workstation, or a list of them.
      *
      * @param  int|list<int>|null  $organizationId
-     * @return array{target_value: float|null, actual_value: float|null, achievement_percent: float|null, aggregation_method: string}
+     * @param  list<array{location_level: string|null, location_id: int|null, organization_id: int|null}>|null  $locationScopes
+     * @return array{target_value: float|null, actual_value: float|null, previous_actual_value: float|null, achievement_percent: float|null, aggregation_method: string}
      */
     public function summarize(
         Indicator $indicator,
@@ -31,13 +34,22 @@ class IndicatorPerformanceService
         ?CarbonInterface $from = null,
         ?CarbonInterface $to = null,
         int|array|null $organizationId = null,
+        ?array $locationScopes = null,
     ): array {
         $targetValue = $this->targetValue($indicator, $financialYear, $reportingPeriod);
-        $actualValue = $this->actualValue($indicator, $financialYear, $reportingPeriod, $from, $to, $organizationId);
+        $actualValue = $this->actualValue($indicator, $financialYear, $reportingPeriod, $from, $to, $organizationId, $locationScopes);
+        $previousYear = FinancialYear::query()
+            ->whereDate('end_date', '<', $financialYear->start_date)
+            ->orderByDesc('end_date')
+            ->first();
+        $previousActualValue = $previousYear
+            ? $this->actualValue($indicator, $previousYear, organizationId: $organizationId, locationScopes: $locationScopes)
+            : null;
 
         return [
             'target_value' => $targetValue,
             'actual_value' => $actualValue,
+            'previous_actual_value' => $previousActualValue,
             'achievement_percent' => ($targetValue !== null && $targetValue > 0 && $actualValue !== null)
                 ? round(($actualValue / $targetValue) * 100, 2)
                 : null,
@@ -69,6 +81,7 @@ class IndicatorPerformanceService
         ?CarbonInterface $from = null,
         ?CarbonInterface $to = null,
         int|array|null $organizationId = null,
+        ?array $locationScopes = null,
     ): ?float {
         $query = IndicatorDataEntry::query()
             ->where('indicator_id', $indicator->id)
@@ -101,8 +114,51 @@ class IndicatorPerformanceService
                 ->whereDate('entry_date', '<=', $to->toDateString());
         }
 
-        if (! (clone $query)->exists()) {
+        $entries = $locationScopes === null ? null : $query->get()->filter(function (IndicatorDataEntry $entry) use ($locationScopes): bool {
+            return collect($locationScopes)->contains(function (array $scope) use ($entry): bool {
+                $organizationMatches = ($scope['organization_id'] ?? null) === null
+                    || (int) $entry->organization_id === (int) $scope['organization_id'];
+                if (! $organizationMatches) {
+                    return false;
+                }
+
+                if (($scope['location_level'] ?? null) === null || ($scope['location_id'] ?? null) === null) {
+                    return true;
+                }
+
+                return $entry->location_level !== null && $entry->location_id !== null
+                    && AdminLocationLevel::isWithin(
+                        $entry->location_level,
+                        (int) $entry->location_id,
+                        $scope['location_level'],
+                        (int) $scope['location_id'],
+                    );
+            });
+        });
+
+        if (($entries !== null && $entries->isEmpty()) || ($entries === null && ! (clone $query)->exists())) {
             return $indicator->aggregation_method === 'count' ? 0.0 : null;
+        }
+
+        if ($indicator->aggregation_method === 'latest' && ($indicator->requires_location || in_array($indicator->collection_scope, ['institutional', 'mixed'], true))) {
+            $entries ??= (clone $query)->orderByDesc('entry_date')->orderByDesc('id')->get();
+            $latestByReportingUnit = $entries->groupBy(function (IndicatorDataEntry $entry) use ($indicator): string {
+                if ($indicator->requires_location && $entry->location_level && $entry->location_id) {
+                    return 'location:'.$entry->location_level.':'.$entry->location_id;
+                }
+
+                return 'organization:'.($entry->organization_id ?? 'national');
+            })->map(fn ($group) => (float) $group->first()->actual_value);
+
+            $measurementCode = $indicator->measurementType()->value('code');
+
+            return in_array($measurementCode, ['percentage', 'ratio'], true)
+                ? (float) $latestByReportingUnit->avg()
+                : (float) $latestByReportingUnit->sum();
+        }
+
+        if ($entries !== null) {
+            return $this->aggregateCollection($entries, $indicator->aggregation_method);
         }
 
         return $this->aggregate(clone $query, $indicator->aggregation_method);
@@ -238,6 +294,21 @@ class IndicatorPerformanceService
             'max' => $query->max('actual_value'),
             'min' => $query->min('actual_value'),
             default => $query->sum('actual_value'),
+        };
+
+        return $value === null ? null : (float) $value;
+    }
+
+    /** @param Collection<int, IndicatorDataEntry> $entries */
+    private function aggregateCollection(Collection $entries, ?string $method): ?float
+    {
+        $value = match ($method) {
+            'average' => $entries->avg('actual_value'),
+            'latest' => $entries->sortByDesc(fn (IndicatorDataEntry $entry) => $entry->entry_date?->getTimestamp() ?? 0)->first()?->actual_value,
+            'count' => $entries->count(),
+            'max' => $entries->max('actual_value'),
+            'min' => $entries->min('actual_value'),
+            default => $entries->sum('actual_value'),
         };
 
         return $value === null ? null : (float) $value;

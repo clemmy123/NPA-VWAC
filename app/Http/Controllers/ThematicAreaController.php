@@ -20,13 +20,15 @@ use Illuminate\View\View;
 
 class ThematicAreaController extends Controller
 {
-    public const array STATUS_OPTIONS = ['draft', 'active', 'completed', 'closed'];
+    public const array STATUS_OPTIONS = ['draft', 'active', 'inactive', 'completed', 'closed'];
 
     public function index(Request $request): JsonResponse|View
     {
+        $projectId = $request->integer('project_id');
         $thematicAreas = $this->scopedThematicAreas($request)
             ->with('project')
-            ->when($request->integer('project_id'), fn ($query, $projectId) => $query->where('project_id', $projectId))
+            ->when($projectId, fn ($query) => $query->where('project_id', $projectId))
+            ->when(! $request->wantsJson() && ! $projectId, fn ($query) => $query->whereRaw('1 = 0'))
             ->latest('id')
             ->paginate($request->integer('per_page', 15));
 
@@ -34,7 +36,11 @@ class ThematicAreaController extends Controller
             return response()->json(ThematicAreaResource::collection($thematicAreas)->response()->getData(true));
         }
 
-        return view('thematic-areas.index', ['thematicAreas' => $thematicAreas]);
+        return view('thematic-areas.index', [
+            'thematicAreas' => $thematicAreas,
+            'projects' => $this->assignableProjects($request),
+            'selectedProjectId' => $projectId,
+        ]);
     }
 
     public function create(Request $request): View
@@ -121,6 +127,14 @@ class ThematicAreaController extends Controller
         }
 
         return $this->redirectBackOrTo($request, 'thematic-areas.index')->with('success', "Thematic area \"{$thematicArea->name}\" deleted.");
+    }
+
+    public function disable(Request $request, ThematicArea $thematicArea): RedirectResponse
+    {
+        $this->authorizeThematicAreaAccess($request, $thematicArea);
+        $thematicArea->update(['status' => 'inactive']);
+
+        return back()->with('success', "Thematic area \"{$thematicArea->name}\" disabled.");
     }
 
     private function scopedThematicAreas(Request $request): Builder

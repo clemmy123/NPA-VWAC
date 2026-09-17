@@ -17,6 +17,18 @@
     @endcan
 </div>
 
+<form method="GET" action="{{ route('thematic-areas.index') }}" class="filter-card report-filters mb-3" id="thematic-area-filters">
+    <div class="rf-field flex-grow-1">
+        <label for="project_id">Project</label>
+        <select name="project_id" id="project_id" class="form-control select2" required>
+            <option value="">Select a project to view thematic areas…</option>
+            @foreach ($projects as $project)
+            <option value="{{ $project->id }}" @selected($selectedProjectId === $project->id)>{{ $project->name }}</option>
+            @endforeach
+        </select>
+    </div>
+</form>
+
 {{-- Desktop Table --}}
 <div class="table-card d-none d-md-block">
     <table class="table mb-0">
@@ -40,6 +52,7 @@
                         'active' => 's-active',
                         'completed' => 's-received',
                         'closed' => 's-inactive',
+                        'inactive' => 's-inactive',
                         default => 's-default',
                     } }}">{{ ucfirst($thematicArea->status) }}</span>
                 </td>
@@ -48,13 +61,15 @@
                     @can('thematic-area.update')
                     <a href="{{ route('thematic-areas.edit', $thematicArea) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
                     @endcan
-                    @can('thematic-area.delete')
-                    <form action="{{ route('thematic-areas.destroy', $thematicArea) }}" method="POST" class="d-inline"
-                          onsubmit="return confirm('Delete thematic area &quot;{{ $thematicArea->name }}&quot;?');">
+                    @can('thematic-area.update')
+                    @if ($thematicArea->status === 'active')
+                    <form action="{{ route('thematic-areas.disable', $thematicArea) }}" method="POST" class="d-inline"
+                          onsubmit="return confirm('Disable this thematic area?');">
                         @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn-icon danger" title="Delete"><i class="mdi mdi-trash-can-outline"></i></button>
+                        @method('PATCH')
+                        <button type="submit" class="btn-icon danger" title="Disable"><i class="mdi mdi-cancel"></i></button>
                     </form>
+                    @endif
                     @endcan
                 </td>
             </tr>
@@ -63,7 +78,7 @@
                 <td colspan="5">
                     <div class="tbl-empty">
                         <i class="mdi mdi-sitemap-outline"></i>
-                        <p>No thematic areas found.</p>
+                        <p>{{ $selectedProjectId ? 'No thematic areas found for this project.' : 'Select a project above to view its thematic areas.' }}</p>
                     </div>
                 </td>
             </tr>
@@ -87,6 +102,7 @@
                 'active' => 's-active',
                 'completed' => 's-received',
                 'closed' => 's-inactive',
+                'inactive' => 's-inactive',
                 default => 's-default',
             } }}">{{ ucfirst($thematicArea->status) }}</span>
         </div>
@@ -98,20 +114,21 @@
             @can('thematic-area.update')
             <a href="{{ route('thematic-areas.edit', $thematicArea) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
             @endcan
-            @can('thematic-area.delete')
-            <form action="{{ route('thematic-areas.destroy', $thematicArea) }}" method="POST" class="d-inline"
-                  onsubmit="return confirm('Delete thematic area &quot;{{ $thematicArea->name }}&quot;?');">
+            @can('thematic-area.update')
+            @if ($thematicArea->status === 'active')
+            <form action="{{ route('thematic-areas.disable', $thematicArea) }}" method="POST" class="d-inline" onsubmit="return confirm('Disable this thematic area?');">
                 @csrf
-                @method('DELETE')
-                <button type="submit" class="btn-icon danger" title="Delete"><i class="mdi mdi-trash-can-outline"></i></button>
+                @method('PATCH')
+                <button type="submit" class="btn-icon danger" title="Disable"><i class="mdi mdi-cancel"></i></button>
             </form>
+            @endif
             @endcan
         </div>
     </div>
     @empty
     <div class="tbl-empty">
         <i class="mdi mdi-sitemap-outline"></i>
-        <p>No thematic areas found.</p>
+        <p>{{ $selectedProjectId ? 'No thematic areas found for this project.' : 'Select a project above to view its thematic areas.' }}</p>
     </div>
     @endforelse
 
@@ -122,3 +139,16 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var project = document.getElementById('project_id');
+    function submitFilter() {
+        document.getElementById('thematic-area-filters').submit();
+    }
+    if (window.jQuery) jQuery(project).on('change select2:select', submitFilter);
+    else project.addEventListener('change', submitFilter);
+});
+</script>
+@endpush

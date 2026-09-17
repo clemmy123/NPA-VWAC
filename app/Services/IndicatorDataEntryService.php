@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\IndicatorDataAssignment;
 use App\Models\IndicatorDataEntry;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -18,17 +17,11 @@ class IndicatorDataEntryService
      * @param  list<array<string, mixed>>  $expenses
      * @param  list<UploadedFile>  $evidenceFiles
      */
-    public function create(array $data, array $rows, array $expenses, array $evidenceFiles, User $user): IndicatorDataEntry
+    public function create(array $data, array $rows, array $expenses, array $evidenceFiles, User $user, array $activities = []): IndicatorDataEntry
     {
-        $this->assertAssignmentScope(
-            $user,
-            (int) $data['indicator_id'],
-            $data['location_level'] ?? null,
-            isset($data['location_id']) ? (int) $data['location_id'] : null,
-            isset($data['organization_id']) ? (int) $data['organization_id'] : null,
-        );
+        $this->authorizeAssignedIndicator($user, (int) $data['indicator_id']);
 
-        return DB::transaction(function () use ($data, $rows, $expenses, $evidenceFiles, $user): IndicatorDataEntry {
+        return DB::transaction(function () use ($data, $rows, $expenses, $evidenceFiles, $user, $activities): IndicatorDataEntry {
             $entry = IndicatorDataEntry::create($data + [
                 'entered_by' => $user->id,
                 'status' => 'draft',
@@ -36,6 +29,7 @@ class IndicatorDataEntryService
 
             $this->syncRows($entry, $rows);
             $this->syncExpenses($entry, $expenses);
+            $this->syncActivities($entry, $activities);
             $this->attachEvidence($entry, $evidenceFiles);
 
             return $entry;
@@ -48,26 +42,15 @@ class IndicatorDataEntryService
      * @param  list<array<string, mixed>>|null  $expenses
      * @param  list<UploadedFile>  $evidenceFiles
      */
-    public function update(IndicatorDataEntry $entry, array $data, ?array $rows, ?array $expenses, array $evidenceFiles, User $user): IndicatorDataEntry
+    public function update(IndicatorDataEntry $entry, array $data, ?array $rows, ?array $expenses, array $evidenceFiles, User $user, ?array $activities = null): IndicatorDataEntry
     {
+        $this->authorizeAssignedIndicator($user, (int) ($data['indicator_id'] ?? $entry->indicator_id));
+
         if (! in_array($entry->status, ['draft', 'rejected'], true)) {
             throw new AuthorizationException('Only draft or rejected entries can be edited.');
         }
 
-        $indicatorId = (int) ($data['indicator_id'] ?? $entry->indicator_id);
-        $locationLevel = array_key_exists('location_level', $data) ? $data['location_level'] : $entry->location_level;
-        $locationId = array_key_exists('location_id', $data) ? $data['location_id'] : $entry->location_id;
-        $organizationId = array_key_exists('organization_id', $data) ? $data['organization_id'] : $entry->organization_id;
-
-        $this->assertAssignmentScope(
-            $user,
-            $indicatorId,
-            $locationLevel,
-            $locationId !== null ? (int) $locationId : null,
-            $organizationId !== null ? (int) $organizationId : null,
-        );
-
-        DB::transaction(function () use ($entry, $data, $rows, $expenses, $evidenceFiles): void {
+        DB::transaction(function () use ($entry, $data, $rows, $expenses, $evidenceFiles, $activities): void {
             $entry->update($data);
 
             if ($rows !== null) {
@@ -78,10 +61,21 @@ class IndicatorDataEntryService
                 $this->syncExpenses($entry, $expenses);
             }
 
+            if ($activities !== null) {
+                $this->syncActivities($entry, $activities);
+            }
+
             $this->attachEvidence($entry, $evidenceFiles);
         });
 
         return $entry->fresh();
+    }
+
+    private function authorizeAssignedIndicator(User $user, int $indicatorId): void
+    {
+        if (! $user->can('indicator.view-all') && ! in_array($indicatorId, $user->assignedIndicatorIds(), true)) {
+            throw new AuthorizationException('This indicator is not assigned to you.');
+        }
     }
 
     public function removeEvidence(IndicatorDataEntry $entry, Media $media): void
@@ -93,45 +87,6 @@ class IndicatorDataEntryService
         }
 
         $media->delete();
-    }
-
-    private function assertAssignmentScope(
-        User $user,
-        int $indicatorId,
-        ?string $locationLevel,
-        ?int $locationId,
-        ?int $organizationId,
-    ): void
-    {
-        if ($user->hasRole('Super Admin')) {
-            return;
-        }
-
-        $assignments = IndicatorDataAssignment::query()
-            ->where('indicator_id', $indicatorId)
-            ->where('is_active', true)
-            ->where(function ($query) use ($user): void {
-                $query->where('user_id', $user->id);
-
-                if ($user->organization_id !== null) {
-                    $query->orWhere('organization_id', $user->organization_id);
-                }
-            })
-            ->get();
-
-        if ($assignments->isEmpty()) {
-            throw new AuthorizationException('You are not assigned to report on this indicator.');
-        }
-
-        $matches = $assignments->contains(
-            fn (IndicatorDataAssignment $assignment) => ($assignment->location_level === null
-                    || ($assignment->location_level === $locationLevel && (int) $assignment->location_id === $locationId))
-                && ($assignment->organization_id === null || (int) $assignment->organization_id === $organizationId)
-        );
-
-        if (! $matches) {
-            throw new AuthorizationException('You are not assigned to report on this indicator for the given location and organization.');
-        }
     }
 
     /** @param  list<array<string, mixed>>  $rows */
@@ -158,6 +113,15 @@ class IndicatorDataEntryService
 
         foreach ($expenses as $expenseData) {
             $entry->expenses()->create($expenseData);
+        }
+    }
+
+    /** @param list<array<string, mixed>> $activities */
+    private function syncActivities(IndicatorDataEntry $entry, array $activities): void
+    {
+        $entry->activities()->delete();
+        foreach ($activities as $activity) {
+            $entry->activities()->create($activity);
         }
     }
 

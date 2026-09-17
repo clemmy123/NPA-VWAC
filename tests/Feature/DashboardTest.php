@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\FinancialYear;
+use App\Models\District;
 use App\Models\Indicator;
 use App\Models\IndicatorDataEntry;
 use App\Models\IndicatorTarget;
@@ -149,12 +150,12 @@ class DashboardTest extends TestCase
         $response->assertSee('value="'.$second->id.'"', false);
     }
 
-    public function test_data_entry_user_dashboard_is_limited_to_their_assigned_indicator(): void
+    public function test_data_entry_user_dashboard_shows_only_assigned_active_indicators(): void
     {
         $user = $this->userWithRole('Data Entry User');
         FinancialYear::factory()->create(['is_current' => true]);
-        $assigned = Indicator::factory()->create(['name' => 'Assigned dashboard indicator']);
-        $other = Indicator::factory()->create(['name' => 'Hidden dashboard indicator']);
+        $assigned = Indicator::factory()->create(['name' => 'Assigned dashboard indicator', 'status' => 'active']);
+        $other = Indicator::factory()->create(['name' => 'Available dashboard indicator', 'status' => 'active']);
         \App\Models\IndicatorDataAssignment::factory()->create([
             'indicator_id' => $assigned->id,
             'user_id' => $user->id,
@@ -165,5 +166,56 @@ class DashboardTest extends TestCase
         $response->assertOk();
         $response->assertSee($assigned->name);
         $response->assertDontSee($other->name);
+    }
+
+    public function test_dashboard_is_not_restricted_by_legacy_region_assignments(): void
+    {
+        $collector = $this->userWithRole('Data Entry User');
+        $financialYear = FinancialYear::factory()->create(['is_current' => true]);
+        $indicator = Indicator::factory()->create([
+            'name' => 'Scoped district collections',
+            'status' => 'active',
+            'requires_location' => true,
+            'reporting_location_level' => 'district',
+            'aggregation_method' => 'sum',
+        ]);
+        $assignedRegion = Region::factory()->create(['name' => 'Assigned Region']);
+        $otherRegion = Region::factory()->create(['name' => 'Other Region']);
+        $insideDistrict = District::factory()->create(['name' => 'Inside District', 'region_id' => $assignedRegion->region_id]);
+        $outsideDistrict = District::factory()->create(['name' => 'Outside District', 'region_id' => $otherRegion->region_id]);
+        \App\Models\IndicatorDataAssignment::factory()->create([
+            'indicator_id' => $indicator->id,
+            'user_id' => $collector->id,
+            'location_level' => 'region',
+            'location_id' => $assignedRegion->region_id,
+        ]);
+        IndicatorTarget::factory()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'target_value' => 100,
+        ]);
+        IndicatorDataEntry::factory()->approved()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'location_level' => 'district',
+            'location_id' => $insideDistrict->district_id,
+            'actual_value' => 10,
+        ]);
+        IndicatorDataEntry::factory()->approved()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'location_level' => 'district',
+            'location_id' => $outsideDistrict->district_id,
+            'actual_value' => 90,
+        ]);
+
+        $response = $this->actingAs($collector)->get(route('dashboard'));
+
+        $response->assertOk();
+        $response->assertSee('100% reached');
+        $response->assertSee('Inside District');
+        $response->assertSee('Outside District');
+        $response->assertSee('Assigned Region');
+        $response->assertSee('Other Region');
     }
 }

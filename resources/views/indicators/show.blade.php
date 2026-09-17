@@ -26,7 +26,7 @@
         <div class="col-md-3 mb-2"><span class="text-muted small">Code</span><div><span class="ref-pill">{{ $indicator->code }}</span></div></div>
         <div class="col-md-3 mb-2"><span class="text-muted small">Status</span><div>
             <span class="s-badge {{ match ($indicator->status) {
-                'active' => 's-active', 'completed' => 's-received', 'closed' => 's-inactive', default => 's-default',
+                'active' => 's-active', 'completed' => 's-received', 'closed', 'inactive' => 's-inactive', default => 's-default',
             } }}">{{ ucfirst($indicator->status) }}</span>
         </div></div>
         <div class="col-md-3 mb-2"><span class="text-muted small">Measurement Type</span><div>{{ $indicator->measurementType?->name ?? '—' }}</div></div>
@@ -54,7 +54,7 @@
         <tbody>
             @forelse ($baselines as $baseline)
             <tr>
-                <td>{{ $baseline->baseline_value }}</td>
+                <td>{{ \App\Support\DisplayNumber::format($baseline->baseline_value) }}</td>
                 <td>{{ $baseline->financialYear?->name ?? '—' }}</td>
                 <td>{{ $baseline->baseline_date?->format('d M Y') ?? '—' }}</td>
                 <td>{{ $baseline->organization?->name ?? '—' }}</td>
@@ -81,7 +81,7 @@
 <div class="d-md-none mb-4">
     @forelse ($baselines as $baseline)
     <div class="mob-card">
-        <div class="mob-card-top"><span class="fw-600">{{ $baseline->baseline_value }}</span><span class="text-muted small">{{ $baseline->financialYear?->name ?? '—' }}</span></div>
+        <div class="mob-card-top"><span class="fw-600">{{ \App\Support\DisplayNumber::format($baseline->baseline_value) }}</span><span class="text-muted small">{{ $baseline->financialYear?->name ?? '—' }}</span></div>
         <div class="mob-card-meta"><span>{{ $baseline->organization?->name ?? '—' }}</span></div>
         <div class="mob-card-footer">
             @can('indicator.set-baseline')
@@ -117,7 +117,7 @@
         <tbody>
             @forelse ($targets as $target)
             <tr>
-                <td>{{ $target->target_value }}</td>
+                <td>{{ \App\Support\DisplayNumber::format($target->target_value) }}</td>
                 <td>{{ $target->financialYear?->name ?? '—' }}</td>
                 <td>{{ $target->reportingPeriod?->name ?? 'Whole year' }}</td>
                 <td>{{ $target->dimensionOption?->name ?? 'Aggregate' }}</td>
@@ -144,7 +144,7 @@
 <div class="d-md-none mb-4">
     @forelse ($targets as $target)
     <div class="mob-card">
-        <div class="mob-card-top"><span class="fw-600">{{ $target->target_value }}</span><span class="text-muted small">{{ $target->financialYear?->name ?? '—' }}</span></div>
+        <div class="mob-card-top"><span class="fw-600">{{ \App\Support\DisplayNumber::format($target->target_value) }}</span><span class="text-muted small">{{ $target->financialYear?->name ?? '—' }}</span></div>
         <div class="mob-card-meta"><span>{{ $target->reportingPeriod?->name ?? 'Whole year' }}</span></div>
         <div class="mob-card-footer">
             @can('indicator.set-target')

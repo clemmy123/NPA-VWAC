@@ -73,6 +73,12 @@ class NpaVawcPlanSeeder extends Seeder
         $code = self::SHEET_CODES[$row['sheet']].'-'.str_pad((string) $row['seq'], 2, '0', STR_PAD_LEFT);
 
         [$measurementTypeCode, $unitCode] = $this->guessMeasurement($row['name']);
+        $searchableText = strtolower($row['name'].' '.$row['description']);
+        $hasBudgetImplication = $measurementTypeCode === 'currency'
+            || str_contains($searchableText, 'budget allocated')
+            || str_contains($searchableText, 'expenditure');
+        $requiresActivity = collect(['conducted', 'training', 'trained', 'meeting', 'dialogue', 'campaign', 'programme', 'program'])
+            ->contains(fn (string $keyword): bool => str_contains($searchableText, $keyword));
 
         Indicator::query()->updateOrCreate(
             ['thematic_area_id' => $thematicArea->id, 'code' => $code],
@@ -82,9 +88,19 @@ class NpaVawcPlanSeeder extends Seeder
                 'measurement_type_id' => MeasurementType::query()->where('code', $measurementTypeCode)->value('id'),
                 'unit_of_measure_id' => UnitOfMeasure::query()->where('code', $unitCode)->value('id'),
                 'collection_mode' => 'progressive',
-                'aggregation_method' => 'sum',
+                'aggregation_method' => match ($measurementTypeCode) {
+                    'percentage', 'ratio' => 'average',
+                    'yes_no' => 'latest',
+                    default => 'sum',
+                },
                 'reporting_frequency' => 'quarterly',
                 'collection_scope' => 'national',
+                'requires_location' => false,
+                'reporting_location_level' => null,
+                'requires_activity' => $requiresActivity,
+                'has_budget_implication' => $hasBudgetImplication,
+                'requires_evidence' => false,
+                'requires_hierarchical_approval' => false,
                 'status' => 'active',
             ],
         );
@@ -109,6 +125,10 @@ class NpaVawcPlanSeeder extends Seeder
 
         if (str_contains($lower, 'percentage') || str_contains($lower, 'proportion') || str_contains($lower, '%')) {
             return ['percentage', 'percent'];
+        }
+
+        if (str_contains($lower, 'in place')) {
+            return ['yes_no', 'responses'];
         }
 
         $unit = match (true) {

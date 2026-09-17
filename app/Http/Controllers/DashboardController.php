@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\ResolvesReportPeriod;
 use App\Models\FinancialYear;
 use App\Models\Indicator;
+use App\Models\IndicatorDataAssignment;
 use App\Models\IndicatorDataEntry;
 use App\Models\Organization;
 use App\Services\IndicatorPerformanceService;
@@ -48,8 +49,10 @@ class DashboardController extends Controller
             ->orderBy('name')
             ->get();
 
+        $assignedAreaIds = Indicator::query()->whereIn('id', $assignedIndicatorIds)->pluck('thematic_area_id')->all();
+        $allowedAreaIds = $visibleAreaIds === null ? null : array_values(array_unique(array_merge($visibleAreaIds, $assignedAreaIds)));
         $thematicAreas = $projects->flatMap->thematicAreas
-            ->when($visibleAreaIds !== null, fn (Collection $areas) => $areas->whereIn('id', $visibleAreaIds))
+            ->when($allowedAreaIds !== null, fn (Collection $areas) => $areas->whereIn('id', $allowedAreaIds))
             ->sortBy('name')->values();
         $indicators = $thematicAreas->flatMap->indicators->sortBy('code')->values();
 
@@ -74,14 +77,30 @@ class DashboardController extends Controller
             ?? FinancialYear::query()->orderByDesc('start_date')->first();
 
         $performance = null;
-        $breakdown = ['type' => null, 'title' => 'Collected Data', 'labels' => [], 'values' => [], 'rows' => []];
+        $breakdown = ['type' => null, 'title' => 'Collected Data', 'labels' => [], 'values' => [], 'rows' => [], 'rollups' => []];
         $progressPercent = null;
 
         if ($selectedIndicator && $financialYear) {
-            $performance = $this->performanceService->summarize($selectedIndicator, $financialYear);
-            $breakdown = $this->indicatorBreakdown($selectedIndicator, $financialYear);
+            $locationScopes = null;
+
+            $performance = $this->performanceService->summarize(
+                $selectedIndicator,
+                $financialYear,
+                locationScopes: $locationScopes,
+            );
+            $breakdown = $this->indicatorBreakdown($selectedIndicator, $financialYear, $locationScopes);
             $progressPercent = $performance['achievement_percent'];
         }
+
+        $visibleCollections = IndicatorDataEntry::query()
+            ->with(['indicator', 'enteredBy'])
+            ->when($financialYear, fn ($query) => $query->where('financial_year_id', $financialYear->id))
+            ->when(! $request->user()->can('indicator.view-all'), fn ($query) => $query->where('entered_by', $request->user()->id))
+            ->when($request->user()->can('indicator.view-all'), fn ($query) => $query->where(function ($visible) use ($request): void {
+                $visible->where('entered_by', $request->user()->id)->orWhereNotIn('status', ['draft', 'rejected']);
+            }))
+            ->latest('entry_date')
+            ->get();
 
         return view('dashboard', [
             'projects' => $projects,
@@ -94,13 +113,15 @@ class DashboardController extends Controller
             'performance' => $performance,
             'breakdown' => $breakdown,
             'progressPercent' => $progressPercent,
+            'collectionCounts' => $visibleCollections->countBy('status'),
+            'recentCollections' => $visibleCollections->take(5),
         ]);
     }
 
     /**
      * @return array{labels: list<string>, values: list<float>}
      */
-    private function indicatorBreakdown(Indicator $indicator, FinancialYear $financialYear): array
+    private function indicatorBreakdown(Indicator $indicator, FinancialYear $financialYear, ?array $locationScopes = null): array
     {
         $entries = IndicatorDataEntry::query()
             ->where('indicator_id', $indicator->id)
@@ -108,8 +129,33 @@ class DashboardController extends Controller
             ->where('status', 'approved')
             ->get();
 
+        if ($locationScopes !== null) {
+            $entries = $entries->filter(fn (IndicatorDataEntry $entry): bool => collect($locationScopes)->contains(
+                function (array $scope) use ($entry): bool {
+                    $organizationMatches = ($scope['organization_id'] ?? null) === null
+                        || (int) $entry->organization_id === (int) $scope['organization_id'];
+
+                    if (! $organizationMatches) {
+                        return false;
+                    }
+
+                    if (($scope['location_level'] ?? null) === null || ($scope['location_id'] ?? null) === null) {
+                        return true;
+                    }
+
+                    return $entry->location_level !== null && $entry->location_id !== null
+                        && AdminLocationLevel::isWithin(
+                            $entry->location_level,
+                            (int) $entry->location_id,
+                            $scope['location_level'],
+                            (int) $scope['location_id'],
+                        );
+                }
+            ));
+        }
+
         if ($entries->isEmpty()) {
-            return ['type' => null, 'title' => 'Collected Data', 'labels' => [], 'values' => [], 'rows' => []];
+            return ['type' => null, 'title' => 'Collected Data', 'labels' => [], 'values' => [], 'rows' => [], 'rollups' => []];
         }
 
         $locationEntries = $entries->whereNotNull('location_level')->whereNotNull('location_id');
@@ -132,12 +178,28 @@ class DashboardController extends Controller
                 ];
             })->sortBy('path')->values();
 
+            $rollups = collect(AdminLocationLevel::pathToLevel($level))->map(function (string $rollupLevel) use ($locationEntries, $indicator): array {
+                $grouped = $locationEntries->groupBy(function (IndicatorDataEntry $entry) use ($rollupLevel): string {
+                    $ancestor = AdminLocationLevel::ancestorChain($entry->location_level, (int) $entry->location_id)[$rollupLevel] ?? null;
+
+                    return $ancestor ? (string) $ancestor['id'] : 'missing';
+                })->forget('missing');
+
+                $rollupRows = $grouped->map(fn (Collection $group, $id): array => [
+                    'name' => AdminLocationLevel::name($rollupLevel, (int) $id) ?? 'Unknown',
+                    'value' => $this->aggregateRollupEntries($group, $indicator),
+                ])->sortBy('name')->values()->all();
+
+                return ['level' => $rollupLevel, 'rows' => $rollupRows];
+            })->filter(fn (array $rollup): bool => $rollup['rows'] !== [])->values()->all();
+
             return [
                 'type' => 'location',
                 'title' => 'Data by '.ucfirst(str_replace('_', ' ', $level)),
                 'labels' => $rows->pluck('name')->all(),
                 'values' => $rows->pluck('value')->all(),
                 'rows' => $rows->all(),
+                'rollups' => $rollups,
             ];
         }
 
@@ -150,7 +212,7 @@ class DashboardController extends Controller
                 'value' => $this->aggregateEntries($group, $indicator->aggregation_method),
             ])->sortBy('name')->values();
 
-            return ['type' => 'organization', 'title' => 'Data by Organization', 'labels' => $rows->pluck('name')->all(), 'values' => $rows->pluck('value')->all(), 'rows' => $rows->all()];
+            return ['type' => 'organization', 'title' => 'Data by Organization', 'labels' => $rows->pluck('name')->all(), 'values' => $rows->pluck('value')->all(), 'rows' => $rows->all(), 'rollups' => []];
         }
 
         $activityEntries = $entries->filter(fn (IndicatorDataEntry $entry): bool => filled($entry->activity_name));
@@ -161,10 +223,10 @@ class DashboardController extends Controller
                 'value' => $this->aggregateEntries($group, $indicator->aggregation_method),
             ])->sortBy('name')->values();
 
-            return ['type' => 'activity', 'title' => 'Data by Activity / Workstation', 'labels' => $rows->pluck('name')->all(), 'values' => $rows->pluck('value')->all(), 'rows' => $rows->all()];
+            return ['type' => 'activity', 'title' => 'Data by Activity / Workstation', 'labels' => $rows->pluck('name')->all(), 'values' => $rows->pluck('value')->all(), 'rows' => $rows->all(), 'rollups' => []];
         }
 
-        return ['type' => 'national', 'title' => 'National Collection', 'labels' => ['National'], 'values' => [$this->aggregateEntries($entries, $indicator->aggregation_method)], 'rows' => []];
+        return ['type' => 'national', 'title' => 'National Collection', 'labels' => ['National'], 'values' => [$this->aggregateEntries($entries, $indicator->aggregation_method)], 'rows' => [], 'rollups' => []];
     }
 
     /**
@@ -180,5 +242,20 @@ class DashboardController extends Controller
             'min' => $entries->min('actual_value'),
             default => $entries->sum('actual_value'),
         };
+    }
+
+    private function aggregateRollupEntries(Collection $entries, Indicator $indicator): float
+    {
+        if ($indicator->aggregation_method !== 'latest') {
+            return $this->aggregateEntries($entries, $indicator->aggregation_method);
+        }
+
+        $latestByLocation = $entries->groupBy(fn (IndicatorDataEntry $entry): string => $entry->location_level.':'.$entry->location_id)
+            ->map(fn (Collection $group): float => (float) $group->sortByDesc('entry_date')->first()?->actual_value);
+        $measurementCode = $indicator->measurementType()->value('code');
+
+        return in_array($measurementCode, ['percentage', 'ratio'], true)
+            ? (float) $latestByLocation->avg()
+            : (float) $latestByLocation->sum();
     }
 }

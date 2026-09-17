@@ -29,6 +29,27 @@ class NpaVawcPlanSeederTest extends TestCase
         $this->assertNotNull($indicator);
         $this->assertNotNull($indicator->measurement_type_id);
         $this->assertNotNull($indicator->unit_of_measure_id);
+
+        $seededIndicators = Indicator::whereHas('thematicArea', fn ($query) => $query->where('project_id', $project->id))->get();
+        $this->assertTrue($seededIndicators->every(fn (Indicator $item): bool =>
+            $item->measurement_type_id !== null
+            && $item->unit_of_measure_id !== null
+            && filled($item->collection_mode)
+            && filled($item->aggregation_method)
+            && filled($item->reporting_frequency)
+            && filled($item->collection_scope)
+        ));
+
+        $loanAmount = Indicator::where('code', 'T1-06')->firstOrFail();
+        $this->assertSame('currency', $loanAmount->measurementType?->code);
+        $this->assertTrue($loanAmount->has_budget_implication);
+
+        $taskForce = Indicator::where('code', 'T3B-04')->firstOrFail();
+        $this->assertSame('yes_no', $taskForce->measurementType?->code);
+        $this->assertSame('latest', $taskForce->aggregation_method);
+
+        $dialogue = Indicator::where('code', 'T2-01')->firstOrFail();
+        $this->assertTrue($dialogue->requires_activity);
     }
 
     public function test_it_is_safe_to_run_twice(): void

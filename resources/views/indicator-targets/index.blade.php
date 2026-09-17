@@ -39,7 +39,7 @@
                 <td>{{ $target->financialYear?->name ?? '—' }}</td>
                 <td>{{ $target->reportingPeriod?->name ?? 'Whole year' }}</td>
                 <td>{{ $target->dimensionOption?->name ?? 'Aggregate' }}</td>
-                <td>{{ rtrim(rtrim(number_format((float) $target->target_value, 4), '0'), '.') }}</td>
+                <td>{{ \App\Support\DisplayNumber::format($target->target_value) }}</td>
                 <td>
                     @can('indicator.set-target')
                     <a href="{{ route('indicator-targets.edit', $target) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
@@ -77,7 +77,7 @@
     <div class="mob-card">
         <div class="mob-card-top">
             <span class="fw-600">{{ $target->indicator?->name ?? '—' }}</span>
-            <span class="s-badge s-default">{{ rtrim(rtrim(number_format((float) $target->target_value, 4), '0'), '.') }}</span>
+            <span class="s-badge s-default">{{ \App\Support\DisplayNumber::format($target->target_value) }}</span>
         </div>
         <div class="mob-card-meta">
             <span><i class="mdi mdi-calendar-outline"></i> {{ $target->financialYear?->name ?? '—' }} · {{ $target->reportingPeriod?->name ?? 'Whole year' }}</span>

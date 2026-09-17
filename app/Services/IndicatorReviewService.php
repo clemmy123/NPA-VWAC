@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Models\IndicatorDataEntry;
+use App\Models\IndicatorApprovalAssignment;
 use App\Models\User;
+use App\Support\AdminLocationLevel;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -22,17 +24,51 @@ class IndicatorReviewService
 
         $this->assertReconciliation($entry);
 
-        $entry->update(['status' => 'submitted', 'submitted_at' => now()]);
+        if ($entry->indicator->requires_hierarchical_approval && $entry->location_level && $entry->location_id) {
+            $chain = AdminLocationLevel::ancestorChain($entry->location_level, (int) $entry->location_id);
+            $sequence = 1;
+            $entry->approvalSteps()->delete();
+            foreach (['ward', 'council', 'district', 'region'] as $level) {
+                if (isset($chain[$level])) {
+                    $entry->approvalSteps()->create([
+                        'location_level' => $level,
+                        'location_id' => $chain[$level]['id'],
+                        'sequence' => $sequence++,
+                        'status' => 'pending',
+                    ]);
+                }
+            }
+        }
+
+        $entry->update([
+            'status' => $entry->approvalSteps()->exists() ? 'pending_approval' : 'submitted',
+            'submitted_at' => now(),
+        ]);
 
         return $entry->fresh();
     }
 
     public function approve(IndicatorDataEntry $entry, User $actor, ?string $comment): IndicatorDataEntry
     {
-        if ($entry->status !== 'submitted') {
-            throw ValidationException::withMessages(['status' => 'Only submitted entries can be approved.']);
+        if (! in_array($entry->status, ['submitted', 'pending_approval'], true)) {
+            throw ValidationException::withMessages(['status' => 'Only submitted or pending entries can be approved.']);
         }
         $this->assertReviewerScope($entry, $actor);
+
+        $currentStep = $entry->approvalSteps()->where('status', 'pending')->orderBy('sequence')->first();
+        if ($currentStep) {
+            $assigned = IndicatorApprovalAssignment::query()->where('user_id', $actor->id)->where('is_active', true)
+                ->where('location_level', $currentStep->location_level)->where('location_id', $currentStep->location_id)->exists();
+            if (! $actor->hasRole('Super Admin') && ! $assigned) {
+                throw new AuthorizationException('This approval step is assigned to another geographic approver.');
+            }
+            $currentStep->update(['status' => 'approved', 'approved_by' => $actor->id, 'decided_at' => now(), 'comment' => $comment]);
+            if ($entry->approvalSteps()->where('status', 'pending')->exists()) {
+                $entry->update(['status' => 'pending_approval']);
+
+                return $entry->fresh();
+            }
+        }
 
         DB::transaction(function () use ($entry, $actor, $comment): void {
             $entry->update([
@@ -53,8 +89,8 @@ class IndicatorReviewService
 
     public function returnToSubmitter(IndicatorDataEntry $entry, User $actor, ?string $comment): IndicatorDataEntry
     {
-        if ($entry->status !== 'submitted') {
-            throw ValidationException::withMessages(['status' => 'Only submitted entries can be returned.']);
+        if (! in_array($entry->status, ['submitted', 'pending_approval'], true)) {
+            throw ValidationException::withMessages(['status' => 'Only submitted or pending entries can be returned.']);
         }
         $this->assertReviewerScope($entry, $actor);
 

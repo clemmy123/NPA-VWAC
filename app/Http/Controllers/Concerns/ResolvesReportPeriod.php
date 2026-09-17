@@ -19,12 +19,7 @@ trait ResolvesReportPeriod
 
         if (! $request->user()->hasRole('Super Admin')) {
             $user = $request->user();
-            $visibleThematicAreaIds = $this->visibleThematicAreaIds($request);
-            $query->where(function (Builder $inner) use ($user, $visibleThematicAreaIds): void {
-                $inner->whereIn('id', $user->assignedProjectIds())
-                    ->orWhereHas('thematicAreas', fn (Builder $areas) => $areas
-                        ->whereIn('id', $visibleThematicAreaIds));
-            });
+            $query->whereIn('id', $user->visibleProjectIds());
         }
 
         return $query;

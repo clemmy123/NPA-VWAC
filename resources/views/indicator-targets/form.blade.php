@@ -50,7 +50,7 @@
     <div class="col-md-6 mb-3">
         <label for="target_value" class="form-label">Target Value</label>
         <input type="number" step="0.0001" name="target_value" id="target_value" class="form-control @error('target_value') is-invalid @enderror"
-               value="{{ old('target_value', $target?->target_value) }}" required>
+               value="{{ old('target_value', \App\Support\DisplayNumber::input($target?->target_value)) }}" required>
         @error('target_value')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 

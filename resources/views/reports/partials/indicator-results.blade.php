@@ -5,6 +5,7 @@
                 <th>Indicator</th>
                 <th>Unit</th>
                 <th class="text-end">Target</th>
+                <th class="text-end">Previous Result</th>
                 <th class="text-end">Actual (approved)</th>
                 <th class="text-end">Achievement</th>
             </tr>
@@ -24,28 +25,29 @@
                         <details class="small mt-1">
                             <summary>{{ ucfirst($breakdownType) }} ({{ count($breakdownRows) }})</summary>
                             @foreach ($breakdownRows as $breakdownRow)
-                            <div class="text-muted">{{ $breakdownRow['label'] }}: {{ rtrim(rtrim(number_format($breakdownRow['value'], 2), '0'), '.') }}</div>
+                            <div class="text-muted">{{ $breakdownRow['label'] }}: {{ \App\Support\DisplayNumber::format($breakdownRow['value']) }}</div>
                             @endforeach
                         </details>
                         @endif
                     @endforeach
                 </td>
                 <td>{{ $row['indicator']->unitOfMeasure?->name ?? '—' }}</td>
-                <td class="text-end">{{ $perf['target_value'] === null ? '—' : rtrim(rtrim(number_format($perf['target_value'], 2), '0'), '.') }}</td>
-                <td class="text-end">{{ $perf['actual_value'] === null ? '—' : rtrim(rtrim(number_format($perf['actual_value'], 2), '0'), '.') }}</td>
+                <td class="text-end">{{ \App\Support\DisplayNumber::format($perf['target_value']) }}</td>
+                <td class="text-end">{{ \App\Support\DisplayNumber::format($perf['previous_actual_value'] ?? null) }}</td>
+                <td class="text-end">{{ \App\Support\DisplayNumber::format($perf['actual_value']) }}</td>
                 <td class="text-end">
                     @if ($perf['achievement_percent'] === null)
                     <span class="text-muted">—</span>
                     @else
                     <span class="s-badge {{ $perf['achievement_percent'] >= 100 ? 's-active' : ($perf['achievement_percent'] >= 50 ? 's-investigation' : 's-inactive') }}">
-                        {{ rtrim(rtrim(number_format($perf['achievement_percent'], 2), '0'), '.') }}%
+                        {{ \App\Support\DisplayNumber::format($perf['achievement_percent']) }}%
                     </span>
                     @endif
                 </td>
             </tr>
             @empty
             <tr>
-                <td colspan="5">
+                <td colspan="6">
                     <div class="tbl-empty">
                         <i class="mdi mdi-file-chart-outline"></i>
                         <p>No indicators in this thematic area.</p>
@@ -65,13 +67,14 @@
             <span class="mob-card-title">{{ $row['indicator']->name }}</span>
             @if ($perf['achievement_percent'] !== null)
             <span class="s-badge {{ $perf['achievement_percent'] >= 100 ? 's-active' : ($perf['achievement_percent'] >= 50 ? 's-investigation' : 's-inactive') }}">
-                {{ rtrim(rtrim(number_format($perf['achievement_percent'], 2), '0'), '.') }}%
+                {{ \App\Support\DisplayNumber::format($perf['achievement_percent']) }}%
             </span>
             @endif
         </div>
         <div class="mob-card-meta">
-            <span>Target {{ $perf['target_value'] === null ? '—' : rtrim(rtrim(number_format($perf['target_value'], 2), '0'), '.') }}</span>
-            <span>Actual {{ $perf['actual_value'] === null ? '—' : rtrim(rtrim(number_format($perf['actual_value'], 2), '0'), '.') }}</span>
+            <span>Target {{ \App\Support\DisplayNumber::format($perf['target_value']) }}</span>
+            <span>Previous {{ \App\Support\DisplayNumber::format($perf['previous_actual_value'] ?? null) }}</span>
+            <span>Actual {{ \App\Support\DisplayNumber::format($perf['actual_value']) }}</span>
         </div>
     </div>
     @empty

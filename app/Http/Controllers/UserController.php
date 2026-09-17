@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Organization;
+use App\Models\IndicatorApprovalAssignment;
 use App\Models\User;
+use App\Support\AdminLocationLevel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -36,6 +38,7 @@ class UserController extends Controller
     {
         $data = $this->validated($request);
         $role = $data['role'];
+        $approval = $this->extractApproval($data);
         unset($data['role']);
 
         if ($data['auth_provider'] === 'local') {
@@ -51,19 +54,26 @@ class UserController extends Controller
 
         $user = User::create($data);
         $user->syncRoles([$role]);
+        $this->syncApproval($user, $role, $approval);
 
         return redirect()->route('users.index')->with('success', "User \"{$user->name}\" created.");
     }
 
     public function edit(User $user): View
     {
-        return view('users.edit', ['user' => $user] + $this->formData());
+        $approval = $user->approvalAssignments()->where('is_active', true)->first();
+        return view('users.edit', [
+            'user' => $user,
+            'approvalAssignment' => $approval,
+            'approvalLocationChain' => $approval ? AdminLocationLevel::ancestorChain($approval->location_level, (int) $approval->location_id) : [],
+        ] + $this->formData());
     }
 
     public function update(Request $request, User $user): RedirectResponse
     {
         $data = $this->validated($request, $user);
         $role = $data['role'];
+        $approval = $this->extractApproval($data);
         unset($data['role']);
 
         if ($data['auth_provider'] === 'local') {
@@ -78,6 +88,7 @@ class UserController extends Controller
 
         $user->update($data);
         $user->syncRoles([$role]);
+        $this->syncApproval($user, $role, $approval);
 
         return redirect()->route('users.index')->with('success', "User \"{$user->name}\" updated.");
     }
@@ -99,6 +110,7 @@ class UserController extends Controller
         return [
             'organizations' => Organization::query()->orderBy('name')->get(),
             'roles' => Role::query()->orderBy('name')->get(),
+            'locationLevels' => ['region', 'district', 'council', 'ward'],
         ];
     }
 
@@ -120,6 +132,33 @@ class UserController extends Controller
             'password' => $passwordRules,
             'status' => ['required', 'string', 'in:active,inactive'],
             'role' => ['required', 'string', 'exists:roles,name'],
+            'approval_location_level' => ['nullable', 'string', 'in:region,district,council,ward', 'required_with:approval_location_id'],
+            'approval_location_id' => ['nullable', 'integer', 'required_with:approval_location_level'],
         ]);
+    }
+
+    private function extractApproval(array &$data): array
+    {
+        $approval = [
+            'location_level' => $data['approval_location_level'] ?? null,
+            'location_id' => isset($data['approval_location_id']) ? (int) $data['approval_location_id'] : null,
+        ];
+        unset($data['approval_location_level'], $data['approval_location_id']);
+
+        return $approval;
+    }
+
+    private function syncApproval(User $user, string $role, array $approval): void
+    {
+        $user->approvalAssignments()->update(['is_active' => false]);
+        if ($role !== 'Data Approver' || ! $approval['location_level'] || ! $approval['location_id']) {
+            return;
+        }
+        abort_unless(AdminLocationLevel::exists($approval['location_level'], $approval['location_id']), 422);
+        IndicatorApprovalAssignment::query()->updateOrCreate([
+            'user_id' => $user->id,
+            'location_level' => $approval['location_level'],
+            'location_id' => $approval['location_id'],
+        ], ['is_active' => true]);
     }
 }

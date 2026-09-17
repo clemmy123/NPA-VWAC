@@ -100,7 +100,7 @@ class ProjectController extends Controller
         $query = Project::query();
 
         if (! $request->user()->hasRole('Super Admin')) {
-            $query->whereIn('id', $request->user()->assignedProjectIds());
+            $query->whereIn('id', $request->user()->visibleProjectIds());
         }
 
         return $query;
@@ -112,6 +112,6 @@ class ProjectController extends Controller
             return;
         }
 
-        abort_unless(in_array($project->id, $request->user()->assignedProjectIds(), true), 403);
+        abort_unless(in_array($project->id, $request->user()->visibleProjectIds(), true), 403);
     }
 }

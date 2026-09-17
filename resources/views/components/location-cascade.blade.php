@@ -1,14 +1,12 @@
 @php
-    $levelSelectId = $levelSelectId ?? 'location_level';
     $fieldName = $fieldName ?? 'location_id';
     $fieldId = $fieldId ?? 'location_id';
     $currentId = $currentId ?? null;
     $ancestorChain = $ancestorChain ?? [];
+    $targetLevel = $targetLevel ?? null;
 @endphp
 
-<div class="location-cascade"
-     data-level-select="{{ $levelSelectId }}"
-     data-ancestor-chain="{{ json_encode($ancestorChain) }}">
+<div class="location-cascade" data-target-level="{{ $targetLevel }}" data-ancestor-chain="{{ base64_encode(json_encode($ancestorChain)) }}">
     <div class="location-cascade-selects"></div>
     <input type="hidden" name="{{ $fieldName }}" id="{{ $fieldId }}" value="{{ $currentId }}">
 </div>
@@ -19,138 +17,131 @@
 (function () {
     var PARENT_LEVEL = {
         region: null, district: 'region', council: 'district', division: 'council',
-        township: 'division', ward: 'division', village_mtaa: 'ward', kitongoji: 'village_mtaa',
+        township: 'division', ward: 'council', village_mtaa: 'ward', kitongoji: 'village_mtaa'
     };
     var LABELS = {
         region: 'Region', district: 'District', council: 'Council', division: 'Division',
-        township: 'Township', ward: 'Ward', village_mtaa: 'Village/Mtaa', kitongoji: 'Kitongoji',
+        township: 'Township', ward: 'Ward', village_mtaa: 'Village/Mtaa', kitongoji: 'Kitongoji'
     };
 
-    function pathToLevel(level) {
+    function pathTo(level) {
         var path = [];
-        var current = level;
-        while (current) {
-            path.unshift(current);
-            current = PARENT_LEVEL[current];
+        while (level) {
+            path.unshift(level);
+            level = PARENT_LEVEL[level];
         }
         return path;
     }
 
-    function fetchOptions(level, parentId) {
-        var url = '/admin-locations/' + level + (parentId ? ('?parent_id=' + parentId) : '');
-        return fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(function (r) { return r.json(); });
-    }
-
-    function renderOptions(select, options, selectedId) {
-        var html = '<option value="">Select ' + LABELS[select.dataset.level] + '…</option>';
-        options.forEach(function (opt) {
-            var isSelected = selectedId != null && String(opt.id) === String(selectedId);
-            html += '<option value="' + opt.id + '"' + (isSelected ? ' selected' : '') + '>' + opt.name + '</option>';
+    function loadOptions(level, parentId, parentLevel) {
+        var params = new URLSearchParams();
+        if (parentId) params.set('parent_id', parentId);
+        if (parentLevel) params.set('parent_level', parentLevel);
+        return fetch('/admin-locations/' + level + (params.toString() ? '?' + params.toString() : ''), {
+            credentials: 'same-origin',
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        }).then(function (response) {
+            if (!response.ok) throw new Error('Unable to load ' + LABELS[level]);
+            return response.json();
         });
-        select.innerHTML = html;
     }
 
-    function initCascade(root) {
-        var levelSelect = document.getElementById(root.dataset.levelSelect);
-        var hiddenInput = root.querySelector('input[type="hidden"]');
-        var host = root.querySelector('.location-cascade-selects');
-        var ancestorChain = JSON.parse(root.dataset.ancestorChain || '{}');
-        var selects = [];
+    function destroyField(field) {
+        var select = field.querySelector('select');
+        if (select && window.jQuery && jQuery.fn.select2 && jQuery(select).hasClass('select2-hidden-accessible')) {
+            jQuery(select).select2('destroy');
+        }
+        field.remove();
+    }
 
-        function clearSelectsFrom(index) {
-            for (var i = selects.length - 1; i >= index; i--) {
-                if (selects[i]) {
-                    selects[i].closest('.location-cascade-field').remove();
-                }
-            }
-            selects.length = index;
+    function init(root) {
+        var host = root.querySelector('.location-cascade-selects');
+        var output = root.querySelector('input[type="hidden"]');
+        var target = root.dataset.targetLevel || '';
+        var path = pathTo(target);
+        var preset = root.dataset.ancestorChain ? JSON.parse(atob(root.dataset.ancestorChain)) : {};
+        var generation = 0;
+
+        function removeAfter(index) {
+            Array.from(host.querySelectorAll('.location-cascade-field')).forEach(function (field) {
+                if (Number(field.dataset.index) > index) destroyField(field);
+            });
         }
 
-        function buildLevel(level, index, path) {
-            var wrapper = document.createElement('div');
-            wrapper.className = 'mb-2 location-cascade-field';
+        function appendLevel(index, parentId, usePreset, buildGeneration) {
+            if (index >= path.length || buildGeneration !== generation) return Promise.resolve();
+            var level = path[index];
+            var field = document.createElement('div');
+            field.className = 'location-cascade-field';
+            field.dataset.index = index;
             var label = document.createElement('label');
             label.className = 'form-label small text-muted mb-1';
             label.textContent = LABELS[level];
             var select = document.createElement('select');
-            select.className = 'form-control form-control-sm select2';
+            select.className = 'form-control';
             select.dataset.level = level;
-            wrapper.appendChild(label);
-            wrapper.appendChild(select);
-            host.appendChild(wrapper);
-            selects[index] = select;
+            select.dataset.index = index;
+            select.innerHTML = '<option value="">Loading ' + LABELS[level] + '…</option>';
+            field.appendChild(label);
+            field.appendChild(select);
+            host.appendChild(field);
 
-            select.addEventListener('change', function () {
-                clearSelectsFrom(index + 1);
-
-                if (index === path.length - 1) {
-                    hiddenInput.value = select.value;
-                    return;
+            return loadOptions(level, parentId, index ? path[index - 1] : null).then(function (options) {
+                if (buildGeneration !== generation || !field.isConnected) return;
+                var selectedId = usePreset && preset[level] ? String(preset[level].id) : '';
+                select.replaceChildren(new Option('Select ' + LABELS[level] + '…', ''));
+                options.forEach(function (option) {
+                    select.appendChild(new Option(option.name, String(option.id), false, String(option.id) === selectedId));
+                });
+                if (window.jQuery && jQuery.fn.select2) {
+                    jQuery(select).select2({
+                        width: '100%', minimumResultsForSearch: 8,
+                        placeholder: 'Select ' + LABELS[level] + '…', dropdownParent: jQuery(field)
+                    });
                 }
-
-                hiddenInput.value = '';
-
-                if (select.value) {
-                    buildAndPopulate(index + 1, path, select.value, false);
-                }
-            });
-
-            return select;
-        }
-
-        function buildAndPopulate(index, path, parentId, usePreset) {
-            var level = path[index];
-            var select = buildLevel(level, index, path);
-            var preset = usePreset ? ancestorChain[level] : null;
-
-            return fetchOptions(level, parentId).then(function (options) {
-                renderOptions(select, options, preset ? preset.id : null);
-
-                // Some levels (ward, village/mtaa) can run into the thousands,
-                // so every cascade level gets a searchable select2 rather than
-                // a long native dropdown — init here since these selects are
-                // built well after the page's own DOMContentLoaded already fired.
-                if (window.initAppSelect2) {
-                    window.initAppSelect2(select, { placeholder: 'Select ' + LABELS[level] + '…' });
-                } else if (window.jQuery) {
-                    jQuery(select).select2({ width: '100%', placeholder: 'Select ' + LABELS[level] + '…' });
-                }
-
-                if (index === path.length - 1) {
-                    hiddenInput.value = preset ? preset.id : (select.value || '');
-                }
-
-                if (preset && index + 1 < path.length) {
-                    return buildAndPopulate(index + 1, path, preset.id, true);
-                }
+                if (index === path.length - 1) output.value = selectedId;
+                if (selectedId && index < path.length - 1) return appendLevel(index + 1, selectedId, true, buildGeneration);
+            }).catch(function (error) {
+                select.replaceChildren(new Option(error.message, ''));
+                select.classList.add('is-invalid');
             });
         }
 
-        function rebuild(usePreset) {
-            host.innerHTML = '';
-            selects = [];
-            hiddenInput.value = '';
-
-            var targetLevel = levelSelect.value;
-            if (! targetLevel) {
+        function selectionChanged(select) {
+            var index = Number(select.dataset.index);
+            removeAfter(index);
+            output.value = '';
+            if (!select.value) return;
+            if (index === path.length - 1) {
+                output.value = select.value;
                 return;
             }
-
-            buildAndPopulate(0, pathToLevel(targetLevel), null, usePreset);
+            appendLevel(index + 1, select.value, false, generation);
         }
 
-        levelSelect.addEventListener('change', function () { rebuild(false); });
+        if (window.jQuery) {
+            jQuery(root).on('change.locationCascade', 'select[data-level]', function () { selectionChanged(this); });
+        } else {
+            root.addEventListener('change', function (event) {
+                if (event.target.matches('select[data-level]')) selectionChanged(event.target);
+            });
+        }
+
         root.addEventListener('location-cascade:set', function (event) {
-            ancestorChain = event.detail && event.detail.ancestorChain ? event.detail.ancestorChain : {};
-            rebuild(true);
+            generation++;
+            target = event.detail && event.detail.targetLevel ? event.detail.targetLevel : target;
+            path = pathTo(target);
+            preset = event.detail && event.detail.ancestorChain ? event.detail.ancestorChain : {};
+            root.dataset.targetLevel = target;
+            Array.from(host.querySelectorAll('.location-cascade-field')).forEach(destroyField);
+            output.value = '';
+            if (target) appendLevel(0, null, true, generation);
         });
 
-        if (levelSelect.value) {
-            rebuild(true);
-        }
+        if (target) appendLevel(0, null, true, generation);
     }
 
-    document.querySelectorAll('.location-cascade').forEach(initCascade);
+    document.querySelectorAll('.location-cascade').forEach(init);
 })();
 </script>
 @endpush

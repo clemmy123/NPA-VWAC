@@ -35,6 +35,7 @@ class DataEntryWorkflowTest extends TestCase
 
     private function assignedDataEntryUser(Indicator $indicator): User
     {
+        $indicator->update(['status' => 'active']);
         $user = $this->userWithRole('Data Entry User');
         IndicatorDataAssignment::factory()->create([
             'indicator_id' => $indicator->id,
@@ -200,7 +201,7 @@ class DataEntryWorkflowTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function test_user_assigned_to_a_specific_region_cannot_create_an_entry_for_a_different_region(): void
+    public function test_legacy_assignment_does_not_restrict_collection_location(): void
     {
         $indicator = Indicator::factory()->create();
         $financialYear = FinancialYear::factory()->started()->create();
@@ -208,6 +209,7 @@ class DataEntryWorkflowTest extends TestCase
         $regionB = Region::factory()->create();
 
         $user = $this->userWithRole('Data Entry User');
+        $indicator->update(['status' => 'active']);
         IndicatorDataAssignment::factory()->create([
             'indicator_id' => $indicator->id,
             'user_id' => $user->id,
@@ -222,7 +224,7 @@ class DataEntryWorkflowTest extends TestCase
             'location_level' => 'region',
             'location_id' => $regionB->region_id,
         ]);
-        $wrongRegionResponse->assertForbidden();
+        $wrongRegionResponse->assertCreated();
 
         $rightRegionResponse = $this->actingAs($user)->postJson('/indicator-data-entries', [
             'indicator_id' => $indicator->id,

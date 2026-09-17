@@ -14,6 +14,18 @@ use Illuminate\Validation\Rule;
 
 class UpdateIndicatorDataEntryRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        /** @var IndicatorDataEntry|null $entry */
+        $entry = $this->route('indicator_data_entry');
+        $indicatorId = $this->input('indicator_id', $entry?->indicator_id);
+        $indicator = $indicatorId ? Indicator::find($indicatorId) : null;
+
+        if ($this->filled('location_id') && $indicator?->requires_location && $indicator->reporting_location_level) {
+            $this->merge(['location_level' => $indicator->reporting_location_level]);
+        }
+    }
+
     public function authorize(): bool
     {
         return true;
@@ -32,10 +44,20 @@ class UpdateIndicatorDataEntryRequest extends FormRequest
             'location_id' => ['nullable', 'integer', 'required_with:location_level'],
             'organization_id' => ['nullable', 'integer', 'exists:organizations,id'],
             'actual_value' => ['nullable', 'numeric'],
+            'actual_text' => ['nullable', 'string'],
             'budget_allocated' => ['nullable', 'numeric'],
             'budget_used' => ['nullable', 'numeric'],
             'currency' => ['nullable', 'string', 'size:3'],
             'remarks' => ['nullable', 'string'],
+
+            'activities' => ['sometimes', 'array'],
+            'activities.*.name' => ['required', 'string', 'max:255'],
+            'activities.*.description' => ['nullable', 'string'],
+            'activities.*.participants_total' => ['required', 'integer', 'min:0'],
+            'activities.*.women' => ['nullable', 'integer', 'min:0'],
+            'activities.*.men' => ['nullable', 'integer', 'min:0'],
+            'activities.*.children' => ['nullable', 'integer', 'min:0'],
+            'activities.*.other' => ['nullable', 'integer', 'min:0'],
 
             'rows' => ['sometimes', 'array'],
             'rows.*.label' => ['nullable', 'string', 'max:255'],
@@ -95,9 +117,6 @@ class UpdateIndicatorDataEntryRequest extends FormRequest
             if ($financialYear && $financialYear->start_date->gt($today)) {
                 $validator->errors()->add('financial_year_id', 'You cannot enter data for a future financial year.');
             }
-            if ($financialYear && $entryDateValue && ! Carbon::parse($entryDateValue)->betweenIncluded($financialYear->start_date, $financialYear->end_date)) {
-                $validator->errors()->add('entry_date', 'The entry date must fall within the selected financial year.');
-            }
         }
 
         $reportingPeriodId = $this->has('reporting_period_id') ? $this->input('reporting_period_id') : $entry->reporting_period_id;
@@ -127,9 +146,6 @@ class UpdateIndicatorDataEntryRequest extends FormRequest
         }
 
         $locationLevel = $this->has('location_level') ? $this->input('location_level') : $entry->location_level;
-        $activityName = $this->has('activity_name') ? $this->input('activity_name') : $entry->activity_name;
-        $budgetAllocated = $this->has('budget_allocated') ? $this->input('budget_allocated') : $entry->budget_allocated;
-
         if ($indicator->requires_location && ! filled($locationLevel)) {
             $validator->errors()->add('location_level', 'This indicator requires a reporting location.');
         }
@@ -140,27 +156,40 @@ class UpdateIndicatorDataEntryRequest extends FormRequest
             $validator->errors()->add('location_level', 'This indicator must stop at the '.str_replace('_', ' ', $indicator->reporting_location_level).' level.');
         }
 
-        if ($indicator->requires_activity && ! filled($activityName)) {
-            $validator->errors()->add('activity_name', 'This indicator requires an activity name.');
+        $activityName = $this->has('activity_name') ? $this->input('activity_name') : $entry->activity_name;
+        $activitiesPresent = $this->has('activities') ? count($this->input('activities', [])) > 0 : $entry->activities()->exists();
+        if ($indicator->requires_activity && ! $activitiesPresent && ! filled($activityName)) {
+            $validator->errors()->add('activities', 'Add at least one activity for this indicator.');
+            $validator->errors()->add('activity_name', 'This indicator requires at least one activity.');
         }
 
-        if ($indicator->has_budget_implication && ! filled($budgetAllocated)) {
-            $validator->errors()->add('budget_allocated', 'This indicator requires a budget allocated amount.');
-        }
-
-        if ($indicator->requires_evidence && ! $this->hasFile('evidence') && $entry->getMedia('evidence')->isEmpty()) {
-            $validator->errors()->add('evidence', 'This indicator requires supporting evidence to be attached.');
-        }
-
-        $periodTypes = ['quarterly' => 'quarter', 'biannual' => 'semi_annual', 'annual' => 'annual'];
+        $periodTypes = ['weekly' => 'week', 'monthly' => 'month', 'quarterly' => 'quarter', 'biannual' => 'semi_annual', 'annual' => 'annual'];
         $requiredPeriodType = $periodTypes[$indicator->reporting_frequency] ?? null;
         $periodId = $this->has('reporting_period_id') ? $this->input('reporting_period_id') : $entry->reporting_period_id;
         $period = $periodId ? ReportingPeriod::find($periodId) : null;
+        $financialYearId = $this->has('financial_year_id') ? $this->input('financial_year_id') : $entry->financial_year_id;
+        $periodIsConfigured = $requiredPeriodType !== null && ReportingPeriod::query()
+            ->where('financial_year_id', $financialYearId)
+            ->where('period_type', $requiredPeriodType)->where('is_active', true)->exists();
+        if ($periodIsConfigured && ! $period) {
+            $validator->errors()->add('reporting_period_id', 'Select the '.$indicator->reporting_frequency.' reporting period.');
+        }
         if ($period && $requiredPeriodType !== $period->period_type) {
             $validator->errors()->add('reporting_period_id', 'The reporting period does not match this indicator frequency.');
         }
+        $entryDate = $this->has('entry_date') ? $this->input('entry_date') : $entry->entry_date;
+        if (! $this->user()?->can('indicator-data.override-period') && $period && $entryDate && ! Carbon::parse($entryDate)->betweenIncluded($period->start_date, $period->end_date)) {
+            $validator->errors()->add('entry_date', 'The entry date must fall inside the selected reporting period.');
+        }
 
         $actualValue = $this->has('actual_value') ? $this->input('actual_value') : $entry->actual_value;
+        $actualText = $this->has('actual_text') ? $this->input('actual_text') : $entry->actual_text;
+        if (in_array($indicator->measurementType?->code, ['text', 'qualitative'], true) && filled($actualValue)) {
+            $validator->errors()->add('actual_value', 'This indicator accepts a text response, not a numeric value.');
+        }
+        if (! in_array($indicator->measurementType?->code, ['text', 'qualitative'], true) && filled($actualText)) {
+            $validator->errors()->add('actual_text', 'This indicator requires a numeric or Yes/No response.');
+        }
         if (filled($actualValue)) {
             $actual = (float) $actualValue;
             $type = $indicator->measurementType?->code;
