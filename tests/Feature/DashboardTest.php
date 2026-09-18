@@ -2,9 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\FinancialYear;
 use App\Models\District;
+use App\Models\FinancialYear;
 use App\Models\Indicator;
+use App\Models\IndicatorDataAssignment;
 use App\Models\IndicatorDataEntry;
 use App\Models\IndicatorTarget;
 use App\Models\Project;
@@ -99,6 +100,9 @@ class DashboardTest extends TestCase
         $response->assertSee('Dodoma');
         $response->assertSee('id="dashboard-region-chart"', false);
         $response->assertSee('gridLines: { display: false }', false);
+        $response->assertDontSee('Visible collections');
+        $response->assertDontSee('Recent data collections');
+        $response->assertDontSee('Awaiting review');
     }
 
     public function test_dashboard_scopes_projects_to_the_users_assignments(): void
@@ -156,7 +160,7 @@ class DashboardTest extends TestCase
         FinancialYear::factory()->create(['is_current' => true]);
         $assigned = Indicator::factory()->create(['name' => 'Assigned dashboard indicator', 'status' => 'active']);
         $other = Indicator::factory()->create(['name' => 'Available dashboard indicator', 'status' => 'active']);
-        \App\Models\IndicatorDataAssignment::factory()->create([
+        IndicatorDataAssignment::factory()->create([
             'indicator_id' => $assigned->id,
             'user_id' => $user->id,
         ]);
@@ -183,7 +187,7 @@ class DashboardTest extends TestCase
         $otherRegion = Region::factory()->create(['name' => 'Other Region']);
         $insideDistrict = District::factory()->create(['name' => 'Inside District', 'region_id' => $assignedRegion->region_id]);
         $outsideDistrict = District::factory()->create(['name' => 'Outside District', 'region_id' => $otherRegion->region_id]);
-        \App\Models\IndicatorDataAssignment::factory()->create([
+        IndicatorDataAssignment::factory()->create([
             'indicator_id' => $indicator->id,
             'user_id' => $collector->id,
             'location_level' => 'region',

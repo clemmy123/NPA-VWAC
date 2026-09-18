@@ -37,7 +37,6 @@ class GeneralReportController extends Controller
             'project_id' => ['nullable', 'integer', 'exists:projects,id'],
             'thematic_area_id' => ['nullable', 'integer', 'exists:thematic_areas,id'],
             'indicator_id' => ['nullable', 'integer', 'exists:indicators,id'],
-            'indicator_id' => ['nullable', 'integer', 'exists:indicators,id'],
             'apply' => ['nullable', 'boolean'],
         ]);
 
@@ -58,9 +57,17 @@ class GeneralReportController extends Controller
 
         $selectedThematicArea = $areasForPlan->firstWhere('id', (int) ($data['thematic_area_id'] ?? 0));
         $areasToAnalyse = $selectedThematicArea ? collect([$selectedThematicArea]) : $areasForPlan;
-        $reportIndicators = Indicator::query()->whereIn('thematic_area_id', $areasToAnalyse->pluck('id'))
-            ->orderBy('code')->orderBy('name')->get();
-        $selectedIndicator = $reportIndicators->firstWhere('id', (int) ($data['indicator_id'] ?? 0));
+
+        $indicators = Indicator::query()
+            ->whereIn('thematic_area_id', $thematicAreas->pluck('id')->filter())
+            ->orderBy('code')
+            ->orderBy('name')
+            ->get();
+
+        $selectedIndicator = $selectedThematicArea
+            ? $indicators->where('thematic_area_id', $selectedThematicArea->id)
+                ->firstWhere('id', (int) ($data['indicator_id'] ?? 0))
+            : null;
 
         $month = isset($data['month']) ? Carbon::parse($data['month'])->startOfMonth() : now()->startOfMonth();
         $financialYears = FinancialYear::query()->where('is_active', true)
@@ -96,7 +103,7 @@ class GeneralReportController extends Controller
         $analysis = null;
 
         if ($applied && $areasToAnalyse->isNotEmpty() && $selectedFinancialYear) {
-            $indicatorQuery = Indicator::query()->with(['unitOfMeasure', 'thematicArea'])
+            $indicatorList = Indicator::query()->with(['unitOfMeasure', 'thematicArea'])
                 ->whereIn('thematic_area_id', $areasToAnalyse->pluck('id'))
                 ->when($selectedIndicator, fn ($query) => $query->whereKey($selectedIndicator->id))
                 ->orderBy('code')->orderBy('name')->get();
@@ -133,7 +140,6 @@ class GeneralReportController extends Controller
             'indicators' => $indicators,
             'selectedProject' => $selectedProject,
             'selectedThematicArea' => $selectedThematicArea,
-            'reportIndicators' => $reportIndicators,
             'selectedIndicator' => $selectedIndicator,
             'financialYears' => $financialYears,
             'reportingPeriods' => $reportingPeriods,
