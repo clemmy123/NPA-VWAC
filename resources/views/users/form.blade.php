@@ -68,17 +68,18 @@
         @error('status')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
-    <div class="col-12"><hr><h6>Approval Area</h6><p class="text-muted small">Required only for the Data Approver role.</p></div>
-    <div class="col-md-4 mb-3">
+    <div id="approval-area-heading" class="col-12 {{ $currentRole === 'Data Approver' ? '' : 'd-none' }}"><hr><h6>Data Approval Area</h6><p class="text-muted small">Select the approval level, then navigate to the exact location.</p></div>
+    <div id="approval-level-field" class="col-md-4 mb-3 {{ $currentRole === 'Data Approver' ? '' : 'd-none' }}">
         <label for="approval_location_level" class="form-label">Approval Level</label>
-        <select name="approval_location_level" id="approval_location_level" class="form-control">
+        <select name="approval_location_level" id="approval_location_level" class="form-control @error('approval_location_level') is-invalid @enderror">
             <option value="">—</option>
             @foreach ($locationLevels as $level)
             <option value="{{ $level }}" @selected(old('approval_location_level', $approvalAssignment?->location_level ?? null) === $level)>{{ ucfirst($level) }}</option>
             @endforeach
         </select>
+        @error('approval_location_level')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
-    <div class="col-md-8 mb-3">
+    <div id="approval-location-field" class="col-md-8 mb-3 {{ $currentRole === 'Data Approver' ? '' : 'd-none' }}">
         <label class="form-label">Approval Location</label>
         @include('components.location-cascade', [
             'levelSelectId' => 'approval_location_level',
@@ -86,7 +87,9 @@
             'fieldId' => 'approval_location_id',
             'currentId' => old('approval_location_id', $approvalAssignment?->location_id ?? null),
             'ancestorChain' => $approvalLocationChain ?? [],
+            'targetLevel' => old('approval_location_level', $approvalAssignment?->location_level ?? null),
         ])
+        @error('approval_location_id')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
     </div>
 
     <div class="col-md-6 mb-3">
@@ -112,3 +115,129 @@
         <input type="password" name="password_confirmation" id="password_confirmation" class="form-control" autocomplete="new-password">
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    var role =
+        document.getElementById('role');
+
+    var heading =
+        document.getElementById(
+            'approval-area-heading'
+        );
+
+    var levelField =
+        document.getElementById(
+            'approval-level-field'
+        );
+
+    var locationField =
+        document.getElementById(
+            'approval-location-field'
+        );
+
+    var level =
+        document.getElementById(
+            'approval_location_level'
+        );
+
+    var locationId =
+        document.getElementById(
+            'approval_location_id'
+        );
+
+
+    if (
+        !role ||
+        !heading ||
+        !levelField ||
+        !locationField ||
+        !level ||
+        !locationId
+    ) {
+        return;
+    }
+
+
+    function updateRoleFields() {
+
+        var enabled =
+            role.value ===
+            'Data Approver';
+
+
+        heading.classList.toggle(
+            'd-none',
+            !enabled
+        );
+
+        levelField.classList.toggle(
+            'd-none',
+            !enabled
+        );
+
+        locationField.classList.toggle(
+            'd-none',
+            !enabled
+        );
+
+
+        level.disabled = !enabled;
+
+        locationId.disabled = !enabled;
+
+
+        if (!enabled) {
+
+            level.value = '';
+
+            locationId.value = '';
+
+
+            /*
+             * Tell Select2 UI to clear
+             * without introducing another
+             * cascade implementation.
+             */
+
+            if (
+                window.jQuery &&
+                jQuery.fn &&
+                jQuery.fn.select2
+            ) {
+
+                jQuery(level)
+                    .trigger(
+                        'change.select2'
+                    );
+            }
+        }
+    }
+
+
+    if (window.jQuery) {
+
+        jQuery(role)
+            .off(
+                'change.approvalRole'
+            )
+            .on(
+                'change.approvalRole',
+                updateRoleFields
+            );
+
+    } else {
+
+        role.addEventListener(
+            'change',
+            updateRoleFields
+        );
+    }
+
+
+    updateRoleFields();
+});
+</script>
+@endpush

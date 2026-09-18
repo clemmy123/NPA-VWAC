@@ -9,6 +9,7 @@ use App\Support\AdminLocationLevel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Spatie\Permission\Models\Role;
 
@@ -122,7 +123,7 @@ class UserController extends Controller
             $passwordRules[] = 'required_if:auth_provider,local';
         }
 
-        return $request->validate([
+        $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'.($user ? ",{$user->id}" : '')],
             'phone_number' => ['nullable', 'string', 'max:50'],
@@ -132,9 +133,18 @@ class UserController extends Controller
             'password' => $passwordRules,
             'status' => ['required', 'string', 'in:active,inactive'],
             'role' => ['required', 'string', 'exists:roles,name'],
-            'approval_location_level' => ['nullable', 'string', 'in:region,district,council,ward', 'required_with:approval_location_id'],
-            'approval_location_id' => ['nullable', 'integer', 'required_with:approval_location_level'],
+            'approval_location_level' => ['exclude_unless:role,Data Approver', 'required_if:role,Data Approver', 'string', 'in:region,district,council,ward'],
+            'approval_location_id' => ['exclude_unless:role,Data Approver', 'required_if:role,Data Approver', 'integer'],
         ]);
+
+        if (($data['role'] ?? null) === 'Data Approver'
+            && ! AdminLocationLevel::exists($data['approval_location_level'], (int) $data['approval_location_id'])) {
+            throw ValidationException::withMessages([
+                'approval_location_id' => 'Select a valid location at the chosen approval level.',
+            ]);
+        }
+
+        return $data;
     }
 
     private function extractApproval(array &$data): array
@@ -154,7 +164,6 @@ class UserController extends Controller
         if ($role !== 'Data Approver' || ! $approval['location_level'] || ! $approval['location_id']) {
             return;
         }
-        abort_unless(AdminLocationLevel::exists($approval['location_level'], $approval['location_id']), 422);
         IndicatorApprovalAssignment::query()->updateOrCreate([
             'user_id' => $user->id,
             'location_level' => $approval['location_level'],
