@@ -206,6 +206,7 @@ class GeneralReportPageTest extends TestCase
         $response->assertOk();
         $response->assertSee('600</td>', false);
         $response->assertSee('60%');
+        $response->assertDontSee('Previous Result');
     }
 
     public function test_quarterly_report_uses_the_period_target_and_period_actuals(): void

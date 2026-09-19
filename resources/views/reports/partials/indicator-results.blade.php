@@ -5,7 +5,6 @@
                 <th>{{ __('Indicator') }}</th>
                 <th>{{ __('Unit') }}</th>
                 <th class="text-end">{{ __('Target') }}</th>
-                <th class="text-end">{{ __('Previous Result') }}</th>
                 <th class="text-end">{{ __('Actual (approved)') }}</th>
                 <th class="text-end">{{ __('Achievement') }}</th>
             </tr>
@@ -33,7 +32,6 @@
                 </td>
                 <td>{{ $row['indicator']->unitOfMeasure?->name ?? '—' }}</td>
                 <td class="text-end">{{ \App\Support\DisplayNumber::format($perf['target_value']) }}</td>
-                <td class="text-end">{{ \App\Support\DisplayNumber::format($perf['previous_actual_value'] ?? null) }}</td>
                 <td class="text-end">{{ \App\Support\DisplayNumber::format($perf['actual_value']) }}</td>
                 <td class="text-end">
                     @if ($perf['achievement_percent'] === null)
@@ -47,7 +45,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="6">
+                <td colspan="5">
                     <div class="tbl-empty">
                         <i class="mdi mdi-file-chart-outline"></i>
                         <p>{{ __('No indicators in this thematic area.') }}</p>
@@ -77,9 +75,8 @@
             @endif
         </div>
         <div class="mob-card-meta">
-            <span>Target {{ \App\Support\DisplayNumber::format($perf['target_value']) }}</span>
-            <span>Previous {{ \App\Support\DisplayNumber::format($perf['previous_actual_value'] ?? null) }}</span>
-            <span>Actual {{ \App\Support\DisplayNumber::format($perf['actual_value']) }}</span>
+            <span>{{ __('Target') }} {{ \App\Support\DisplayNumber::format($perf['target_value']) }}</span>
+            <span>{{ __('Actual (approved)') }} {{ \App\Support\DisplayNumber::format($perf['actual_value']) }}</span>
         </div>
     </div>
     @empty

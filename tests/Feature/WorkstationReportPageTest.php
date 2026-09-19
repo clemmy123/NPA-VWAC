@@ -241,6 +241,7 @@ class WorkstationReportPageTest extends TestCase
 
         $pageOne->assertOk();
         $pageOne->assertSee('id="results"', false);
+        $pageOne->assertDontSee('Previous Result');
         $pageOne->assertSee('>Workstation indicator 1</div>', false);
         $pageOne->assertDontSee('>Workstation indicator 11</div>', false);
         $pageOne->assertSee('page=2', false);

@@ -26,7 +26,7 @@ class IndicatorPerformanceService
      *
      * @param  int|list<int>|null  $organizationId
      * @param  list<array{location_level: string|null, location_id: int|null, organization_id: int|null}>|null  $locationScopes
-     * @return array{target_value: float|null, actual_value: float|null, previous_actual_value: float|null, achievement_percent: float|null, aggregation_method: string}
+     * @return array{target_value: float|null, actual_value: float|null, achievement_percent: float|null, aggregation_method: string}
      */
     public function summarize(
         Indicator $indicator,
@@ -39,18 +39,10 @@ class IndicatorPerformanceService
     ): array {
         $targetValue = $this->targetValue($indicator, $financialYear, $reportingPeriod);
         $actualValue = $this->actualValue($indicator, $financialYear, $reportingPeriod, $from, $to, $organizationId, $locationScopes);
-        $previousYear = FinancialYear::query()
-            ->whereDate('end_date', '<', $financialYear->start_date)
-            ->orderByDesc('end_date')
-            ->first();
-        $previousActualValue = $previousYear
-            ? $this->actualValue($indicator, $previousYear, organizationId: $organizationId, locationScopes: $locationScopes)
-            : null;
 
         return [
             'target_value' => $targetValue,
             'actual_value' => $actualValue,
-            'previous_actual_value' => $previousActualValue,
             'achievement_percent' => ($targetValue !== null && $targetValue > 0 && $actualValue !== null)
                 ? round(($actualValue / $targetValue) * 100, 2)
                 : null,
