@@ -82,7 +82,7 @@ class IndicatorController extends Controller
             return (new IndicatorResource($indicator))->response()->setStatusCode(201);
         }
 
-        return $this->redirectBackOrTo($request, 'indicators.index')->with('success', "Indicator \"{$indicator->name}\" created.");
+        return $this->redirectBackOrTo($request, 'indicators.index')->with('success', __('Indicator ":name" created.', ['name' => $indicator->name]));
     }
 
     public function show(Request $request, Indicator $indicator): JsonResponse|View|IndicatorResource
@@ -133,7 +133,7 @@ class IndicatorController extends Controller
             return new IndicatorResource($indicator);
         }
 
-        return $this->redirectBackOrTo($request, 'indicators.index')->with('success', "Indicator \"{$indicator->name}\" updated.");
+        return $this->redirectBackOrTo($request, 'indicators.index')->with('success', __('Indicator ":name" updated.', ['name' => $indicator->name]));
     }
 
     public function destroy(Request $request, Indicator $indicator): JsonResponse|RedirectResponse
@@ -145,7 +145,7 @@ class IndicatorController extends Controller
             return response()->json(null, 204);
         }
 
-        return $this->redirectBackOrTo($request, 'indicators.index')->with('success', "Indicator \"{$indicator->name}\" deleted.");
+        return $this->redirectBackOrTo($request, 'indicators.index')->with('success', __('Indicator ":name" deleted.', ['name' => $indicator->name]));
     }
 
     public function disable(Request $request, Indicator $indicator): RedirectResponse
@@ -153,7 +153,7 @@ class IndicatorController extends Controller
         $this->authorizeIndicator($request->user(), $indicator);
         $indicator->update(['status' => 'inactive']);
 
-        return back()->with('success', "Indicator \"{$indicator->name}\" disabled.");
+        return back()->with('success', __('Indicator ":name" disabled.', ['name' => $indicator->name]));
     }
 
     /**

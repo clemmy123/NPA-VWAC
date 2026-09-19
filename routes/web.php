@@ -40,6 +40,14 @@ use Spatie\Permission\Models\Role;
 
 Route::redirect('/', '/dashboard');
 
+Route::get('/locale/{locale}', function (string $locale) {
+    abort_unless(array_key_exists($locale, config('app.available_locales')), 404);
+
+    session(['locale' => $locale]);
+
+    return redirect()->back();
+})->name('locale.switch');
+
 if (app()->environment('local')) {
     // Local-only convenience: Jumuishi SSO can't be exercised against a local
     // instance (there's no central hub to redirect to), so this offers a

@@ -5,10 +5,10 @@
 <div class="page-header">
     <div>
         <h4 class="page-title">{{ $thematicArea->name }}</h4>
-        <nav aria-label="breadcrumb">
+        <nav aria-label="{{ __('breadcrumb') }}">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('projects.index') }}">Projects</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('projects.index') }}">{{ __('Projects') }}</a></li>
                 @if ($thematicArea->project)
                 <li class="breadcrumb-item"><a href="{{ route('projects.show', $thematicArea->project) }}">{{ $thematicArea->project->name }}</a></li>
                 @endif
@@ -17,20 +17,20 @@
         </nav>
     </div>
     @can('thematic-area.update')
-    <a href="{{ route('thematic-areas.edit', $thematicArea) }}" class="btn btn-outline-secondary btn-sm"><i class="mdi mdi-pencil-outline"></i> Edit Thematic Area</a>
+    <a href="{{ route('thematic-areas.edit', $thematicArea) }}" class="btn btn-outline-secondary btn-sm"><i class="mdi mdi-pencil-outline"></i> {{ __('Edit Thematic Area') }}</a>
     @endcan
 </div>
 
 <div class="chart-card mb-4">
     <div class="row">
-        <div class="col-md-4 mb-2"><span class="text-muted small">Project</span><div>{{ $thematicArea->project?->name ?? '—' }}</div></div>
-        <div class="col-md-4 mb-2"><span class="text-muted small">Status</span><div>
+        <div class="col-md-4 mb-2"><span class="text-muted small">{{ __('Project') }}</span><div>{{ $thematicArea->project?->name ?? '—' }}</div></div>
+        <div class="col-md-4 mb-2"><span class="text-muted small">{{ __('Status') }}</span><div>
             <span class="s-badge {{ match ($thematicArea->status) {
                 'active' => 's-active', 'completed' => 's-received', 'closed', 'inactive' => 's-inactive', default => 's-default',
-            } }}">{{ ucfirst($thematicArea->status) }}</span>
+            } }}">{{ __(ucfirst($thematicArea->status)) }}</span>
         </div></div>
         @if ($thematicArea->description)
-        <div class="col-12 mt-2"><span class="text-muted small">Description</span><p class="mb-0">{{ $thematicArea->description }}</p></div>
+        <div class="col-12 mt-2"><span class="text-muted small">{{ __('Description') }}</span><p class="mb-0">{{ $thematicArea->description }}</p></div>
         @endif
     </div>
 </div>
@@ -38,15 +38,15 @@
 {{-- Thematic Managers --}}
 @can('thematic-area.assign-manager')
 <div class="d-flex justify-content-between align-items-center mb-2">
-    <h5 class="mb-0">Thematic Managers</h5>
-    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-ta-manager" data-quick-add-title="Assign Thematic Manager to &quot;{{ $thematicArea->name }}&quot;">
-        <i class="mdi mdi-plus"></i> Assign Manager
+    <h5 class="mb-0">{{ __('Thematic Managers') }}</h5>
+    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-ta-manager" data-quick-add-title="{{ __('Assign Thematic Manager to ":name"', ['name' => $thematicArea->name]) }}">
+        <i class="mdi mdi-plus"></i> {{ __('Assign Manager') }}
     </button>
 </div>
 
 <div class="table-card mb-4">
     <table class="table mb-0">
-        <thead><tr><th>Name</th><th>Email</th><th>Actions</th></tr></thead>
+        <thead><tr><th>{{ __('Name') }}</th><th>{{ __('Email') }}</th><th>{{ __('Actions') }}</th></tr></thead>
         <tbody>
             @forelse ($managers as $manager)
             <tr>
@@ -54,16 +54,16 @@
                 <td>{{ $manager->email }}</td>
                 <td>
                     <form action="{{ route('thematic-areas.managers.destroy', [$thematicArea, $manager]) }}" method="POST" class="d-inline"
-                          onsubmit="return confirm('Remove &quot;{{ $manager->name }}&quot; as a manager of this thematic area?');">
+                          data-confirm="{{ __('Remove ":name" as a manager of this thematic area?', ['name' => $manager->name]) }}">
                         @csrf
                         @method('DELETE')
                         <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                        <button type="submit" class="btn-icon danger" title="Remove"><i class="mdi mdi-close"></i></button>
+                        <button type="submit" class="btn-icon danger" title="{{ __('Remove') }}"><i class="mdi mdi-close"></i></button>
                     </form>
                 </td>
             </tr>
             @empty
-            <tr><td colspan="3"><div class="tbl-empty"><i class="mdi mdi-account-outline"></i><p>No thematic managers assigned yet.</p></div></td></tr>
+            <tr><td colspan="3"><div class="tbl-empty"><i class="mdi mdi-account-outline"></i><p>{{ __('No thematic managers assigned yet.') }}</p></div></td></tr>
             @endforelse
         </tbody>
     </table>
@@ -74,18 +74,18 @@
         @csrf
         <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
         <div class="mb-3">
-            <label for="user_id" class="form-label">User</label>
+            <label for="user_id" class="form-label">{{ __('User') }}</label>
             <select name="user_id" id="user_id" class="form-control select2" required>
-                <option value="">Select a Thematic Manager…</option>
+                <option value="">{{ __('Select a Thematic Manager…') }}</option>
                 @foreach ($assignableManagers as $user)
                 <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
                 @endforeach
             </select>
-            <div class="form-text">Only users with the "Thematic Manager" role are listed. Assign the role first under Users if it's missing.</div>
+            <div class="form-text">{{ __('Only users with the "Thematic Manager" role are listed. Assign the role first under Users if it\'s missing.') }}</div>
         </div>
         <div class="d-flex form-actions">
-            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> Assign</button>
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> {{ __('Assign') }}</button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
         </div>
     </form>
 </template>
@@ -93,44 +93,44 @@
 
 {{-- Indicators --}}
 <div class="d-flex justify-content-between align-items-center mb-2">
-    <h5 class="mb-0">Indicators</h5>
+    <h5 class="mb-0">{{ __('Indicators') }}</h5>
     @can('indicator.create')
-    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-indicator" data-quick-add-title="Add Indicator to &quot;{{ $thematicArea->name }}&quot;">
-        <i class="mdi mdi-plus"></i> Add Indicator
+    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-indicator" data-quick-add-title="{{ __('Add Indicator to ":name"', ['name' => $thematicArea->name]) }}">
+        <i class="mdi mdi-plus"></i> {{ __('Add Indicator') }}
     </button>
     @endcan
 </div>
 
 <div class="table-card d-none d-md-block mb-4">
     <table class="table mb-0">
-        <thead><tr><th>Code</th><th>Name</th><th>Frequency</th><th>Status</th><th>Actions</th></tr></thead>
+        <thead><tr><th>{{ __('Code') }}</th><th>{{ __('Name') }}</th><th>{{ __('Frequency') }}</th><th>{{ __('Status') }}</th><th>{{ __('Actions') }}</th></tr></thead>
         <tbody>
             @forelse ($indicators as $indicator)
             <tr>
                 <td><span class="ref-pill">{{ $indicator->code }}</span></td>
                 <td><a href="{{ route('indicators.show', $indicator) }}">{{ $indicator->name }}</a></td>
-                <td>{{ $indicator->reporting_frequency ? ucfirst($indicator->reporting_frequency) : '—' }}</td>
+                <td>{{ $indicator->reporting_frequency ? __(ucfirst($indicator->reporting_frequency)) : '—' }}</td>
                 <td>
                     <span class="s-badge {{ match ($indicator->status) {
                         'active' => 's-active', 'completed' => 's-received', 'closed', 'inactive' => 's-inactive', default => 's-default',
-                    } }}">{{ ucfirst($indicator->status) }}</span>
+                    } }}">{{ __(ucfirst($indicator->status)) }}</span>
                 </td>
                 <td>
                     @can('indicator.update')
-                    <a href="{{ route('indicators.edit', $indicator) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
+                    <a href="{{ route('indicators.edit', $indicator) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
                     @endcan
                     @if ($indicator->status === 'active')
-                    <form action="{{ route('indicators.disable', $indicator) }}" method="POST" class="d-inline" onsubmit="return confirm('Disable this indicator?');">
+                    <form action="{{ route('indicators.disable', $indicator) }}" method="POST" class="d-inline" data-confirm="{{ __('Disable this indicator?') }}">
                         @csrf
                         @method('PATCH')
                         <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                        <button type="submit" class="btn-icon danger" title="Disable"><i class="mdi mdi-cancel"></i></button>
+                        <button type="submit" class="btn-icon danger" title="{{ __('Disable') }}"><i class="mdi mdi-cancel"></i></button>
                     </form>
                     @endif
                 </td>
             </tr>
             @empty
-            <tr><td colspan="5"><div class="tbl-empty"><i class="mdi mdi-chart-box-outline"></i><p>No indicators yet.</p></div></td></tr>
+            <tr><td colspan="5"><div class="tbl-empty"><i class="mdi mdi-chart-box-outline"></i><p>{{ __('No indicators yet.') }}</p></div></td></tr>
             @endforelse
         </tbody>
     </table>
@@ -143,41 +143,41 @@
             <a href="{{ route('indicators.show', $indicator) }}" class="fw-600">{{ $indicator->name }}</a>
             <span class="s-badge {{ match ($indicator->status) {
                 'active' => 's-active', 'completed' => 's-received', 'closed', 'inactive' => 's-inactive', default => 's-default',
-            } }}">{{ ucfirst($indicator->status) }}</span>
+            } }}">{{ __(ucfirst($indicator->status)) }}</span>
         </div>
         <div class="mob-card-body"><p class="mob-card-title"><span class="ref-pill">{{ $indicator->code }}</span></p></div>
         <div class="mob-card-footer">
             @can('indicator.update')
-            <a href="{{ route('indicators.edit', $indicator) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
+            <a href="{{ route('indicators.edit', $indicator) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
             @endcan
             @if ($indicator->status === 'active')
-            <form action="{{ route('indicators.disable', $indicator) }}" method="POST" class="d-inline" onsubmit="return confirm('Disable this indicator?');">
+            <form action="{{ route('indicators.disable', $indicator) }}" method="POST" class="d-inline" data-confirm="{{ __('Disable this indicator?') }}">
                 @csrf
                 @method('PATCH')
                 <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                <button type="submit" class="btn-icon danger" title="Disable"><i class="mdi mdi-cancel"></i></button>
+                <button type="submit" class="btn-icon danger" title="{{ __('Disable') }}"><i class="mdi mdi-cancel"></i></button>
             </form>
             @endif
         </div>
     </div>
     @empty
-    <div class="tbl-empty"><i class="mdi mdi-chart-box-outline"></i><p>No indicators yet.</p></div>
+    <div class="tbl-empty"><i class="mdi mdi-chart-box-outline"></i><p>{{ __('No indicators yet.') }}</p></div>
     @endforelse
 </div>
 
 {{-- Interventions --}}
 <div class="d-flex justify-content-between align-items-center mb-2">
-    <h5 class="mb-0">Interventions</h5>
+    <h5 class="mb-0">{{ __('Interventions') }}</h5>
     @can('intervention.create')
-    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-intervention" data-quick-add-title="Add Intervention to &quot;{{ $thematicArea->name }}&quot;">
-        <i class="mdi mdi-plus"></i> Add Intervention
+    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-intervention" data-quick-add-title="{{ __('Add Intervention to ":name"', ['name' => $thematicArea->name]) }}">
+        <i class="mdi mdi-plus"></i> {{ __('Add Intervention') }}
     </button>
     @endcan
 </div>
 
 <div class="table-card d-none d-md-block mb-4">
     <table class="table mb-0">
-        <thead><tr><th>Name</th><th>Linked Indicators</th><th>Status</th><th>Actions</th></tr></thead>
+        <thead><tr><th>{{ __('Name') }}</th><th>{{ __('Linked Indicators') }}</th><th>{{ __('Status') }}</th><th>{{ __('Actions') }}</th></tr></thead>
         <tbody>
             @forelse ($interventions as $intervention)
             <tr>
@@ -186,25 +186,25 @@
                 <td>
                     <span class="s-badge {{ match ($intervention->status) {
                         'active' => 's-active', 'completed' => 's-received', 'closed' => 's-inactive', default => 's-default',
-                    } }}">{{ ucfirst($intervention->status) }}</span>
+                    } }}">{{ __(ucfirst($intervention->status)) }}</span>
                 </td>
                 <td>
                     @can('intervention.update')
-                    <a href="{{ route('interventions.edit', $intervention) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
+                    <a href="{{ route('interventions.edit', $intervention) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
                     @endcan
                     @can('intervention.delete')
                     <form action="{{ route('interventions.destroy', $intervention) }}" method="POST" class="d-inline"
-                          onsubmit="return confirm('Delete intervention &quot;{{ $intervention->name }}&quot;?');">
+                          data-confirm="{{ __('Delete intervention ":name"?', ['name' => $intervention->name]) }}">
                         @csrf
                         @method('DELETE')
                         <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                        <button type="submit" class="btn-icon danger" title="Delete"><i class="mdi mdi-trash-can-outline"></i></button>
+                        <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
                     </form>
                     @endcan
                 </td>
             </tr>
             @empty
-            <tr><td colspan="4"><div class="tbl-empty"><i class="mdi mdi-rocket-launch-outline"></i><p>No interventions yet.</p></div></td></tr>
+            <tr><td colspan="4"><div class="tbl-empty"><i class="mdi mdi-rocket-launch-outline"></i><p>{{ __('No interventions yet.') }}</p></div></td></tr>
             @endforelse
         </tbody>
     </table>
@@ -217,26 +217,26 @@
             <span class="fw-600">{{ $intervention->name }}</span>
             <span class="s-badge {{ match ($intervention->status) {
                 'active' => 's-active', 'completed' => 's-received', 'closed' => 's-inactive', default => 's-default',
-            } }}">{{ ucfirst($intervention->status) }}</span>
+            } }}">{{ __(ucfirst($intervention->status)) }}</span>
         </div>
         <div class="mob-card-meta"><span>{{ $intervention->indicators->pluck('name')->implode(', ') ?: '—' }}</span></div>
         <div class="mob-card-footer">
             @can('intervention.update')
-            <a href="{{ route('interventions.edit', $intervention) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
+            <a href="{{ route('interventions.edit', $intervention) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
             @endcan
             @can('intervention.delete')
             <form action="{{ route('interventions.destroy', $intervention) }}" method="POST" class="d-inline"
-                  onsubmit="return confirm('Delete intervention &quot;{{ $intervention->name }}&quot;?');">
+                  data-confirm="{{ __('Delete intervention ":name"?', ['name' => $intervention->name]) }}">
                 @csrf
                 @method('DELETE')
                 <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                <button type="submit" class="btn-icon danger" title="Delete"><i class="mdi mdi-trash-can-outline"></i></button>
+                <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
             </form>
             @endcan
         </div>
     </div>
     @empty
-    <div class="tbl-empty"><i class="mdi mdi-rocket-launch-outline"></i><p>No interventions yet.</p></div>
+    <div class="tbl-empty"><i class="mdi mdi-rocket-launch-outline"></i><p>{{ __('No interventions yet.') }}</p></div>
     @endforelse
 </div>
 
@@ -253,8 +253,8 @@
             'unitsOfMeasure' => $unitsOfMeasure,
         ])
         <div class="d-flex form-actions">
-            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> Save</button>
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> {{ __('Save') }}</button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
         </div>
     </form>
 </template>
@@ -272,8 +272,8 @@
             'indicators' => $allIndicators,
         ])
         <div class="d-flex form-actions">
-            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> Save</button>
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> {{ __('Save') }}</button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
         </div>
     </form>
 </template>

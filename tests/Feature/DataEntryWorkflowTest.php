@@ -177,6 +177,7 @@ class DataEntryWorkflowTest extends TestCase
             'indicator_id' => $indicator->id,
             'financial_year_id' => $financialYear->id,
             'entry_date' => now()->toDateString(),
+            'actual_value' => 0,
             'rows' => [
                 ['label' => 'Youth', 'value' => 25, 'dimension_option_ids' => [$option->id]],
             ],
@@ -196,6 +197,7 @@ class DataEntryWorkflowTest extends TestCase
             'indicator_id' => $indicator->id,
             'financial_year_id' => $financialYear->id,
             'entry_date' => now()->toDateString(),
+            'actual_value' => 0,
         ]);
 
         $response->assertForbidden();
@@ -223,6 +225,7 @@ class DataEntryWorkflowTest extends TestCase
             'entry_date' => now()->toDateString(),
             'location_level' => 'region',
             'location_id' => $regionB->region_id,
+            'actual_value' => 0,
         ]);
         $wrongRegionResponse->assertCreated();
 
@@ -232,6 +235,7 @@ class DataEntryWorkflowTest extends TestCase
             'entry_date' => now()->toDateString(),
             'location_level' => 'region',
             'location_id' => $regionA->region_id,
+            'actual_value' => 0,
         ]);
         $rightRegionResponse->assertCreated();
     }
@@ -246,6 +250,7 @@ class DataEntryWorkflowTest extends TestCase
             'indicator_id' => $indicator->id,
             'financial_year_id' => $financialYear->id,
             'entry_date' => now()->toDateString(),
+            'actual_value' => 0,
         ]);
 
         $response->assertCreated();

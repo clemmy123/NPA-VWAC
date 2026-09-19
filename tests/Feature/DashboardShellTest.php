@@ -42,6 +42,10 @@ class DashboardShellTest extends TestCase
         $response->assertSee('Workstation Reports');
         $response->assertSee(route('reports.general'), false);
         $response->assertSee(route('reports.workstation'), false);
+        $response->assertSee('lang-dropdown', false);
+        $response->assertSee('>EN</span>', false);
+        $response->assertSee('rel="icon" type="image/png" href="'.asset('app-assets/logo.png').'"', false);
+        $response->assertDontSee('app-assets/images/logo-sm.png', false);
     }
 
     public function test_data_entry_user_only_sees_nav_items_they_are_permitted_to_view(): void

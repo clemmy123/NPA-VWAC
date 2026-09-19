@@ -1,14 +1,14 @@
 @extends('components.main-layout')
-@section('title', 'Late Data Entries')
+@section('title', __('Late Data Entries'))
 
 @section('content')
 <div class="page-header">
     <div>
-        <h4 class="page-title">Late Data Entries</h4>
-        <nav aria-label="breadcrumb">
+        <h4 class="page-title">{{ __('Late Data Entries') }}</h4>
+        <nav aria-label="{{ __('breadcrumb') }}">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item active">Late Data Entries</li>
+                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
+                <li class="breadcrumb-item active">{{ __('Late Data Entries') }}</li>
             </ol>
         </nav>
     </div>
@@ -18,13 +18,12 @@
 <div class="table-card">
     <div class="tbl-empty">
         <i class="mdi mdi-calendar-remove-outline"></i>
-        <p>No financial year is configured yet.</p>
+        <p>{{ __('No financial year is configured yet.') }}</p>
     </div>
 </div>
 @else
 <p class="text-muted mb-3">
-    Assigned indicators with no submitted or approved data for a reporting period that has already closed,
-    for {{ $financialYear->name }}.
+    {{ __('Assigned indicators with no submitted or approved data for a reporting period that has already closed, for :year.', ['year' => $financialYear->name]) }}
 </p>
 
 {{-- Desktop Table --}}
@@ -32,10 +31,10 @@
     <table class="table mb-0">
         <thead>
             <tr>
-                <th>Indicator</th>
-                <th>Assigned To</th>
-                <th>Reporting Period</th>
-                <th>Days Late</th>
+                <th>{{ __('Indicator') }}</th>
+                <th>{{ __('Assigned To') }}</th>
+                <th>{{ __('Reporting Period') }}</th>
+                <th>{{ __('Days Late') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -49,14 +48,14 @@
                     @endif
                 </td>
                 <td>{{ $late['period']->name }}</td>
-                <td><span class="s-badge s-inactive">{{ $late['days_late'] }} day{{ $late['days_late'] === 1 ? '' : 's' }}</span></td>
+                <td><span class="s-badge s-inactive">{{ $late['days_late'] === 1 ? __(':count day', ['count' => $late['days_late']]) : __(':count days', ['count' => $late['days_late']]) }}</span></td>
             </tr>
             @empty
             <tr>
                 <td colspan="4">
                     <div class="tbl-empty">
                         <i class="mdi mdi-check-circle-outline"></i>
-                        <p>Nothing is late — everyone is up to date.</p>
+                        <p>{{ __('Nothing is late — everyone is up to date.') }}</p>
                     </div>
                 </td>
             </tr>
@@ -71,7 +70,7 @@
     <div class="mob-card">
         <div class="mob-card-top">
             <span class="fw-600">{{ $late['indicator']?->name ?? '—' }}</span>
-            <span class="s-badge s-inactive">{{ $late['days_late'] }} day{{ $late['days_late'] === 1 ? '' : 's' }}</span>
+            <span class="s-badge s-inactive">{{ $late['days_late'] === 1 ? __(':count day', ['count' => $late['days_late']]) : __(':count days', ['count' => $late['days_late']]) }}</span>
         </div>
         <div class="mob-card-meta">
             <span><i class="mdi mdi-account-outline"></i> {{ $late['user']?->name ?? $late['organization']?->name ?? '—' }}</span>
@@ -81,7 +80,7 @@
     @empty
     <div class="tbl-empty">
         <i class="mdi mdi-check-circle-outline"></i>
-        <p>Nothing is late — everyone is up to date.</p>
+        <p>{{ __('Nothing is late — everyone is up to date.') }}</p>
     </div>
     @endforelse
 </div>

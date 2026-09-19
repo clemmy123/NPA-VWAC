@@ -15,8 +15,6 @@ use Illuminate\Support\Collection;
 
 class IndicatorPerformanceService
 {
-    private const int CHART_BAR_LIMIT = 12;
-
     /**
      * Target vs. approved-actual for one indicator in one financial year, aggregated
      * according to the indicator's own `aggregation_method` — dashboards must never
@@ -216,21 +214,21 @@ class IndicatorPerformanceService
                     $alerts[] = [
                         'level' => 'warning',
                         'title' => 'No target',
-                        'detail' => $label.' has no target for this period.',
+                        'detail' => __(':label has no target for this period.', ['label' => $label]),
                     ];
                 } elseif ($performance['actual_value'] === null) {
                     $noActuals++;
                     $alerts[] = [
                         'level' => 'danger',
                         'title' => 'No approved actuals',
-                        'detail' => $label.' has a target but no approved collections yet.',
+                        'detail' => __(':label has a target but no approved collections yet.', ['label' => $label]),
                     ];
                 } else {
                     $notComputed++;
                     $alerts[] = [
                         'level' => 'warning',
                         'title' => 'Achievement not computed',
-                        'detail' => $label.' cannot be scored for this period.',
+                        'detail' => __(':label cannot be scored for this period.', ['label' => $label]),
                     ];
                 }
 
@@ -247,7 +245,7 @@ class IndicatorPerformanceService
                 $alerts[] = [
                     'level' => 'warning',
                     'title' => 'At risk',
-                    'detail' => $label.' is at '.$formatted.' of target.',
+                    'detail' => __(':label is at :percent of target.', ['label' => $label, 'percent' => $formatted]),
                     'percent' => $percent,
                 ];
             } else {
@@ -255,7 +253,7 @@ class IndicatorPerformanceService
                 $alerts[] = [
                     'level' => 'danger',
                     'title' => 'Off track',
-                    'detail' => $label.' is at '.$formatted.' of target.',
+                    'detail' => __(':label is at :percent of target.', ['label' => $label, 'percent' => $formatted]),
                     'percent' => $percent,
                 ];
             }
@@ -277,7 +275,7 @@ class IndicatorPerformanceService
             'average_achievement' => $percents === [] ? null : round(array_sum($percents) / count($percents), 1),
             'alerts' => array_map(fn (array $alert): array => [
                 'level' => $alert['level'],
-                'title' => $alert['title'],
+                'title' => __($alert['title']),
                 'detail' => $alert['detail'],
             ], $alerts),
             'alert_summary' => [
@@ -288,10 +286,54 @@ class IndicatorPerformanceService
                 'not_computed' => $notComputed,
             ],
             'chart' => $this->chartSeries($rows) + [
-                'status_labels' => ['On track', 'At risk', 'Off track', 'No data'],
+                'status_labels' => [__('On track'), __('At risk'), __('Off track'), __('No data')],
                 'status_values' => [$onTrack, $atRisk, $offTrack, $noData],
             ],
         ];
+    }
+
+    /**
+     * Put the weakest results first so the summary table opens on off-track indicators.
+     *
+     * @param  list<array{indicator: Indicator, performance: array{target_value: float|null, actual_value: float|null, achievement_percent: float|null, aggregation_method: string}}>  $rows
+     * @return list<array{indicator: Indicator, performance: array{target_value: float|null, actual_value: float|null, achievement_percent: float|null, aggregation_method: string}}>
+     */
+    public function prioritizeOffTrackRows(array $rows): array
+    {
+        usort($rows, function (array $left, array $right): int {
+            $compared = $this->statusRank($left['performance']['achievement_percent'] ?? null)
+                <=> $this->statusRank($right['performance']['achievement_percent'] ?? null);
+
+            if ($compared !== 0) {
+                return $compared;
+            }
+
+            $leftPercent = $left['performance']['achievement_percent'] ?? null;
+            $rightPercent = $right['performance']['achievement_percent'] ?? null;
+
+            if ($leftPercent !== null && $rightPercent !== null) {
+                $compared = $leftPercent <=> $rightPercent;
+
+                if ($compared !== 0) {
+                    return $compared;
+                }
+            }
+
+            $leftCode = mb_strtolower((string) ($left['indicator']->code ?? ''));
+            $rightCode = mb_strtolower((string) ($right['indicator']->code ?? ''));
+            $compared = $leftCode <=> $rightCode;
+
+            if ($compared !== 0) {
+                return $compared;
+            }
+
+            $leftName = mb_strtolower((string) $left['indicator']->name);
+            $rightName = mb_strtolower((string) $right['indicator']->name);
+
+            return $leftName <=> $rightName;
+        });
+
+        return array_values($rows);
     }
 
     /**
@@ -301,27 +343,30 @@ class IndicatorPerformanceService
     private function chartSeries(array $rows): array
     {
         $areaIds = collect($rows)->map(fn (array $row): int => (int) ($row['indicator']->thematic_area_id ?? 0))->unique();
+        $indicatorBars = $areaIds->count() <= 1;
 
-        $items = $areaIds->count() > 1
-            ? $this->thematicAreaChartItems($rows)
-            : $this->indicatorChartItems($rows);
+        if ($indicatorBars) {
+            $items = $this->indicatorChartItems($rows);
+            $title = __('Achievement by indicator');
+            $caption = '';
+        } else {
+            $items = $this->thematicAreaChartItems($rows);
+            $title = __('Average achievement by thematic area');
+            $caption = __('Mean of scored indicators in each area. Open one area for indicator bars.');
+        }
 
         $labels = array_column($items, 'label');
         $values = array_column($items, 'value');
 
         return [
-            'title' => $areaIds->count() > 1
-                ? 'Average achievement by thematic area'
-                : (count($rows) > self::CHART_BAR_LIMIT ? 'Lowest achievement' : 'Achievement by indicator'),
-            'caption' => $areaIds->count() > 1
-                ? 'Mean of scored indicators in each area. Open one area for indicator bars.'
-                : (count($rows) > self::CHART_BAR_LIMIT
-                    ? 'The '.self::CHART_BAR_LIMIT.' indicators furthest from target. Full list is in the table below.'
-                    : ''),
-            'height' => max(240, min(480, count($labels) * 42 + 32)),
+            'title' => $title,
+            'caption' => $caption,
+            'height' => max(140, min(280, max(1, count($labels)) * 36 + 48)),
             'labels' => $labels,
             'values' => $values,
-            'bar_colors' => array_map(fn (float $value): string => $this->barColor($value), $values),
+            'bar_colors' => $indicatorBars
+                ? array_fill(0, count($values), '#188ae2')
+                : array_map(fn (float $value): string => $this->barColor($value), $values),
         ];
     }
 
@@ -347,7 +392,7 @@ class IndicatorPerformanceService
 
         foreach ($buckets as $bucket) {
             $items[] = [
-                'label' => $bucket['label'],
+                'label' => $this->shortenChartLabel($bucket['label']),
                 'value' => $bucket['percents'] === []
                     ? 0.0
                     : round(array_sum($bucket['percents']) / count($bucket['percents']), 1),
@@ -368,25 +413,61 @@ class IndicatorPerformanceService
         $items = [];
 
         foreach ($rows as $row) {
-            $indicator = $row['indicator'];
             $percent = $row['performance']['achievement_percent'];
 
+            if ($percent === null) {
+                continue;
+            }
+
+            $indicator = $row['indicator'];
+            $name = trim(($indicator->code ? $indicator->code.' · ' : '').$indicator->name);
+
             $items[] = [
-                'label' => trim(($indicator->code ? $indicator->code.' · ' : '').$indicator->name),
-                'value' => $percent === null ? 0.0 : (float) $percent,
-                'sort' => $percent === null ? -1.0 : (float) $percent,
+                'label' => $this->shortenChartLabel($name, 34).' · '.__($this->achievementStatus($percent)),
+                'value' => (float) $percent,
             ];
         }
 
-        if (count($items) > self::CHART_BAR_LIMIT) {
-            usort($items, fn (array $left, array $right): int => $left['sort'] <=> $right['sort']);
-            $items = array_slice($items, 0, self::CHART_BAR_LIMIT);
+        return $items;
+    }
+
+    private function achievementStatus(float $percent): string
+    {
+        if ($percent >= 100) {
+            return 'On track';
         }
 
-        return array_map(fn (array $item): array => [
-            'label' => $item['label'],
-            'value' => $item['value'],
-        ], $items);
+        if ($percent >= 50) {
+            return 'At risk';
+        }
+
+        return 'Off track';
+    }
+
+    private function shortenChartLabel(string $label, int $max = 40): string
+    {
+        if (mb_strlen($label) <= $max) {
+            return $label;
+        }
+
+        return rtrim(mb_substr($label, 0, $max - 1)).'…';
+    }
+
+    private function statusRank(?float $percent): int
+    {
+        if ($percent === null) {
+            return 3;
+        }
+
+        if ($percent < 50) {
+            return 0;
+        }
+
+        if ($percent < 100) {
+            return 1;
+        }
+
+        return 2;
     }
 
     /**

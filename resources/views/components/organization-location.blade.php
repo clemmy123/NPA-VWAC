@@ -9,33 +9,33 @@
      data-options-url="{{ url('/admin-locations') }}">
     <div class="row">
         <div class="col-md-6 mb-3 org-loc-field" data-level="region">
-            <label for="org_location_region" class="form-label">Region</label>
-            <select id="org_location_region" class="form-control org-loc-select" data-level="region" data-placeholder="Select Region…">
-                <option value="">Select Region…</option>
+            <label for="org_location_region" class="form-label">{{ __('Region') }}</label>
+            <select id="org_location_region" class="form-control org-loc-select" data-level="region" data-placeholder="{{ __('Select Region…') }}">
+                <option value="">{{ __('Select Region…') }}</option>
             </select>
         </div>
         <div class="col-md-6 mb-3 org-loc-field" data-level="district" hidden>
-            <label for="org_location_district" class="form-label">District</label>
-            <select id="org_location_district" class="form-control org-loc-select" data-level="district" data-parent="region" data-placeholder="Select District…">
-                <option value="">Select District…</option>
+            <label for="org_location_district" class="form-label">{{ __('District') }}</label>
+            <select id="org_location_district" class="form-control org-loc-select" data-level="district" data-parent="region" data-placeholder="{{ __('Select District…') }}">
+                <option value="">{{ __('Select District…') }}</option>
             </select>
         </div>
         <div class="col-md-6 mb-3 org-loc-field" data-level="council" hidden>
-            <label for="org_location_council" class="form-label">Council</label>
-            <select id="org_location_council" class="form-control org-loc-select" data-level="council" data-parent="district" data-placeholder="Select Council…">
-                <option value="">Select Council…</option>
+            <label for="org_location_council" class="form-label">{{ __('Council') }}</label>
+            <select id="org_location_council" class="form-control org-loc-select" data-level="council" data-parent="district" data-placeholder="{{ __('Select Council…') }}">
+                <option value="">{{ __('Select Council…') }}</option>
             </select>
         </div>
         <div class="col-md-6 mb-3 org-loc-field" data-level="ward" hidden>
-            <label for="org_location_ward" class="form-label">Ward</label>
-            <select id="org_location_ward" class="form-control org-loc-select" data-level="ward" data-parent="council" data-parent-level="council" data-placeholder="Select Ward…">
-                <option value="">Select Ward…</option>
+            <label for="org_location_ward" class="form-label">{{ __('Ward') }}</label>
+            <select id="org_location_ward" class="form-control org-loc-select" data-level="ward" data-parent="council" data-parent-level="council" data-placeholder="{{ __('Select Ward…') }}">
+                <option value="">{{ __('Select Ward…') }}</option>
             </select>
         </div>
         <div class="col-md-6 mb-3 org-loc-field" data-level="village_mtaa" hidden>
-            <label for="org_location_village" class="form-label">Street / Village</label>
-            <select id="org_location_village" class="form-control org-loc-select" data-level="village_mtaa" data-parent="ward" data-placeholder="Select Street / Village…">
-                <option value="">Select Street / Village…</option>
+            <label for="org_location_village" class="form-label">{{ __('Street / Village') }}</label>
+            <select id="org_location_village" class="form-control org-loc-select" data-level="village_mtaa" data-parent="ward" data-placeholder="{{ __('Select Street / Village…') }}">
+                <option value="">{{ __('Select Street / Village…') }}</option>
             </select>
         </div>
     </div>

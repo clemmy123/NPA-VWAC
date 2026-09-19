@@ -122,6 +122,7 @@ class GeneralReportController extends Controller
                 ];
             }
 
+            $rows = $this->performanceService->prioritizeOffTrackRows($rows);
             $analysis = $this->performanceService->analyse($rows);
         }
 

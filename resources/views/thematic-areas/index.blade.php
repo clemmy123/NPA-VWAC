@@ -1,27 +1,27 @@
 @extends('components.main-layout')
-@section('title', 'Thematic Areas')
+@section('title', __('Thematic Areas'))
 
 @section('content')
 <div class="page-header">
     <div>
-        <h4 class="page-title">Thematic Areas</h4>
-        <nav aria-label="breadcrumb">
+        <h4 class="page-title">{{ __('Thematic Areas') }}</h4>
+        <nav aria-label="{{ __('breadcrumb') }}">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item active">Thematic Areas</li>
+                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
+                <li class="breadcrumb-item active">{{ __('Thematic Areas') }}</li>
             </ol>
         </nav>
     </div>
     @can('thematic-area.create')
-    <a href="{{ route('thematic-areas.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> New Thematic Area</a>
+    <a href="{{ route('thematic-areas.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Thematic Area') }}</a>
     @endcan
 </div>
 
 <form method="GET" action="{{ route('thematic-areas.index') }}" class="filter-card report-filters mb-3" id="thematic-area-filters">
     <div class="rf-field flex-grow-1">
-        <label for="project_id">Project</label>
+        <label for="project_id">{{ __('Project') }}</label>
         <select name="project_id" id="project_id" class="form-control select2" required>
-            <option value="">Select a project to view thematic areas…</option>
+            <option value="">{{ __('Select a project to view thematic areas…') }}</option>
             @foreach ($projects as $project)
             <option value="{{ $project->id }}" @selected($selectedProjectId === $project->id)>{{ $project->name }}</option>
             @endforeach
@@ -35,10 +35,10 @@
         <thead>
             <tr>
                 <th>#</th>
-                <th>Name</th>
-                <th>Project</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>{{ __('Name') }}</th>
+                <th>{{ __('Project') }}</th>
+                <th>{{ __('Status') }}</th>
+                <th>{{ __('Actions') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -54,20 +54,20 @@
                         'closed' => 's-inactive',
                         'inactive' => 's-inactive',
                         default => 's-default',
-                    } }}">{{ ucfirst($thematicArea->status) }}</span>
+                    } }}">{{ __(ucfirst($thematicArea->status)) }}</span>
                 </td>
                 <td>
-                    <a href="{{ route('thematic-areas.show', $thematicArea) }}" class="btn-icon" title="View"><i class="mdi mdi-eye-outline"></i></a>
+                    <a href="{{ route('thematic-areas.show', $thematicArea) }}" class="btn-icon" title="{{ __('View') }}"><i class="mdi mdi-eye-outline"></i></a>
                     @can('thematic-area.update')
-                    <a href="{{ route('thematic-areas.edit', $thematicArea) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
+                    <a href="{{ route('thematic-areas.edit', $thematicArea) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
                     @endcan
                     @can('thematic-area.update')
                     @if ($thematicArea->status === 'active')
                     <form action="{{ route('thematic-areas.disable', $thematicArea) }}" method="POST" class="d-inline"
-                          onsubmit="return confirm('Disable this thematic area?');">
+                          data-confirm="{{ __('Disable this thematic area?') }}">
                         @csrf
                         @method('PATCH')
-                        <button type="submit" class="btn-icon danger" title="Disable"><i class="mdi mdi-cancel"></i></button>
+                        <button type="submit" class="btn-icon danger" title="{{ __('Disable') }}"><i class="mdi mdi-cancel"></i></button>
                     </form>
                     @endif
                     @endcan
@@ -78,7 +78,7 @@
                 <td colspan="5">
                     <div class="tbl-empty">
                         <i class="mdi mdi-sitemap-outline"></i>
-                        <p>{{ $selectedProjectId ? 'No thematic areas found for this project.' : 'Select a project above to view its thematic areas.' }}</p>
+                        <p>{{ $selectedProjectId ? __('No thematic areas found for this project.') : __('Select a project above to view its thematic areas.') }}</p>
                     </div>
                 </td>
             </tr>
@@ -104,22 +104,22 @@
                 'closed' => 's-inactive',
                 'inactive' => 's-inactive',
                 default => 's-default',
-            } }}">{{ ucfirst($thematicArea->status) }}</span>
+            } }}">{{ __(ucfirst($thematicArea->status)) }}</span>
         </div>
         <div class="mob-card-meta">
             <span><i class="mdi mdi-folder-outline"></i> {{ $thematicArea->project?->name ?? '—' }}</span>
         </div>
         <div class="mob-card-footer">
-            <a href="{{ route('thematic-areas.show', $thematicArea) }}" class="btn-icon" title="View"><i class="mdi mdi-eye-outline"></i></a>
+            <a href="{{ route('thematic-areas.show', $thematicArea) }}" class="btn-icon" title="{{ __('View') }}"><i class="mdi mdi-eye-outline"></i></a>
             @can('thematic-area.update')
-            <a href="{{ route('thematic-areas.edit', $thematicArea) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
+            <a href="{{ route('thematic-areas.edit', $thematicArea) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
             @endcan
             @can('thematic-area.update')
             @if ($thematicArea->status === 'active')
-            <form action="{{ route('thematic-areas.disable', $thematicArea) }}" method="POST" class="d-inline" onsubmit="return confirm('Disable this thematic area?');">
+            <form action="{{ route('thematic-areas.disable', $thematicArea) }}" method="POST" class="d-inline" data-confirm="{{ __('Disable this thematic area?') }}">
                 @csrf
                 @method('PATCH')
-                <button type="submit" class="btn-icon danger" title="Disable"><i class="mdi mdi-cancel"></i></button>
+                <button type="submit" class="btn-icon danger" title="{{ __('Disable') }}"><i class="mdi mdi-cancel"></i></button>
             </form>
             @endif
             @endcan
@@ -128,7 +128,7 @@
     @empty
     <div class="tbl-empty">
         <i class="mdi mdi-sitemap-outline"></i>
-        <p>{{ $selectedProjectId ? 'No thematic areas found for this project.' : 'Select a project above to view its thematic areas.' }}</p>
+        <p>{{ $selectedProjectId ? __('No thematic areas found for this project.') : __('Select a project above to view its thematic areas.') }}</p>
     </div>
     @endforelse
 

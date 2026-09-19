@@ -1,19 +1,19 @@
 @extends('components.main-layout')
-@section('title', 'Interventions')
+@section('title', __('Interventions'))
 
 @section('content')
 <div class="page-header">
     <div>
-        <h4 class="page-title">Interventions</h4>
-        <nav aria-label="breadcrumb">
+        <h4 class="page-title">{{ __('Interventions') }}</h4>
+        <nav aria-label="{{ __('breadcrumb') }}">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item active">Interventions</li>
+                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
+                <li class="breadcrumb-item active">{{ __('Interventions') }}</li>
             </ol>
         </nav>
     </div>
     @can('intervention.create')
-    <a href="{{ route('interventions.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> New Intervention</a>
+    <a href="{{ route('interventions.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Intervention') }}</a>
     @endcan
 </div>
 
@@ -23,11 +23,11 @@
         <thead>
             <tr>
                 <th>#</th>
-                <th>Name</th>
-                <th>Thematic Area</th>
-                <th>Indicators</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>{{ __('Name') }}</th>
+                <th>{{ __('Thematic Area') }}</th>
+                <th>{{ __('Indicators') }}</th>
+                <th>{{ __('Status') }}</th>
+                <th>{{ __('Actions') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -43,18 +43,18 @@
                         'completed' => 's-received',
                         'closed' => 's-inactive',
                         default => 's-default',
-                    } }}">{{ ucfirst($intervention->status) }}</span>
+                    } }}">{{ __(ucfirst($intervention->status)) }}</span>
                 </td>
                 <td>
                     @can('intervention.update')
-                    <a href="{{ route('interventions.edit', $intervention) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
+                    <a href="{{ route('interventions.edit', $intervention) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
                     @endcan
                     @can('intervention.delete')
                     <form action="{{ route('interventions.destroy', $intervention) }}" method="POST" class="d-inline"
-                          onsubmit="return confirm('Delete intervention &quot;{{ $intervention->name }}&quot;?');">
+                          data-confirm="{{ __('Delete intervention ":name"?', ['name' => $intervention->name]) }}">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn-icon danger" title="Delete"><i class="mdi mdi-trash-can-outline"></i></button>
+                        <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
                     </form>
                     @endcan
                 </td>
@@ -64,7 +64,7 @@
                 <td colspan="6">
                     <div class="tbl-empty">
                         <i class="mdi mdi-hand-heart-outline"></i>
-                        <p>No interventions found.</p>
+                        <p>{{ __('No interventions found.') }}</p>
                     </div>
                 </td>
             </tr>
@@ -89,22 +89,22 @@
                 'completed' => 's-received',
                 'closed' => 's-inactive',
                 default => 's-default',
-            } }}">{{ ucfirst($intervention->status) }}</span>
+            } }}">{{ __(ucfirst($intervention->status)) }}</span>
         </div>
         <div class="mob-card-meta">
             <span><i class="mdi mdi-sitemap-outline"></i> {{ $intervention->thematicArea?->name ?? '—' }}</span>
-            <span><i class="mdi mdi-chart-box-outline"></i> {{ $intervention->indicators->count() }} indicators</span>
+            <span><i class="mdi mdi-chart-box-outline"></i> {{ $intervention->indicators->count() }} {{ __('indicators') }}</span>
         </div>
         <div class="mob-card-footer">
             @can('intervention.update')
-            <a href="{{ route('interventions.edit', $intervention) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
+            <a href="{{ route('interventions.edit', $intervention) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
             @endcan
             @can('intervention.delete')
             <form action="{{ route('interventions.destroy', $intervention) }}" method="POST" class="d-inline"
-                  onsubmit="return confirm('Delete intervention &quot;{{ $intervention->name }}&quot;?');">
+                  data-confirm="{{ __('Delete intervention ":name"?', ['name' => $intervention->name]) }}">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn-icon danger" title="Delete"><i class="mdi mdi-trash-can-outline"></i></button>
+                <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
             </form>
             @endcan
         </div>
@@ -112,7 +112,7 @@
     @empty
     <div class="tbl-empty">
         <i class="mdi mdi-hand-heart-outline"></i>
-        <p>No interventions found.</p>
+        <p>{{ __('No interventions found.') }}</p>
     </div>
     @endforelse
 

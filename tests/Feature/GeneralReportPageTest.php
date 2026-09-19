@@ -129,6 +129,9 @@ class GeneralReportPageTest extends TestCase
         $response->assertSee('id="report-achievement-chart"', false);
         $response->assertSee('chart.bar_colors', false);
         $response->assertSee("hoverBackgroundColor: '#2563eb'", false);
+        $response->assertSee('#188ae2', false);
+        $response->assertSee('#dc2626', false);
+        $response->assertSee('#22c55e', false);
         $response->assertSee('gridLines: { display: false }', false);
         $response->assertDontSee('rgba(59, 130, 246, 0.35)', false);
         $response->assertSee('id="report-status-chart"', false);
@@ -374,6 +377,10 @@ class GeneralReportPageTest extends TestCase
 
         $pageOne->assertOk();
         $pageOne->assertSee('id="results"', false);
+        $pageOne->assertSee('Achievement by indicator');
+        $pageOne->assertSee('Off track');
+        $pageOne->assertDontSee('Lowest achievement');
+        $pageOne->assertDontSee('Achievement by status');
         $pageOne->assertSee('>Paginated indicator 1</div>', false);
         $pageOne->assertDontSee('>Paginated indicator 11</div>', false);
         $pageOne->assertSee('page=2', false);
@@ -396,6 +403,71 @@ class GeneralReportPageTest extends TestCase
         $pageTwo->assertOk();
         $pageTwo->assertSee('>Paginated indicator 16</div>', false);
         $pageTwo->assertDontSee('>Paginated indicator 1</div>', false);
+    }
+
+    public function test_indicator_results_table_lists_off_track_rows_first(): void
+    {
+        $user = $this->userWithRole('Super Admin');
+        $project = Project::factory()->create();
+        $thematicArea = ThematicArea::factory()->create(['project_id' => $project->id]);
+        $financialYear = FinancialYear::factory()->create([
+            'start_date' => '2025-07-01',
+            'end_date' => '2026-06-30',
+            'is_current' => true,
+        ]);
+
+        $onTrack = Indicator::factory()->create([
+            'thematic_area_id' => $thematicArea->id,
+            'name' => 'AAA on track indicator',
+            'code' => 'AAA-01',
+            'aggregation_method' => 'sum',
+        ]);
+        $atRisk = Indicator::factory()->create([
+            'thematic_area_id' => $thematicArea->id,
+            'name' => 'MMM at risk indicator',
+            'code' => 'MMM-01',
+            'aggregation_method' => 'sum',
+        ]);
+        $offTrack = Indicator::factory()->create([
+            'thematic_area_id' => $thematicArea->id,
+            'name' => 'ZZZ off track indicator',
+            'code' => 'ZZZ-01',
+            'aggregation_method' => 'sum',
+        ]);
+
+        foreach ([
+            [$onTrack, 120],
+            [$atRisk, 60],
+            [$offTrack, 20],
+        ] as [$indicator, $actual]) {
+            IndicatorTarget::factory()->create([
+                'indicator_id' => $indicator->id,
+                'financial_year_id' => $financialYear->id,
+                'target_value' => 100,
+            ]);
+            IndicatorDataEntry::factory()->approved()->create([
+                'indicator_id' => $indicator->id,
+                'financial_year_id' => $financialYear->id,
+                'entry_date' => '2025-12-10',
+                'actual_value' => $actual,
+            ]);
+        }
+
+        $response = $this->actingAs($user)->get(route('reports.general', [
+            'frequency' => 'monthly',
+            'month' => '2025-12-01',
+            'project_id' => $project->id,
+            'thematic_area_id' => $thematicArea->id,
+            'apply' => 1,
+        ]));
+
+        $response->assertOk();
+        $response->assertSeeInOrder([
+            '>ZZZ off track indicator</div>',
+            '>MMM at risk indicator</div>',
+            '>AAA on track indicator</div>',
+        ], false);
+        $response->assertSee('s-achievement', false);
     }
 
     public function test_selected_indicator_scopes_the_general_report(): void

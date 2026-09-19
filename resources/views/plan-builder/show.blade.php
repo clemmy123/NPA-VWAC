@@ -5,28 +5,28 @@
 <div class="page-header">
     <div>
         <h4 class="page-title" id="pbTitle">{{ $thematicArea->name }}</h4>
-        <nav aria-label="breadcrumb">
+        <nav aria-label="{{ __('breadcrumb') }}">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('plan-builder.index') }}">Plan Builder</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('plan-builder.index') }}">{{ __('Plan Builder') }}</a></li>
                 <li class="breadcrumb-item active" id="pbCrumb">{{ $thematicArea->name }}</li>
             </ol>
         </nav>
     </div>
-    <div class="autosave-flag" id="pbAutosave"><span class="autosave-dot"></span>All changes saved</div>
+    <div class="autosave-flag" id="pbAutosave"><span class="autosave-dot"></span>{{ __('All changes saved') }}</div>
 </div>
 
 @unless ($currentFinancialYear)
-<div class="alert alert-warning mb-3">No financial year is marked current — the baseline column is disabled until one is set in Settings.</div>
+<div class="alert alert-warning mb-3">{{ __('No financial year is marked current — the baseline column is disabled until one is set in Settings.') }}</div>
 @endunless
 @if ($financialYears->isEmpty())
-<div class="alert alert-warning mb-3">No financial years exist yet — the target column is disabled until one is added in Settings.</div>
+<div class="alert alert-warning mb-3">{{ __('No financial years exist yet — the target column is disabled until one is added in Settings.') }}</div>
 @endif
 
 <div class="chart-card mb-3">
     <input type="text" id="pbNameInput" class="pb-name-input" value="{{ $thematicArea->name }}" maxlength="255"
            {{ $canUpdateThematicArea ? '' : 'readonly' }}>
-    <textarea id="pbDescInput" class="pb-desc-input" rows="1" placeholder="Add a description…"
+    <textarea id="pbDescInput" class="pb-desc-input" rows="1" placeholder="{{ __('Add a description…') }}"
               {{ $canUpdateThematicArea ? '' : 'readonly' }}>{{ $thematicArea->description }}</textarea>
 </div>
 
@@ -34,10 +34,10 @@
     <table class="table mb-0 pb-table">
         <thead>
             <tr>
-                <th style="width:34%">Indicator</th>
-                <th style="width:14%">Unit</th>
-                <th style="width:14%">Baseline ({{ $currentFinancialYear?->name ?? '—' }})</th>
-                <th style="width:14%">Target</th>
+                <th style="width:34%">{{ __('Indicator') }}</th>
+                <th style="width:14%">{{ __('Unit') }}</th>
+                <th style="width:14%">{{ __('Baseline (:year)', ['year' => $currentFinancialYear?->name ?? '—']) }}</th>
+                <th style="width:14%">{{ __('Target') }}</th>
                 <th style="width:56px"></th>
             </tr>
         </thead>
@@ -48,12 +48,12 @@
                 data-baseline-id="{{ $baselines[$indicator->id]->id ?? '' }}"
                 data-target-id="{{ $targets[$indicator->id]->id ?? '' }}">
                 <td>
-                    <input type="text" class="pb-input pb-name" value="{{ $indicator->name }}" placeholder="Indicator name…"
+                    <input type="text" class="pb-input pb-name" value="{{ $indicator->name }}" placeholder="{{ __('Indicator name…') }}"
                            {{ $canUpdateIndicator ? '' : 'readonly' }}>
-                    <button type="button" class="pb-more-toggle"><i class="mdi mdi-chevron-down"></i> More fields</button>
+                    <button type="button" class="pb-more-toggle"><i class="mdi mdi-chevron-down"></i> {{ __('More fields') }}</button>
                     <div class="pb-more-fields">
                         <div>
-                            <label>Measurement type</label>
+                            <label>{{ __('Measurement type') }}</label>
                             <select class="pb-input pb-measurement-type" {{ $canUpdateIndicator ? '' : 'disabled' }}>
                                 <option value="">—</option>
                                 @foreach ($measurementTypes as $type)
@@ -62,16 +62,16 @@
                             </select>
                         </div>
                         <div>
-                            <label>Reporting frequency</label>
+                            <label>{{ __('Reporting frequency') }}</label>
                             <select class="pb-input pb-frequency" {{ $canUpdateIndicator ? '' : 'disabled' }}>
                                 <option value="">—</option>
                                 @foreach ($reportingFrequencies as $freq)
-                                <option value="{{ $freq }}" @selected($indicator->reporting_frequency === $freq)>{{ ucfirst($freq) }}</option>
+                                <option value="{{ $freq }}" @selected($indicator->reporting_frequency === $freq)>{{ __(ucfirst($freq)) }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div>
-                            <label>Baseline source (organization)</label>
+                            <label>{{ __('Baseline source (organization)') }}</label>
                             <select class="pb-input pb-baseline-org select2" {{ $canSetBaseline ? '' : 'disabled' }}>
                                 <option value="">—</option>
                                 @foreach ($organizations as $organization)
@@ -106,7 +106,7 @@
                 </td>
                 <td>
                     @if ($canDeleteIndicator)
-                    <button type="button" class="btn-icon danger pb-delete" title="Delete indicator"><i class="mdi mdi-trash-can-outline"></i></button>
+                    <button type="button" class="btn-icon danger pb-delete" title="{{ __('Delete indicator') }}"><i class="mdi mdi-trash-can-outline"></i></button>
                     @endif
                 </td>
             </tr>
@@ -115,7 +115,7 @@
                 <td colspan="5">
                     <div class="tbl-empty">
                         <i class="mdi mdi-format-list-checks"></i>
-                        <p>No indicators yet — add the first one below.</p>
+                        <p>{{ __('No indicators yet — add the first one below.') }}</p>
                     </div>
                 </td>
             </tr>
@@ -125,7 +125,7 @@
 
     @can('indicator.create')
     <div class="pb-add-row">
-        <button type="button" class="pb-add-ghost-btn" id="pbAddIndicator"><i class="mdi mdi-plus"></i> Add indicator</button>
+        <button type="button" class="pb-add-ghost-btn" id="pbAddIndicator"><i class="mdi mdi-plus"></i> {{ __('Add indicator') }}</button>
     </div>
     @endcan
 </div>
@@ -242,13 +242,13 @@
         const flag = document.getElementById('pbAutosave');
         if (state === 'saving') {
             flag.style.color = 'var(--success-text)';
-            flag.lastChild.textContent = ' Saving…';
+            flag.lastChild.textContent = ' ' + @json(__('Saving…'));
         } else if (state === 'error') {
             flag.style.color = 'var(--danger-text)';
-            flag.lastChild.textContent = ' Could not save — check the field';
+            flag.lastChild.textContent = ' ' + @json(__('Could not save — check the field'));
         } else {
             flag.style.color = 'var(--muted-soft)';
-            flag.lastChild.textContent = ' All changes saved';
+            flag.lastChild.textContent = ' ' + @json(__('All changes saved'));
         }
     }
 
@@ -264,7 +264,7 @@
         });
         const data = await res.json().catch(() => null);
         if (!res.ok) {
-            const message = data && data.message ? data.message : 'Something went wrong.';
+            const message = data && data.message ? data.message : @json(__('Something went wrong.'));
             throw new Error(message);
         }
         return data;
@@ -379,7 +379,13 @@
             maybeShowEmpty();
             return;
         }
-        if (!confirm('Delete this indicator? This also removes its baseline and target.')) return;
+        if (window.confirmAppAction) {
+            if (! await window.confirmAppAction(@json(__('Delete this indicator? This also removes its baseline and target.')))) {
+                return;
+            }
+        } else if (! confirm(@json(__('Delete this indicator? This also removes its baseline and target.')))) {
+            return;
+        }
         autosaveFlag('saving');
         try {
             await api(indicatorUrl(id), 'DELETE', {});
@@ -396,7 +402,7 @@
         if (!body.querySelector('.pb-row') && !document.getElementById('pbEmptyRow')) {
             const tr = document.createElement('tr');
             tr.id = 'pbEmptyRow';
-            tr.innerHTML = '<td colspan="5"><div class="tbl-empty"><i class="mdi mdi-format-list-checks"></i><p>No indicators yet — add the first one below.</p></div></td>';
+            tr.innerHTML = '<td colspan="5"><div class="tbl-empty"><i class="mdi mdi-format-list-checks"></i><p>{{ __('No indicators yet — add the first one below.') }}</p></div></td>';
             body.appendChild(tr);
         }
     }
@@ -419,7 +425,7 @@
         if (moreToggle && moreFields) {
             moreToggle.addEventListener('click', () => {
                 const open = moreFields.classList.toggle('open');
-                moreToggle.innerHTML = '<i class="mdi mdi-chevron-' + (open ? 'up' : 'down') + '"></i> ' + (open ? 'Hide details' : 'More fields');
+                moreToggle.innerHTML = '<i class="mdi mdi-chevron-' + (open ? 'up' : 'down') + '"></i> ' + (open ? @json(__('Hide details')) : @json(__('More fields')));
             });
         }
 
@@ -436,11 +442,11 @@
         tr.className = 'pb-row';
         tr.innerHTML = `
             <td>
-                <input type="text" class="pb-input pb-name" placeholder="Indicator name…">
-                <button type="button" class="pb-more-toggle"><i class="mdi mdi-chevron-down"></i> More fields</button>
+                <input type="text" class="pb-input pb-name" placeholder="{{ __('Indicator name…') }}">
+                <button type="button" class="pb-more-toggle"><i class="mdi mdi-chevron-down"></i> {{ __('More fields') }}</button>
                 <div class="pb-more-fields">
                     <div>
-                        <label>Measurement type</label>
+                        <label>{{ __('Measurement type') }}</label>
                         <select class="pb-input pb-measurement-type">
                             <option value="">—</option>
                             @foreach ($measurementTypes as $type)
@@ -449,16 +455,16 @@
                         </select>
                     </div>
                     <div>
-                        <label>Reporting frequency</label>
+                        <label>{{ __('Reporting frequency') }}</label>
                         <select class="pb-input pb-frequency">
                             <option value="">—</option>
                             @foreach ($reportingFrequencies as $freq)
-                            <option value="{{ $freq }}">{{ ucfirst($freq) }}</option>
+                            <option value="{{ $freq }}">{{ __(ucfirst($freq)) }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div>
-                        <label>Baseline source (organization)</label>
+                        <label>{{ __('Baseline source (organization)') }}</label>
                         <select class="pb-input pb-baseline-org select2">
                             <option value="">—</option>
                             ${ORGANIZATIONS.map((org) => '<option value="' + org.id + '">' + org.name + '</option>').join('')}
@@ -481,7 +487,7 @@
                     ${FINANCIAL_YEARS.map((fy) => '<option value="' + fy.id + '"' + (fy.id === FINANCIAL_YEAR_ID ? ' selected' : '') + '>' + fy.name + '</option>').join('')}
                 </select>
             </td>
-            <td>${CAN_DELETE_INDICATOR ? '<button type="button" class="btn-icon danger pb-delete" title="Delete indicator"><i class="mdi mdi-trash-can-outline"></i></button>' : ''}</td>
+            <td>${CAN_DELETE_INDICATOR ? '<button type="button" class="btn-icon danger pb-delete" title="{{ __('Delete indicator') }}"><i class="mdi mdi-trash-can-outline"></i></button>' : ''}</td>
         `;
         body.appendChild(tr);
         wireRow(tr);
@@ -502,8 +508,8 @@
 
     if (nameInput && !nameInput.readOnly) {
         nameInput.addEventListener('input', () => {
-            document.getElementById('pbTitle').textContent = nameInput.value || 'Untitled thematic area';
-            document.getElementById('pbCrumb').textContent = nameInput.value || 'Untitled thematic area';
+            document.getElementById('pbTitle').textContent = nameInput.value || @json(__('Untitled thematic area'));
+            document.getElementById('pbCrumb').textContent = nameInput.value || @json(__('Untitled thematic area'));
         });
         nameInput.addEventListener('change', async () => {
             autosaveFlag('saving');

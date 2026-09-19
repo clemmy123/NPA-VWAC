@@ -57,15 +57,18 @@
     };
 
     var LABELS = {
-        region: 'Region',
-        district: 'District',
-        council: 'Council',
-        division: 'Division',
-        township: 'Township',
-        ward: 'Ward',
-        village_mtaa: 'Village/Mtaa',
-        kitongoji: 'Kitongoji'
+        region: @json(__('Region')),
+        district: @json(__('District')),
+        council: @json(__('Council')),
+        division: @json(__('Division')),
+        township: @json(__('Township')),
+        ward: @json(__('Ward')),
+        village_mtaa: @json(__('Village/Mtaa')),
+        kitongoji: @json(__('Kitongoji'))
     };
+    var SELECT_LEVEL = @json(__('Select :level…'));
+    var LOADING_LEVEL = @json(__('Loading :level…'));
+    var UNABLE_LOAD_LEVEL = @json(__('Unable to load :level'));
 
 
     /*
@@ -132,8 +135,7 @@
 
             if (!response.ok) {
                 throw new Error(
-                    'Unable to load ' +
-                    (LABELS[level] || level) +
+                    UNABLE_LOAD_LEVEL.replace(':level', LABELS[level] || level) +
                     '. HTTP ' +
                     response.status
                 );
@@ -198,10 +200,7 @@
         var placeholder = document.createElement('option');
 
         placeholder.value = '';
-        placeholder.textContent =
-            'Select ' +
-            (LABELS[select.dataset.level] || 'location') +
-            '…';
+        placeholder.textContent = SELECT_LEVEL.replace(':level', LABELS[select.dataset.level] || select.dataset.level);
 
         select.appendChild(placeholder);
 
@@ -270,10 +269,7 @@
         if (window.initAppSelect2) {
 
             window.initAppSelect2(select, {
-                placeholder:
-                    'Select ' +
-                    (LABELS[level] || level) +
-                    '…'
+                placeholder: SELECT_LEVEL.replace(':level', LABELS[level] || level)
             });
 
             return;
@@ -291,10 +287,7 @@
 
                 $select.select2({
                     width: '100%',
-                    placeholder:
-                        'Select ' +
-                        (LABELS[level] || level) +
-                        '…'
+                    placeholder: SELECT_LEVEL.replace(':level', LABELS[level] || level)
                 });
             }
         }
@@ -496,10 +489,7 @@
                 document.createElement('option');
 
             loading.value = '';
-            loading.textContent =
-                'Loading ' +
-                (LABELS[level] || level) +
-                '…';
+            loading.textContent = LOADING_LEVEL.replace(':level', LABELS[level] || level);
 
             select.appendChild(loading);
 
@@ -747,9 +737,7 @@
 
                 option.value = '';
 
-                option.textContent =
-                    'Unable to load ' +
-                    (LABELS[level] || level);
+                option.textContent = UNABLE_LOAD_LEVEL.replace(':level', LABELS[level] || level);
 
                 select.appendChild(option);
             });

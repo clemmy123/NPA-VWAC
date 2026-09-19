@@ -29,7 +29,7 @@ class FinancialYearController extends Controller
 
         $financialYear = FinancialYear::create($data);
 
-        return redirect()->route('financial-years.index')->with('success', "Financial year \"{$financialYear->name}\" created.");
+        return redirect()->route('financial-years.index')->with('success', __('Financial year ":name" created.', ['name' => $financialYear->name]));
     }
 
     public function edit(FinancialYear $financialYear): View
@@ -45,14 +45,14 @@ class FinancialYearController extends Controller
 
         $financialYear->update($data);
 
-        return redirect()->route('financial-years.index')->with('success', "Financial year \"{$financialYear->name}\" updated.");
+        return redirect()->route('financial-years.index')->with('success', __('Financial year ":name" updated.', ['name' => $financialYear->name]));
     }
 
     public function destroy(FinancialYear $financialYear): RedirectResponse
     {
         $financialYear->delete();
 
-        return redirect()->route('financial-years.index')->with('success', "Financial year \"{$financialYear->name}\" deleted.");
+        return redirect()->route('financial-years.index')->with('success', __('Financial year ":name" deleted.', ['name' => $financialYear->name]));
     }
 
     private function applyCurrent(array &$data, ?FinancialYear $except = null): void

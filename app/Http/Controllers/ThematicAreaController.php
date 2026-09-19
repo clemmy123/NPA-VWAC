@@ -61,7 +61,7 @@ class ThematicAreaController extends Controller
             return (new ThematicAreaResource($thematicArea))->response()->setStatusCode(201);
         }
 
-        return $this->redirectBackOrTo($request, 'thematic-areas.index')->with('success', "Thematic area \"{$thematicArea->name}\" created.");
+        return $this->redirectBackOrTo($request, 'thematic-areas.index')->with('success', __('Thematic area ":name" created.', ['name' => $thematicArea->name]));
     }
 
     public function show(Request $request, ThematicArea $thematicArea): JsonResponse|View|ThematicAreaResource
@@ -113,7 +113,7 @@ class ThematicAreaController extends Controller
             return new ThematicAreaResource($thematicArea);
         }
 
-        return $this->redirectBackOrTo($request, 'thematic-areas.index')->with('success', "Thematic area \"{$thematicArea->name}\" updated.");
+        return $this->redirectBackOrTo($request, 'thematic-areas.index')->with('success', __('Thematic area ":name" updated.', ['name' => $thematicArea->name]));
     }
 
     public function destroy(Request $request, ThematicArea $thematicArea): JsonResponse|RedirectResponse
@@ -126,7 +126,7 @@ class ThematicAreaController extends Controller
             return response()->json(null, 204);
         }
 
-        return $this->redirectBackOrTo($request, 'thematic-areas.index')->with('success', "Thematic area \"{$thematicArea->name}\" deleted.");
+        return $this->redirectBackOrTo($request, 'thematic-areas.index')->with('success', __('Thematic area ":name" deleted.', ['name' => $thematicArea->name]));
     }
 
     public function disable(Request $request, ThematicArea $thematicArea): RedirectResponse
@@ -134,7 +134,7 @@ class ThematicAreaController extends Controller
         $this->authorizeThematicAreaAccess($request, $thematicArea);
         $thematicArea->update(['status' => 'inactive']);
 
-        return back()->with('success', "Thematic area \"{$thematicArea->name}\" disabled.");
+        return back()->with('success', __('Thematic area ":name" disabled.', ['name' => $thematicArea->name]));
     }
 
     private function scopedThematicAreas(Request $request): Builder

@@ -9,7 +9,7 @@
             </span>
             <span class="brand-text">{{ config('app.name') }}</span>
         </a>
-        <a href="{{ route('dashboard') }}" class="sidebar-home">Home</a>
+        <a href="{{ route('dashboard') }}" class="sidebar-home">{{ __('Home') }}</a>
     </div>
 
     <!-- Navigation -->
@@ -21,7 +21,7 @@
                 <li class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     <a href="{{ route('dashboard') }}">
                         <i class="bi bi-grid"></i>
-                        <span>Dashboard</span>
+                        <span>{{ __('Dashboard') }}</span>
                     </a>
                 </li>
 
@@ -30,7 +30,7 @@
                 <li class="{{ request()->routeIs('plan-builder.*') ? 'active' : '' }}">
                     <a href="{{ route('plan-builder.index') }}">
                         <i class="bi bi-pencil-square"></i>
-                        <span>Plan Builder</span>
+                        <span>{{ __('Plan Builder') }}</span>
                     </a>
                 </li>
                 @endcan
@@ -50,32 +50,32 @@
                 <li class="{{ $planActive ? 'active' : '' }}">
                     <a href="javascript: void(0);">
                         <i class="bi bi-diagram-3"></i>
-                        <span>Plan Hierarchy</span>
+                        <span>{{ __('Plan Hierarchy') }}</span>
                         <span class="menu-arrow"></span>
                     </a>
 
                     <ul class="nav-second-level" aria-expanded="{{ $planActive ? 'true' : 'false' }}">
                         @can('project.view')
                         <li class="{{ request()->routeIs('projects.*') ? 'active' : '' }}">
-                            <a href="{{ route('projects.index') }}">Projects</a>
+                            <a href="{{ route('projects.index') }}">{{ __('Projects') }}</a>
                         </li>
                         @endcan
 
                         @can('thematic-area.view')
                         <li class="{{ request()->routeIs('thematic-areas.*') ? 'active' : '' }}">
-                            <a href="{{ route('thematic-areas.index') }}">Thematic Areas</a>
+                            <a href="{{ route('thematic-areas.index') }}">{{ __('Thematic Areas') }}</a>
                         </li>
                         @endcan
 
                         @can('indicator.view')
                         <li class="{{ request()->routeIs('indicators.*') ? 'active' : '' }}">
-                            <a href="{{ route('indicators.index') }}">Indicators</a>
+                            <a href="{{ route('indicators.index') }}">{{ __('Indicators') }}</a>
                         </li>
                         @endcan
 
                         @can('intervention.view')
                         <li class="{{ request()->routeIs('interventions.*') ? 'active' : '' }}">
-                            <a href="{{ route('interventions.index') }}">Interventions</a>
+                            <a href="{{ route('interventions.index') }}">{{ __('Interventions') }}</a>
                         </li>
                         @endcan
                     </ul>
@@ -90,16 +90,16 @@
                 <li class="{{ $targetsActive ? 'active' : '' }}">
                     <a href="javascript: void(0);">
                         <i class="bi bi-bullseye"></i>
-                        <span>Baselines &amp; Targets</span>
+                        <span>{{ __('Baselines & Targets') }}</span>
                         <span class="menu-arrow"></span>
                     </a>
 
                     <ul class="nav-second-level" aria-expanded="{{ $targetsActive ? 'true' : 'false' }}">
                         <li class="{{ request()->routeIs('indicator-baselines.*') ? 'active' : '' }}">
-                            <a href="{{ route('indicator-baselines.index') }}">Baselines</a>
+                            <a href="{{ route('indicator-baselines.index') }}">{{ __('Baselines') }}</a>
                         </li>
                         <li class="{{ request()->routeIs('indicator-targets.*') ? 'active' : '' }}">
-                            <a href="{{ route('indicator-targets.index') }}">Targets</a>
+                            <a href="{{ route('indicator-targets.index') }}">{{ __('Targets') }}</a>
                         </li>
                     </ul>
                 </li>
@@ -110,7 +110,7 @@
                 <li class="{{ request()->routeIs('indicator-data-entries.*') ? 'active' : '' }}">
                     <a href="{{ route('indicator-data-entries.index') }}">
                         <i class="bi bi-clipboard-data"></i>
-                        <span>Data Collections</span>
+                        <span>{{ __('Data Collections') }}</span>
                     </a>
                 </li>
                 @endcan
@@ -121,18 +121,18 @@
                 <li class="{{ $reportsActive ? 'active' : '' }}">
                     <a href="javascript: void(0);">
                         <i class="bi bi-file-earmark-bar-graph"></i>
-                        <span>Reports</span>
+                        <span>{{ __('Reports') }}</span>
                         <span class="menu-arrow"></span>
                     </a>
                     <ul class="nav-second-level" aria-expanded="{{ $reportsActive ? 'true' : 'false' }}">
                         <li class="{{ request()->routeIs('reports.general') ? 'active' : '' }}">
-                            <a href="{{ route('reports.general') }}">General Report</a>
+                            <a href="{{ route('reports.general') }}">{{ __('General Report') }}</a>
                         </li>
                         <li class="{{ request()->routeIs('reports.workstation') ? 'active' : '' }}">
-                            <a href="{{ route('reports.workstation') }}">Workstation Reports</a>
+                            <a href="{{ route('reports.workstation') }}">{{ __('Workstation Reports') }}</a>
                         </li>
                         <li class="{{ request()->routeIs('reports.late-data-entries') ? 'active' : '' }}">
-                            <a href="{{ route('reports.late-data-entries') }}">Late Data Entries</a>
+                            <a href="{{ route('reports.late-data-entries') }}">{{ __('Late Data Entries') }}</a>
                         </li>
                     </ul>
                 </li>
@@ -143,7 +143,7 @@
                 <li class="{{ request()->routeIs('users.*') ? 'active' : '' }}">
                     <a href="{{ route('users.index') }}">
                         <i class="bi bi-people"></i>
-                        <span>Users</span>
+                        <span>{{ __('Users') }}</span>
                     </a>
                 </li>
                 @endcan
@@ -153,7 +153,7 @@
                 <li class="{{ request()->routeIs('settings.*', 'organizations.*', 'organization-types.*', 'financial-years.*', 'reporting-periods.*', 'measurement-types.*', 'units-of-measure.*', 'dimensions.*') ? 'active' : '' }}">
                     <a href="{{ route('settings.index') }}">
                         <i class="bi bi-gear"></i>
-                        <span>Settings</span>
+                        <span>{{ __('Settings') }}</span>
                     </a>
                 </li>
                 @endcan

@@ -2,12 +2,12 @@
     <table class="table mb-0">
         <thead>
             <tr>
-                <th>Indicator</th>
-                <th>Unit</th>
-                <th class="text-end">Target</th>
-                <th class="text-end">Previous Result</th>
-                <th class="text-end">Actual (approved)</th>
-                <th class="text-end">Achievement</th>
+                <th>{{ __('Indicator') }}</th>
+                <th>{{ __('Unit') }}</th>
+                <th class="text-end">{{ __('Target') }}</th>
+                <th class="text-end">{{ __('Previous Result') }}</th>
+                <th class="text-end">{{ __('Actual (approved)') }}</th>
+                <th class="text-end">{{ __('Achievement') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -23,7 +23,7 @@
                     @foreach (($row['breakdowns'] ?? []) as $breakdownType => $breakdownRows)
                         @if ($breakdownRows !== [])
                         <details class="small mt-1">
-                            <summary>{{ ucfirst($breakdownType) }} ({{ count($breakdownRows) }})</summary>
+                            <summary>{{ __(ucfirst($breakdownType)) }} ({{ count($breakdownRows) }})</summary>
                             @foreach ($breakdownRows as $breakdownRow)
                             <div class="text-muted">{{ $breakdownRow['label'] }}: {{ \App\Support\DisplayNumber::format($breakdownRow['value']) }}</div>
                             @endforeach
@@ -39,7 +39,7 @@
                     @if ($perf['achievement_percent'] === null)
                     <span class="text-muted">—</span>
                     @else
-                    <span class="s-badge {{ $perf['achievement_percent'] >= 100 ? 's-active' : ($perf['achievement_percent'] >= 50 ? 's-investigation' : 's-inactive') }}">
+                    <span class="s-badge s-achievement">
                         {{ \App\Support\DisplayNumber::format($perf['achievement_percent']) }}%
                     </span>
                     @endif
@@ -50,7 +50,7 @@
                 <td colspan="6">
                     <div class="tbl-empty">
                         <i class="mdi mdi-file-chart-outline"></i>
-                        <p>No indicators in this thematic area.</p>
+                        <p>{{ __('No indicators in this thematic area.') }}</p>
                     </div>
                 </td>
             </tr>
@@ -71,7 +71,7 @@
         <div class="mob-card-top">
             <span class="mob-card-title">{{ $row['indicator']->name }}</span>
             @if ($perf['achievement_percent'] !== null)
-            <span class="s-badge {{ $perf['achievement_percent'] >= 100 ? 's-active' : ($perf['achievement_percent'] >= 50 ? 's-investigation' : 's-inactive') }}">
+            <span class="s-badge s-achievement">
                 {{ \App\Support\DisplayNumber::format($perf['achievement_percent']) }}%
             </span>
             @endif
@@ -85,7 +85,7 @@
     @empty
     <div class="tbl-empty">
         <i class="mdi mdi-file-chart-outline"></i>
-        <p>No indicators in this thematic area.</p>
+        <p>{{ __('No indicators in this thematic area.') }}</p>
     </div>
     @endforelse
     @if ($rowPaginator->hasPages())

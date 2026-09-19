@@ -1,36 +1,36 @@
 @extends('components.main-layout')
-@section('title', 'Indicators')
+@section('title', __('Indicators'))
 
 @section('content')
 <div class="page-header">
     <div>
-        <h4 class="page-title">Indicators</h4>
-        <nav aria-label="breadcrumb">
+        <h4 class="page-title">{{ __('Indicators') }}</h4>
+        <nav aria-label="{{ __('breadcrumb') }}">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item active">Indicators</li>
+                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
+                <li class="breadcrumb-item active">{{ __('Indicators') }}</li>
             </ol>
         </nav>
     </div>
     @can('indicator.create')
-    <a href="{{ route('indicators.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> New Indicator</a>
+    <a href="{{ route('indicators.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Indicator') }}</a>
     @endcan
 </div>
 
 <form method="GET" action="{{ route('indicators.index') }}" class="filter-card report-filters mb-3" id="indicator-filters">
     <div class="rf-field">
-        <label for="project_id">Project</label>
+        <label for="project_id">{{ __('Project') }}</label>
         <select name="project_id" id="project_id" class="form-control select2" required>
-            <option value="">Select project…</option>
+            <option value="">{{ __('Select project…') }}</option>
             @foreach ($projects as $project)
             <option value="{{ $project->id }}" @selected($selectedProjectId === $project->id)>{{ $project->name }}</option>
             @endforeach
         </select>
     </div>
     <div class="rf-field">
-        <label for="thematic_area_id">Thematic Area</label>
+        <label for="thematic_area_id">{{ __('Thematic Area') }}</label>
         <select name="thematic_area_id" id="thematic_area_id" class="form-control select2" required>
-            <option value="">Select thematic area…</option>
+            <option value="">{{ __('Select thematic area…') }}</option>
             @foreach ($thematicAreas as $area)
             <option value="{{ $area->id }}" data-project-id="{{ $area->project_id }}" @selected($selectedThematicAreaId === $area->id)>{{ $area->name }}</option>
             @endforeach
@@ -44,12 +44,12 @@
         <thead>
             <tr>
                 <th>#</th>
-                <th>Code</th>
-                <th>Name</th>
-                <th>Thematic Area</th>
-                <th>Frequency</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>{{ __('Code') }}</th>
+                <th>{{ __('Name') }}</th>
+                <th>{{ __('Thematic Area') }}</th>
+                <th>{{ __('Frequency') }}</th>
+                <th>{{ __('Status') }}</th>
+                <th>{{ __('Actions') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -59,7 +59,7 @@
                 <td><span class="ref-pill">{{ $indicator->code }}</span></td>
                 <td><a href="{{ route('indicators.show', $indicator) }}">{{ $indicator->name }}</a></td>
                 <td>{{ $indicator->thematicArea?->name ?? '—' }}</td>
-                <td>{{ $indicator->reporting_frequency ? ucfirst($indicator->reporting_frequency) : '—' }}</td>
+                <td>{{ $indicator->reporting_frequency ? __(ucfirst($indicator->reporting_frequency)) : '—' }}</td>
                 <td>
                     <span class="s-badge {{ match ($indicator->status) {
                         'active' => 's-active',
@@ -67,19 +67,19 @@
                         'closed' => 's-inactive',
                         'inactive' => 's-inactive',
                         default => 's-default',
-                    } }}">{{ ucfirst($indicator->status) }}</span>
+                    } }}">{{ __(ucfirst($indicator->status)) }}</span>
                 </td>
                 <td>
-                    <a href="{{ route('indicators.show', $indicator) }}" class="btn-icon" title="View"><i class="mdi mdi-eye-outline"></i></a>
+                    <a href="{{ route('indicators.show', $indicator) }}" class="btn-icon" title="{{ __('View') }}"><i class="mdi mdi-eye-outline"></i></a>
                     @can('indicator.update')
-                    <a href="{{ route('indicators.edit', $indicator) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
+                    <a href="{{ route('indicators.edit', $indicator) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
                     @endcan
                     @can('indicator.update')
                     @if ($indicator->status === 'active')
-                    <form action="{{ route('indicators.disable', $indicator) }}" method="POST" class="d-inline" onsubmit="return confirm('Disable this indicator?');">
+                    <form action="{{ route('indicators.disable', $indicator) }}" method="POST" class="d-inline" data-confirm="{{ __('Disable this indicator?') }}">
                         @csrf
                         @method('PATCH')
-                        <button type="submit" class="btn-icon danger" title="Disable"><i class="mdi mdi-cancel"></i></button>
+                        <button type="submit" class="btn-icon danger" title="{{ __('Disable') }}"><i class="mdi mdi-cancel"></i></button>
                     </form>
                     @endif
                     @endcan
@@ -90,7 +90,7 @@
                 <td colspan="7">
                     <div class="tbl-empty">
                         <i class="mdi mdi-chart-box-outline"></i>
-                        <p>{{ $selectedProjectId && $selectedThematicAreaId ? 'No indicators found for this thematic area.' : 'Select a project and thematic area above to view indicators.' }}</p>
+                        <p>{{ $selectedProjectId && $selectedThematicAreaId ? __('No indicators found for this thematic area.') : __('Select a project and thematic area above to view indicators.') }}</p>
                     </div>
                 </td>
             </tr>
@@ -116,26 +116,26 @@
                 'closed' => 's-inactive',
                 'inactive' => 's-inactive',
                 default => 's-default',
-            } }}">{{ ucfirst($indicator->status) }}</span>
+            } }}">{{ __(ucfirst($indicator->status)) }}</span>
         </div>
         <div class="mob-card-body">
             <p class="mob-card-title"><span class="ref-pill">{{ $indicator->code }}</span></p>
         </div>
         <div class="mob-card-meta">
             <span><i class="mdi mdi-sitemap-outline"></i> {{ $indicator->thematicArea?->name ?? '—' }}</span>
-            <span><i class="mdi mdi-calendar-refresh"></i> {{ $indicator->reporting_frequency ? ucfirst($indicator->reporting_frequency) : '—' }}</span>
+            <span><i class="mdi mdi-calendar-refresh"></i> {{ $indicator->reporting_frequency ? __(ucfirst($indicator->reporting_frequency)) : '—' }}</span>
         </div>
         <div class="mob-card-footer">
-            <a href="{{ route('indicators.show', $indicator) }}" class="btn-icon" title="View"><i class="mdi mdi-eye-outline"></i></a>
+            <a href="{{ route('indicators.show', $indicator) }}" class="btn-icon" title="{{ __('View') }}"><i class="mdi mdi-eye-outline"></i></a>
             @can('indicator.update')
-            <a href="{{ route('indicators.edit', $indicator) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
+            <a href="{{ route('indicators.edit', $indicator) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
             @endcan
             @can('indicator.update')
             @if ($indicator->status === 'active')
-            <form action="{{ route('indicators.disable', $indicator) }}" method="POST" class="d-inline" onsubmit="return confirm('Disable this indicator?');">
+            <form action="{{ route('indicators.disable', $indicator) }}" method="POST" class="d-inline" data-confirm="{{ __('Disable this indicator?') }}">
                 @csrf
                 @method('PATCH')
-                <button type="submit" class="btn-icon danger" title="Disable"><i class="mdi mdi-cancel"></i></button>
+                <button type="submit" class="btn-icon danger" title="{{ __('Disable') }}"><i class="mdi mdi-cancel"></i></button>
             </form>
             @endif
             @endcan
@@ -144,7 +144,7 @@
     @empty
     <div class="tbl-empty">
         <i class="mdi mdi-chart-box-outline"></i>
-        <p>{{ $selectedProjectId && $selectedThematicAreaId ? 'No indicators found for this thematic area.' : 'Select a project and thematic area above to view indicators.' }}</p>
+        <p>{{ $selectedProjectId && $selectedThematicAreaId ? __('No indicators found for this thematic area.') : __('Select a project and thematic area above to view indicators.') }}</p>
     </div>
     @endforelse
 
@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var initial = @json((string) $selectedThematicAreaId);
     function filterThematics() {
         var selected = thematic.value || initial;
-        thematic.replaceChildren(new Option(project.value ? 'Select thematic area…' : 'Select project first…', ''));
+        thematic.replaceChildren(new Option(project.value ? @json(__('Select thematic area…')) : @json(__('Select project first…')), ''));
         options.forEach(function (option) { if (option.dataset.projectId === project.value) thematic.appendChild(option.cloneNode(true)); });
         thematic.disabled = !project.value;
         if (Array.from(thematic.options).some(function (option) { return option.value === selected; })) thematic.value = selected;

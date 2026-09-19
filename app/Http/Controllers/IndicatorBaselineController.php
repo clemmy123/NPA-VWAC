@@ -44,7 +44,7 @@ class IndicatorBaselineController extends Controller
             return (new IndicatorBaselineResource($baseline))->response()->setStatusCode(201);
         }
 
-        return $this->redirectBackOrTo($request, 'indicator-baselines.index')->with('success', 'Baseline created.');
+        return $this->redirectBackOrTo($request, 'indicator-baselines.index')->with('success', __('Baseline created.'));
     }
 
     public function show(IndicatorBaseline $indicatorBaseline): IndicatorBaselineResource
@@ -65,7 +65,7 @@ class IndicatorBaselineController extends Controller
             return new IndicatorBaselineResource($indicatorBaseline);
         }
 
-        return $this->redirectBackOrTo($request, 'indicator-baselines.index')->with('success', 'Baseline updated.');
+        return $this->redirectBackOrTo($request, 'indicator-baselines.index')->with('success', __('Baseline updated.'));
     }
 
     public function destroy(Request $request, IndicatorBaseline $indicatorBaseline): JsonResponse|RedirectResponse
@@ -76,7 +76,7 @@ class IndicatorBaselineController extends Controller
             return response()->json(null, 204);
         }
 
-        return $this->redirectBackOrTo($request, 'indicator-baselines.index')->with('success', 'Baseline deleted.');
+        return $this->redirectBackOrTo($request, 'indicator-baselines.index')->with('success', __('Baseline deleted.'));
     }
 
     /** @return array<string, mixed> */

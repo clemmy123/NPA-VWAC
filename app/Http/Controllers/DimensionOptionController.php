@@ -21,7 +21,7 @@ class DimensionOptionController extends Controller
 
         $dimension->options()->create($data);
 
-        return redirect()->route('dimensions.edit', $dimension)->with('success', "Option \"{$data['name']}\" added to \"{$dimension->name}\".");
+        return redirect()->route('dimensions.edit', $dimension)->with('success', __('Option ":name" added to ":dimension".', ['name' => $data['name'], 'dimension' => $dimension->name]));
     }
 
     public function edit(Dimension $dimension, DimensionOption $dimensionOption): View
@@ -35,14 +35,14 @@ class DimensionOptionController extends Controller
 
         $dimensionOption->update($data);
 
-        return redirect()->route('dimensions.edit', $dimension)->with('success', "Option \"{$dimensionOption->name}\" updated.");
+        return redirect()->route('dimensions.edit', $dimension)->with('success', __('Option ":name" updated.', ['name' => $dimensionOption->name]));
     }
 
     public function destroy(Dimension $dimension, DimensionOption $dimensionOption): RedirectResponse
     {
         $dimensionOption->delete();
 
-        return redirect()->route('dimensions.edit', $dimension)->with('success', "Option \"{$dimensionOption->name}\" deleted.");
+        return redirect()->route('dimensions.edit', $dimension)->with('success', __('Option ":name" deleted.', ['name' => $dimensionOption->name]));
     }
 
     /** @return array<string, mixed> */

@@ -1,25 +1,25 @@
 @extends('components.main-layout')
-@section('title', 'Reporting Periods')
+@section('title', __('Reporting Periods'))
 
 @section('content')
 <div class="page-header">
     <div>
-        <h4 class="page-title">Reporting Periods</h4>
-        <nav aria-label="breadcrumb">
+        <h4 class="page-title">{{ __('Reporting Periods') }}</h4>
+        <nav aria-label="{{ __('breadcrumb') }}">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('settings.index') }}">Settings</a></li>
-                <li class="breadcrumb-item active">Reporting Periods</li>
+                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('settings.index') }}">{{ __('Settings') }}</a></li>
+                <li class="breadcrumb-item active">{{ __('Reporting Periods') }}</li>
             </ol>
         </nav>
     </div>
-    <a href="{{ route('reporting-periods.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> New Period</a>
+    <a href="{{ route('reporting-periods.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Period') }}</a>
 </div>
 
 <div class="table-card d-none d-md-block">
     <table class="table mb-0">
         <thead>
-            <tr><th>#</th><th>Financial Year</th><th>Code</th><th>Name</th><th>Type</th><th>Status</th><th>Actions</th></tr>
+            <tr><th>#</th><th>{{ __('Financial Year') }}</th><th>{{ __('Code') }}</th><th>{{ __('Name') }}</th><th>{{ __('Type') }}</th><th>{{ __('Status') }}</th><th>{{ __('Actions') }}</th></tr>
         </thead>
         <tbody>
             @forelse ($reportingPeriods as $reportingPeriod)
@@ -28,15 +28,15 @@
                 <td>{{ $reportingPeriod->financialYear?->name ?? '—' }}</td>
                 <td><span class="ref-pill">{{ $reportingPeriod->code }}</span></td>
                 <td>{{ $reportingPeriod->name }}</td>
-                <td>{{ ucfirst(str_replace('_', ' ', $reportingPeriod->period_type)) }}</td>
-                <td><span class="s-badge {{ $reportingPeriod->is_active ? 's-active' : 's-inactive' }}">{{ $reportingPeriod->is_active ? 'Active' : 'Inactive' }}</span></td>
+                <td>{{ __(ucfirst(str_replace('_', ' ', $reportingPeriod->period_type))) }}</td>
+                <td><span class="s-badge {{ $reportingPeriod->is_active ? 's-active' : 's-inactive' }}">{{ $reportingPeriod->is_active ? __('Active') : __('Inactive') }}</span></td>
                 <td>
-                    <a href="{{ route('reporting-periods.edit', $reportingPeriod) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
+                    <a href="{{ route('reporting-periods.edit', $reportingPeriod) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
                     <form action="{{ route('reporting-periods.destroy', $reportingPeriod) }}" method="POST" class="d-inline"
-                          onsubmit="return confirm('Delete this reporting period?');">
+                          data-confirm="{{ __('Delete this reporting period?') }}">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn-icon danger" title="Delete"><i class="mdi mdi-trash-can-outline"></i></button>
+                        <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
                     </form>
                 </td>
             </tr>
@@ -45,7 +45,7 @@
                 <td colspan="7">
                     <div class="tbl-empty">
                         <i class="mdi mdi-calendar-week-outline"></i>
-                        <p>No reporting periods found.</p>
+                        <p>{{ __('No reporting periods found.') }}</p>
                     </div>
                 </td>
             </tr>
@@ -62,25 +62,25 @@
     <div class="mob-card">
         <div class="mob-card-top">
             <span class="fw-600">{{ $reportingPeriod->name }}</span>
-            <span class="s-badge {{ $reportingPeriod->is_active ? 's-active' : 's-inactive' }}">{{ $reportingPeriod->is_active ? 'Active' : 'Inactive' }}</span>
+            <span class="s-badge {{ $reportingPeriod->is_active ? 's-active' : 's-inactive' }}">{{ $reportingPeriod->is_active ? __('Active') : __('Inactive') }}</span>
         </div>
         <div class="mob-card-meta">
             <span><i class="mdi mdi-calendar-range-outline"></i> {{ $reportingPeriod->financialYear?->name ?? '—' }}</span>
         </div>
         <div class="mob-card-footer">
-            <a href="{{ route('reporting-periods.edit', $reportingPeriod) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
+            <a href="{{ route('reporting-periods.edit', $reportingPeriod) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
             <form action="{{ route('reporting-periods.destroy', $reportingPeriod) }}" method="POST" class="d-inline"
-                  onsubmit="return confirm('Delete this reporting period?');">
+                  data-confirm="{{ __('Delete this reporting period?') }}">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn-icon danger" title="Delete"><i class="mdi mdi-trash-can-outline"></i></button>
+                <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
             </form>
         </div>
     </div>
     @empty
     <div class="tbl-empty">
         <i class="mdi mdi-calendar-week-outline"></i>
-        <p>No reporting periods found.</p>
+        <p>{{ __('No reporting periods found.') }}</p>
     </div>
     @endforelse
     @if ($reportingPeriods->hasPages())

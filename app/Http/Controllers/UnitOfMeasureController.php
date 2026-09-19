@@ -27,7 +27,7 @@ class UnitOfMeasureController extends Controller
 
         $unitOfMeasure = UnitOfMeasure::create($data);
 
-        return redirect()->route('units-of-measure.index')->with('success', "Unit of measure \"{$unitOfMeasure->name}\" created.");
+        return redirect()->route('units-of-measure.index')->with('success', __('Unit of measure ":name" created.', ['name' => $unitOfMeasure->name]));
     }
 
     public function edit(UnitOfMeasure $unitOfMeasure): View
@@ -41,14 +41,14 @@ class UnitOfMeasureController extends Controller
 
         $unitOfMeasure->update($data);
 
-        return redirect()->route('units-of-measure.index')->with('success', "Unit of measure \"{$unitOfMeasure->name}\" updated.");
+        return redirect()->route('units-of-measure.index')->with('success', __('Unit of measure ":name" updated.', ['name' => $unitOfMeasure->name]));
     }
 
     public function destroy(UnitOfMeasure $unitOfMeasure): RedirectResponse
     {
         $unitOfMeasure->delete();
 
-        return redirect()->route('units-of-measure.index')->with('success', "Unit of measure \"{$unitOfMeasure->name}\" deleted.");
+        return redirect()->route('units-of-measure.index')->with('success', __('Unit of measure ":name" deleted.', ['name' => $unitOfMeasure->name]));
     }
 
     /** @return array<string, mixed> */

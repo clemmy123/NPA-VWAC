@@ -38,7 +38,7 @@ class ReportingPeriodController extends Controller
 
         $reportingPeriod = ReportingPeriod::create($data);
 
-        return redirect()->route('reporting-periods.index')->with('success', "Reporting period \"{$reportingPeriod->name}\" created.");
+        return redirect()->route('reporting-periods.index')->with('success', __('Reporting period ":name" created.', ['name' => $reportingPeriod->name]));
     }
 
     public function edit(ReportingPeriod $reportingPeriod): View
@@ -52,14 +52,14 @@ class ReportingPeriodController extends Controller
 
         $reportingPeriod->update($data);
 
-        return redirect()->route('reporting-periods.index')->with('success', "Reporting period \"{$reportingPeriod->name}\" updated.");
+        return redirect()->route('reporting-periods.index')->with('success', __('Reporting period ":name" updated.', ['name' => $reportingPeriod->name]));
     }
 
     public function destroy(ReportingPeriod $reportingPeriod): RedirectResponse
     {
         $reportingPeriod->delete();
 
-        return redirect()->route('reporting-periods.index')->with('success', "Reporting period \"{$reportingPeriod->name}\" deleted.");
+        return redirect()->route('reporting-periods.index')->with('success', __('Reporting period ":name" deleted.', ['name' => $reportingPeriod->name]));
     }
 
     /** @return array<string, mixed> */

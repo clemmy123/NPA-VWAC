@@ -322,7 +322,7 @@ class IndicatorPerformanceServiceTest extends TestCase
         $this->assertSame(1, $result['alert_summary']['at_risk']);
     }
 
-    public function test_analyse_caps_a_single_area_chart_to_the_lowest_indicators(): void
+    public function test_analyse_lists_every_scored_indicator_with_its_status(): void
     {
         $area = ThematicArea::factory()->create();
         $rows = [];
@@ -345,11 +345,82 @@ class IndicatorPerformanceServiceTest extends TestCase
 
         $result = $this->service->analyse($rows);
 
-        $this->assertSame('Lowest achievement', $result['chart']['title']);
-        $this->assertCount(12, $result['chart']['labels']);
-        $this->assertSame('X-01 · Indicator 1', $result['chart']['labels'][0]);
-        $this->assertSame(10.0, $result['chart']['values'][0]);
-        $this->assertSame('X-12 · Indicator 12', $result['chart']['labels'][11]);
-        $this->assertFalse(in_array('X-14 · Indicator 14', $result['chart']['labels'], true));
+        $this->assertSame('Achievement by indicator', $result['chart']['title']);
+        $this->assertCount(14, $result['chart']['labels']);
+        $this->assertSame('X-01 · Indicator 1 · Off track', $result['chart']['labels'][0]);
+        $this->assertSame('X-05 · Indicator 5 · At risk', $result['chart']['labels'][4]);
+        $this->assertSame('X-14 · Indicator 14 · On track', $result['chart']['labels'][13]);
+        $this->assertSame([10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0], $result['chart']['values']);
+        $this->assertSame(array_fill(0, 14, '#188ae2'), $result['chart']['bar_colors']);
+    }
+
+    public function test_analyse_charts_only_scored_indicators_when_few_have_results(): void
+    {
+        $area = ThematicArea::factory()->create();
+        $rows = [];
+
+        for ($index = 1; $index <= 14; $index++) {
+            $rows[] = [
+                'indicator' => Indicator::factory()->create([
+                    'thematic_area_id' => $area->id,
+                    'name' => 'Indicator '.$index,
+                    'code' => sprintf('X-%02d', $index),
+                ]),
+                'performance' => [
+                    'target_value' => 100.0,
+                    'actual_value' => $index <= 3 ? (float) ($index * 10) : null,
+                    'achievement_percent' => $index <= 3 ? (float) ($index * 10) : null,
+                    'aggregation_method' => 'sum',
+                ],
+            ];
+        }
+
+        $result = $this->service->analyse($rows);
+
+        $this->assertSame('Achievement by indicator', $result['chart']['title']);
+        $this->assertSame([
+            'X-01 · Indicator 1 · Off track',
+            'X-02 · Indicator 2 · Off track',
+            'X-03 · Indicator 3 · Off track',
+        ], $result['chart']['labels']);
+        $this->assertSame([10.0, 20.0, 30.0], $result['chart']['values']);
+        $this->assertSame(['#188ae2', '#188ae2', '#188ae2'], $result['chart']['bar_colors']);
+    }
+
+    public function test_prioritize_off_track_rows_puts_the_weakest_indicators_first(): void
+    {
+        $onTrack = Indicator::factory()->create(['name' => 'AAA on track', 'code' => 'A']);
+        $atRisk = Indicator::factory()->create(['name' => 'MMM at risk', 'code' => 'M']);
+        $offTrackLow = Indicator::factory()->create(['name' => 'ZZZ off track low', 'code' => 'Z']);
+        $offTrackHigh = Indicator::factory()->create(['name' => 'YYY off track high', 'code' => 'Y']);
+        $noData = Indicator::factory()->create(['name' => 'BBB no data', 'code' => 'B']);
+
+        $sorted = $this->service->prioritizeOffTrackRows([
+            [
+                'indicator' => $onTrack,
+                'performance' => ['target_value' => 100.0, 'actual_value' => 120.0, 'achievement_percent' => 120.0, 'aggregation_method' => 'sum'],
+            ],
+            [
+                'indicator' => $atRisk,
+                'performance' => ['target_value' => 100.0, 'actual_value' => 60.0, 'achievement_percent' => 60.0, 'aggregation_method' => 'sum'],
+            ],
+            [
+                'indicator' => $offTrackHigh,
+                'performance' => ['target_value' => 100.0, 'actual_value' => 40.0, 'achievement_percent' => 40.0, 'aggregation_method' => 'sum'],
+            ],
+            [
+                'indicator' => $offTrackLow,
+                'performance' => ['target_value' => 100.0, 'actual_value' => 10.0, 'achievement_percent' => 10.0, 'aggregation_method' => 'sum'],
+            ],
+            [
+                'indicator' => $noData,
+                'performance' => ['target_value' => 100.0, 'actual_value' => null, 'achievement_percent' => null, 'aggregation_method' => 'sum'],
+            ],
+        ]);
+
+        $this->assertSame(
+            ['ZZZ off track low', 'YYY off track high', 'MMM at risk', 'AAA on track', 'BBB no data'],
+            array_map(fn (array $row): string => $row['indicator']->name, $sorted),
+        );
     }
 }

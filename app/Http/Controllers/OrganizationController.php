@@ -40,7 +40,7 @@ class OrganizationController extends Controller
 
         $organization = Organization::create($data);
 
-        return redirect()->route('organizations.index')->with('success', "Organization \"{$organization->name}\" created.");
+        return redirect()->route('organizations.index')->with('success', __('Organization ":name" created.', ['name' => $organization->name]));
     }
 
     public function edit(Organization $organization): View
@@ -59,14 +59,14 @@ class OrganizationController extends Controller
 
         $organization->update($data);
 
-        return redirect()->route('organizations.index')->with('success', "Organization \"{$organization->name}\" updated.");
+        return redirect()->route('organizations.index')->with('success', __('Organization ":name" updated.', ['name' => $organization->name]));
     }
 
     public function destroy(Organization $organization): RedirectResponse
     {
         $organization->delete();
 
-        return redirect()->route('organizations.index')->with('success', "Organization \"{$organization->name}\" deleted.");
+        return redirect()->route('organizations.index')->with('success', __('Organization ":name" deleted.', ['name' => $organization->name]));
     }
 
     /** @return array<string, mixed> */

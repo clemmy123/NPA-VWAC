@@ -7,6 +7,7 @@ use App\Models\Indicator;
 use App\Models\IndicatorDataEntry;
 use App\Models\ReportingPeriod;
 use App\Support\AdminLocationLevel;
+use App\Support\DisplayNumber;
 use Carbon\Carbon;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -23,6 +24,10 @@ class UpdateIndicatorDataEntryRequest extends FormRequest
 
         if ($this->filled('location_id') && $indicator?->requires_location && $indicator->reporting_location_level) {
             $this->merge(['location_level' => $indicator->reporting_location_level]);
+        }
+
+        if ($this->exists('actual_value')) {
+            $this->merge(['actual_value' => DisplayNumber::normalizeInput($this->input('actual_value'))]);
         }
     }
 
@@ -43,7 +48,7 @@ class UpdateIndicatorDataEntryRequest extends FormRequest
             'location_level' => ['nullable', 'string', Rule::in(AdminLocationLevel::levels()), 'required_with:location_id'],
             'location_id' => ['nullable', 'integer', 'required_with:location_level'],
             'organization_id' => ['nullable', 'integer', 'exists:organizations,id'],
-            'actual_value' => ['nullable', 'numeric'],
+            'actual_value' => ['nullable', 'numeric', 'min:0'],
             'actual_text' => ['nullable', 'string'],
             'budget_allocated' => ['nullable', 'numeric'],
             'budget_used' => ['nullable', 'numeric'],
@@ -184,13 +189,17 @@ class UpdateIndicatorDataEntryRequest extends FormRequest
 
         $actualValue = $this->has('actual_value') ? $this->input('actual_value') : $entry->actual_value;
         $actualText = $this->has('actual_text') ? $this->input('actual_text') : $entry->actual_text;
-        if (in_array($indicator->measurementType?->code, ['text', 'qualitative'], true) && filled($actualValue)) {
+        $isText = in_array($indicator->measurementType?->code, ['text', 'qualitative'], true);
+        if ($isText && filled($actualValue)) {
             $validator->errors()->add('actual_value', 'This indicator accepts a text response, not a numeric value.');
         }
-        if (! in_array($indicator->measurementType?->code, ['text', 'qualitative'], true) && filled($actualText)) {
+        if (! $isText && filled($actualText)) {
             $validator->errors()->add('actual_text', 'This indicator requires a numeric or Yes/No response.');
         }
-        if (filled($actualValue)) {
+        if (! $isText && $this->exists('actual_value') && ! is_numeric($this->input('actual_value'))) {
+            $validator->errors()->add('actual_value', __('Enter a number starting from 0. This field cannot be left empty.'));
+        }
+        if (is_numeric($actualValue)) {
             $actual = (float) $actualValue;
             $type = $indicator->measurementType?->code;
             if ($type === 'count' && floor($actual) !== $actual) {

@@ -41,7 +41,7 @@ class ProjectController extends Controller
             return (new ProjectResource($project))->response()->setStatusCode(201);
         }
 
-        return redirect()->route('projects.index')->with('success', "Project \"{$project->name}\" created.");
+        return redirect()->route('projects.index')->with('success', __('Project ":name" created.', ['name' => $project->name]));
     }
 
     public function show(Request $request, Project $project): JsonResponse|View|ProjectResource
@@ -79,7 +79,7 @@ class ProjectController extends Controller
             return new ProjectResource($project);
         }
 
-        return redirect()->route('projects.index')->with('success', "Project \"{$project->name}\" updated.");
+        return redirect()->route('projects.index')->with('success', __('Project ":name" updated.', ['name' => $project->name]));
     }
 
     public function destroy(Request $request, Project $project): JsonResponse|RedirectResponse
@@ -92,7 +92,7 @@ class ProjectController extends Controller
             return response()->json(null, 204);
         }
 
-        return redirect()->route('projects.index')->with('success', "Project \"{$project->name}\" deleted.");
+        return redirect()->route('projects.index')->with('success', __('Project ":name" deleted.', ['name' => $project->name]));
     }
 
     private function scopedProjects(Request $request): Builder

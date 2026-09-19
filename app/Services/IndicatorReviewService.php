@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\IndicatorDataEntry;
 use App\Models\IndicatorApprovalAssignment;
+use App\Models\IndicatorDataEntry;
 use App\Models\User;
 use App\Support\AdminLocationLevel;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -22,6 +22,7 @@ class IndicatorReviewService
             throw new AuthorizationException('You can only submit your own entries.');
         }
 
+        $this->assertNumericActualValuePresent($entry);
         $this->assertReconciliation($entry);
 
         if ($entry->indicator->requires_hierarchical_approval && $entry->location_level && $entry->location_id) {
@@ -105,6 +106,21 @@ class IndicatorReviewService
         });
 
         return $entry->fresh();
+    }
+
+    private function assertNumericActualValuePresent(IndicatorDataEntry $entry): void
+    {
+        $type = $entry->indicator->measurementType?->code;
+
+        if (in_array($type, ['text', 'qualitative'], true)) {
+            return;
+        }
+
+        if ($entry->actual_value === null) {
+            throw ValidationException::withMessages([
+                'actual_value' => __('Enter a number starting from 0. This field cannot be left empty.'),
+            ]);
+        }
     }
 
     private function assertReconciliation(IndicatorDataEntry $entry): void

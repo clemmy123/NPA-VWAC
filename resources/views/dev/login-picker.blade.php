@@ -4,7 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Dev Login — {{ config('app.name') }}</title>
-    <link rel="shortcut icon" href="{{ asset('app-assets/images/logo-sm.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('app-assets/logo.png') }}">
+    <link rel="shortcut icon" href="{{ asset('app-assets/logo.png') }}">
     <link href="{{ asset('app-assets/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('app-assets/css/icons.min.css') }}" rel="stylesheet">
 

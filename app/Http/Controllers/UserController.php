@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Organization;
 use App\Models\IndicatorApprovalAssignment;
+use App\Models\Organization;
 use App\Models\User;
 use App\Support\AdminLocationLevel;
 use Illuminate\Http\RedirectResponse;
@@ -57,12 +57,13 @@ class UserController extends Controller
         $user->syncRoles([$role]);
         $this->syncApproval($user, $role, $approval);
 
-        return redirect()->route('users.index')->with('success', "User \"{$user->name}\" created.");
+        return redirect()->route('users.index')->with('success', __('User ":name" created.', ['name' => $user->name]));
     }
 
     public function edit(User $user): View
     {
         $approval = $user->approvalAssignments()->where('is_active', true)->first();
+
         return view('users.edit', [
             'user' => $user,
             'approvalAssignment' => $approval,
@@ -91,7 +92,7 @@ class UserController extends Controller
         $user->syncRoles([$role]);
         $this->syncApproval($user, $role, $approval);
 
-        return redirect()->route('users.index')->with('success', "User \"{$user->name}\" updated.");
+        return redirect()->route('users.index')->with('success', __('User ":name" updated.', ['name' => $user->name]));
     }
 
     public function destroy(User $user): RedirectResponse
@@ -99,8 +100,8 @@ class UserController extends Controller
         $user->update(['status' => $user->status === 'active' ? 'inactive' : 'active']);
 
         $message = $user->status === 'active'
-            ? "User \"{$user->name}\" reactivated."
-            : "User \"{$user->name}\" deactivated.";
+            ? __('User ":name" reactivated.', ['name' => $user->name])
+            : __('User ":name" deactivated.', ['name' => $user->name]);
 
         return redirect()->route('users.index')->with('success', $message);
     }

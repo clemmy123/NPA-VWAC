@@ -2,13 +2,19 @@
 
 namespace Tests\Feature;
 
+use App\Models\Council;
+use App\Models\Division;
 use App\Models\FinancialYear;
 use App\Models\Indicator;
 use App\Models\IndicatorDataAssignment;
+use App\Models\MeasurementType;
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\Region;
 use App\Models\ReportingPeriod;
 use App\Models\User;
+use App\Models\VillageMtaa;
+use App\Models\Ward;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -170,6 +176,7 @@ class DataEntryAssignmentScopeTest extends TestCase
             'financial_year_id' => $financialYear->id,
             'reporting_period_id' => $futurePeriod->id,
             'entry_date' => now()->toDateString(),
+            'actual_value' => 0,
         ]);
 
         $response->assertCreated();
@@ -194,6 +201,7 @@ class DataEntryAssignmentScopeTest extends TestCase
             'financial_year_id' => $financialYear->id,
             'entry_date' => now()->toDateString(),
             'organization_id' => $otherOrganization->id,
+            'actual_value' => 0,
         ])->assertCreated();
 
         $this->assertDatabaseHas('indicator_data_entries', [
@@ -206,6 +214,7 @@ class DataEntryAssignmentScopeTest extends TestCase
             'financial_year_id' => $financialYear->id,
             'entry_date' => now()->toDateString(),
             'organization_id' => $assignedOrganization->id,
+            'actual_value' => 0,
         ])->assertCreated();
     }
 
@@ -229,16 +238,16 @@ class DataEntryAssignmentScopeTest extends TestCase
             'financial_year_id' => $financialYear->id,
             'entry_date' => now()->toDateString(),
             'location_level' => 'region',
-            'location_id' => \App\Models\Region::factory()->create()->region_id,
+            'location_id' => Region::factory()->create()->region_id,
         ])->assertJsonValidationErrors('location_id');
     }
 
     public function test_a_council_scoped_user_can_submit_a_street_level_indicator_within_their_council(): void
     {
-        $council = \App\Models\Council::factory()->create();
-        $division = \App\Models\Division::factory()->create(['council_id' => $council->council_id]);
-        $ward = \App\Models\Ward::factory()->create(['division_id' => $division->division_id]);
-        $street = \App\Models\VillageMtaa::factory()->create(['ward_id' => $ward->ward_id, 'type' => 'mtaa']);
+        $council = Council::factory()->create();
+        $division = Division::factory()->create(['council_id' => $council->council_id]);
+        $ward = Ward::factory()->create(['division_id' => $division->division_id]);
+        $street = VillageMtaa::factory()->create(['ward_id' => $ward->ward_id, 'type' => 'mtaa']);
         $indicator = Indicator::factory()->create([
             'requires_location' => true,
             'reporting_location_level' => 'village_mtaa',
@@ -290,7 +299,7 @@ class DataEntryAssignmentScopeTest extends TestCase
 
     public function test_percentage_measurement_rejects_values_above_one_hundred(): void
     {
-        $measurement = \App\Models\MeasurementType::factory()->create(['code' => 'percentage']);
+        $measurement = MeasurementType::factory()->create(['code' => 'percentage']);
         $indicator = Indicator::factory()->create(['measurement_type_id' => $measurement->id]);
         $financialYear = FinancialYear::factory()->started()->create();
         $user = User::factory()->create();

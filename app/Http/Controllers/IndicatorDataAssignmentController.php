@@ -41,7 +41,7 @@ class IndicatorDataAssignmentController extends Controller
 
         IndicatorDataAssignment::create($data);
 
-        return $this->redirectBackOrTo($request, 'indicator-data-assignments.index')->with('success', 'Assignment created.');
+        return $this->redirectBackOrTo($request, 'indicator-data-assignments.index')->with('success', __('Assignment created.'));
     }
 
     public function edit(Request $request, IndicatorDataAssignment $indicatorDataAssignment): View
@@ -65,7 +65,7 @@ class IndicatorDataAssignmentController extends Controller
 
         $indicatorDataAssignment->update($data);
 
-        return $this->redirectBackOrTo($request, 'indicator-data-assignments.index')->with('success', 'Assignment updated.');
+        return $this->redirectBackOrTo($request, 'indicator-data-assignments.index')->with('success', __('Assignment updated.'));
     }
 
     public function destroy(Request $request, IndicatorDataAssignment $indicatorDataAssignment): RedirectResponse
@@ -73,7 +73,7 @@ class IndicatorDataAssignmentController extends Controller
         $this->authorizeExistingAssignment($request->user(), $indicatorDataAssignment);
         $indicatorDataAssignment->delete();
 
-        return $this->redirectBackOrTo($request, 'indicator-data-assignments.index')->with('success', 'Assignment deleted.');
+        return $this->redirectBackOrTo($request, 'indicator-data-assignments.index')->with('success', __('Assignment deleted.'));
     }
 
     /** @return array<string, mixed> */
@@ -92,8 +92,7 @@ class IndicatorDataAssignmentController extends Controller
             }
         }
 
-        $delegationScopes = $ownAssignments->filter(fn (IndicatorDataAssignment $assignment): bool =>
-            $assignment->location_level !== null && $assignment->location_id !== null
+        $delegationScopes = $ownAssignments->filter(fn (IndicatorDataAssignment $assignment): bool => $assignment->location_level !== null && $assignment->location_id !== null
         )->groupBy('indicator_id')->map(fn ($assignments) => $assignments->map(function (IndicatorDataAssignment $assignment): array {
             $chain = AdminLocationLevel::ancestorChain($assignment->location_level, (int) $assignment->location_id);
 

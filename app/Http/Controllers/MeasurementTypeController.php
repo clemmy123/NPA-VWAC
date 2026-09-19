@@ -27,7 +27,7 @@ class MeasurementTypeController extends Controller
 
         $measurementType = MeasurementType::create($data);
 
-        return redirect()->route('measurement-types.index')->with('success', "Measurement type \"{$measurementType->name}\" created.");
+        return redirect()->route('measurement-types.index')->with('success', __('Measurement type ":name" created.', ['name' => $measurementType->name]));
     }
 
     public function edit(MeasurementType $measurementType): View
@@ -41,14 +41,14 @@ class MeasurementTypeController extends Controller
 
         $measurementType->update($data);
 
-        return redirect()->route('measurement-types.index')->with('success', "Measurement type \"{$measurementType->name}\" updated.");
+        return redirect()->route('measurement-types.index')->with('success', __('Measurement type ":name" updated.', ['name' => $measurementType->name]));
     }
 
     public function destroy(MeasurementType $measurementType): RedirectResponse
     {
         $measurementType->delete();
 
-        return redirect()->route('measurement-types.index')->with('success', "Measurement type \"{$measurementType->name}\" deleted.");
+        return redirect()->route('measurement-types.index')->with('success', __('Measurement type ":name" deleted.', ['name' => $measurementType->name]));
     }
 
     /** @return array<string, mixed> */

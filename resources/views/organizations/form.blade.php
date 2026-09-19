@@ -2,14 +2,14 @@
 
 <div class="row">
     <div class="col-md-6 mb-3">
-        <label for="name" class="form-label">Name</label>
+        <label for="name" class="form-label">{{ __('Name') }}</label>
         <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror"
                value="{{ old('name', $organization?->name) }}" required maxlength="255" placeholder="e.g. CRDB Bank">
         @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
     <div class="col-md-6 mb-3">
-        <label for="organization_type_id" class="form-label">Type</label>
+        <label for="organization_type_id" class="form-label">{{ __('Type') }}</label>
         <select name="organization_type_id" id="organization_type_id" class="form-control @error('organization_type_id') is-invalid @enderror">
             <option value="">—</option>
             @foreach ($organizationTypes as $type)
@@ -20,14 +20,14 @@
     </div>
 
     <div class="col-md-6 mb-3">
-        <label for="code" class="form-label">Code</label>
+        <label for="code" class="form-label">{{ __('Code') }}</label>
         <input type="text" name="code" id="code" class="form-control @error('code') is-invalid @enderror"
                value="{{ old('code', $organization?->code) }}" maxlength="50">
         @error('code')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
     <div class="col-12 mb-3">
-        <label for="description" class="form-label">Description</label>
+        <label for="description" class="form-label">{{ __('Description') }}</label>
         <textarea name="description" id="description" rows="2"
                   class="form-control @error('description') is-invalid @enderror">{{ old('description', $organization?->description) }}</textarea>
         @error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -35,7 +35,7 @@
 </div>
 
 <div class="mb-3">
-    <p class="form-label mb-2">Location</p>
+    <p class="form-label mb-2">{{ __('Location') }}</p>
     @include('components.organization-location', [
         'ancestorChain' => $locationAncestorChain ?? [],
         'currentLevel' => old('location_level', $organization?->location_level),
@@ -49,7 +49,7 @@
             <input type="hidden" name="is_active" value="0">
             <input type="checkbox" name="is_active" id="is_active" class="form-check-input" value="1"
                    @checked(old('is_active', $organization?->is_active ?? true))>
-            <label for="is_active" class="form-check-label">Active</label>
+            <label for="is_active" class="form-check-label">{{ __('Active') }}</label>
         </div>
     </div>
 </div>

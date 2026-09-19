@@ -29,4 +29,23 @@ final class DisplayNumber
 
         return rtrim(rtrim(number_format((float) $value, $maximumDecimals, '.', ''), '0'), '.');
     }
+
+    public static function normalizeInput(mixed $value): int|float|string|null
+    {
+        if (is_int($value) || is_float($value)) {
+            return $value;
+        }
+
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (! is_string($value)) {
+            return is_numeric($value) ? $value : null;
+        }
+
+        $normalized = str_replace([',', ' ', "\u{00A0}"], '', trim($value));
+
+        return $normalized === '' || $normalized === '-' || $normalized === '.' ? null : $normalized;
+    }
 }

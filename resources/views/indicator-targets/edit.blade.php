@@ -1,15 +1,15 @@
 @extends('components.main-layout')
-@section('title', 'Edit Target')
+@section('title', __('Edit Target'))
 
 @section('content')
 <div class="page-header">
     <div>
-        <h4 class="page-title">Edit Target</h4>
-        <nav aria-label="breadcrumb">
+        <h4 class="page-title">{{ __('Edit Target') }}</h4>
+        <nav aria-label="{{ __('breadcrumb') }}">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
                 <li class="breadcrumb-item"><a href="{{ route('indicator-targets.index') }}">Targets</a></li>
-                <li class="breadcrumb-item active">Edit</li>
+                <li class="breadcrumb-item active">{{ __('Edit') }}</li>
             </ol>
         </nav>
     </div>
@@ -28,8 +28,8 @@
         ])
 
         <div class="d-flex form-actions">
-            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> Save Changes</button>
-            <a href="{{ route('indicator-targets.index') }}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> {{ __('Save Changes') }}</button>
+            <a href="{{ route('indicator-targets.index') }}" class="btn btn-outline-secondary">{{ __('Cancel') }}</a>
         </div>
     </form>
 </div>

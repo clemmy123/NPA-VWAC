@@ -27,7 +27,7 @@ class OrganizationTypeController extends Controller
 
         OrganizationType::create($data);
 
-        return redirect()->route('organization-types.index')->with('success', "Organization type \"{$data['name']}\" created.");
+        return redirect()->route('organization-types.index')->with('success', __('Organization type ":name" created.', ['name' => $data['name']]));
     }
 
     public function edit(OrganizationType $organizationType): View
@@ -41,14 +41,14 @@ class OrganizationTypeController extends Controller
 
         $organizationType->update($data);
 
-        return redirect()->route('organization-types.index')->with('success', "Organization type \"{$data['name']}\" updated.");
+        return redirect()->route('organization-types.index')->with('success', __('Organization type ":name" updated.', ['name' => $data['name']]));
     }
 
     public function destroy(OrganizationType $organizationType): RedirectResponse
     {
         $organizationType->delete();
 
-        return redirect()->route('organization-types.index')->with('success', "Organization type \"{$organizationType->name}\" deleted.");
+        return redirect()->route('organization-types.index')->with('success', __('Organization type ":name" deleted.', ['name' => $organizationType->name]));
     }
 
     /** @return array<string, mixed> */

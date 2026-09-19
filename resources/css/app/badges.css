@@ -23,6 +23,13 @@
 .s-investigation {
   background: var(--warning-bg);
   color: var(--warning-text);
+  box-shadow: inset 0 0 0 1px var(--warning-text);
+}
+
+.s-achievement {
+  background-image: linear-gradient(135deg, var(--nav-active-bg) 0%, var(--surface) 100%);
+  color: var(--brand-blue);
+  box-shadow: inset 0 0 0 1px var(--accent-border-hover);
 }
 
 .s-reported,

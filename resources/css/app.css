@@ -10,6 +10,7 @@
 @import './app/forms.css';
 @import './app/alerts.css';
 @import './app/toasts.css';
+@import './app/app-alerts.css';
 @import './app/cards.css';
 @import './app/tables.css';
 @import './app/mobile-cards.css';

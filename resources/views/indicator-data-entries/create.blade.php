@@ -1,15 +1,15 @@
 @extends('components.main-layout')
-@section('title', 'New Data Collection')
+@section('title', __('New Data Collection'))
 
 @section('content')
 <div class="page-header">
     <div>
-        <h4 class="page-title">New Data Collection</h4>
-        <nav aria-label="breadcrumb">
+        <h4 class="page-title">{{ __('New Data Collection') }}</h4>
+        <nav aria-label="{{ __('breadcrumb') }}">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('indicator-data-entries.index') }}">Data Collections</a></li>
-                <li class="breadcrumb-item active">New</li>
+                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('indicator-data-entries.index') }}">{{ __('Data Collections') }}</a></li>
+                <li class="breadcrumb-item active">{{ __('New') }}</li>
             </ol>
         </nav>
     </div>
@@ -20,24 +20,24 @@
         @csrf
         <div class="row g-3">
         <div class="col-lg-4">
-            <label for="project_id" class="form-label">Project</label>
+            <label for="project_id" class="form-label">{{ __('Project') }}</label>
             <select name="project_id" id="project_id" class="form-control @error('project_id') is-invalid @enderror" data-no-select2 required>
-                <option value="">Select a project…</option>
+                <option value="">{{ __('Select a project…') }}</option>
                 @foreach ($projects as $project)
                 @php($canCollectProject = $collectableProjectIds->contains((int) $project->id))
                 <option value="{{ $project->id }}" @disabled(! $canCollectProject) @selected((int) old('project_id') === $project->id && $canCollectProject)>
-                    {{ $project->code ? $project->code.' · ' : '' }}{{ $project->name }}{{ $canCollectProject ? '' : ' — No assigned active indicator' }}
+                    {{ $project->code ? $project->code.' · ' : '' }}{{ $project->name }}{{ $canCollectProject ? '' : ' — '.__('No assigned active indicator') }}
                 </option>
                 @endforeach
             </select>
             @error('project_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            <div class="form-text">Projects without an assigned active indicator are shown for clarity but cannot start a collection.</div>
+            <div class="form-text">{{ __('Projects without an assigned active indicator are shown for clarity but cannot start a collection.') }}</div>
         </div>
 
         <div class="col-lg-4">
-            <label for="thematic_area_id" class="form-label">Thematic Area</label>
+            <label for="thematic_area_id" class="form-label">{{ __('Thematic Area') }}</label>
             <select name="thematic_area_id" id="thematic_area_id" class="form-control @error('thematic_area_id') is-invalid @enderror" data-no-select2 required>
-                <option value="">Select a project first…</option>
+                <option value="">{{ __('Select a project first…') }}</option>
                 @foreach ($thematicAreas as $thematicArea)
                 <option value="{{ $thematicArea->id }}" data-project-id="{{ $thematicArea->project_id }}" @selected((int) old('thematic_area_id') === $thematicArea->id)>{{ $thematicArea->name }}</option>
                 @endforeach
@@ -46,21 +46,21 @@
         </div>
 
         <div class="col-lg-4">
-            <label for="indicator_id" class="form-label">Indicator</label>
+            <label for="indicator_id" class="form-label">{{ __('Indicator') }}</label>
             <select name="indicator_id" id="indicator_id" class="form-control @error('indicator_id') is-invalid @enderror" data-no-select2 required>
-                <option value="">Select a thematic area first…</option>
+                <option value="">{{ __('Select a thematic area first…') }}</option>
                 @foreach ($indicators as $indicator)
                 <option value="{{ $indicator->id }}" data-thematic-area-id="{{ $indicator->thematic_area_id }}" @selected((int) old('indicator_id') === $indicator->id)>{{ $indicator->code ? $indicator->code.' · ' : '' }}{{ $indicator->name }}</option>
                 @endforeach
             </select>
             @error('indicator_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            <p class="text-muted small mt-1">The indicator-specific collection fields will appear after this draft is started.</p>
+            <p class="text-muted small mt-1">{{ __('The indicator-specific collection fields will appear after this draft is started.') }}</p>
         </div>
         </div>
 
         <div class="d-flex form-actions">
-            <button type="submit" class="btn btn-dark"><i class="mdi mdi-arrow-right"></i> Start Collection</button>
-            <a href="{{ route('indicator-data-entries.index') }}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-dark"><i class="mdi mdi-arrow-right"></i> {{ __('Start Collection') }}</button>
+            <a href="{{ route('indicator-data-entries.index') }}" class="btn btn-outline-secondary">{{ __('Cancel') }}</a>
         </div>
     </form>
 </div>
@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var projectId = project.value;
         var selectedId = thematic.value || initialThematicId;
         thematic.replaceChildren(new Option(
-            projectId ? 'Select a thematic area…' : 'Select a project first…',
+            projectId ? @json(__('Select a thematic area…')) : @json(__('Select a project first…')),
             ''
         ));
         thematicOptions.forEach(function (option) {
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var thematicId = thematic.value;
         var selectedId = indicator.value || initialIndicatorId;
         indicator.replaceChildren(new Option(
-            thematicId ? 'Select an indicator…' : 'Select a thematic area first…',
+            thematicId ? @json(__('Select an indicator…')) : @json(__('Select a thematic area first…')),
             ''
         ));
         indicatorOptions.forEach(function (option) {

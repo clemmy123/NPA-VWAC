@@ -1,14 +1,14 @@
 @extends('components.main-layout')
-@section('title', 'Edit Thematic Area')
+@section('title', __('Edit Thematic Area'))
 
 @section('content')
 <div class="page-header">
     <div>
-        <h4 class="page-title">Edit Thematic Area</h4>
-        <nav aria-label="breadcrumb">
+        <h4 class="page-title">{{ __('Edit Thematic Area') }}</h4>
+        <nav aria-label="{{ __('breadcrumb') }}">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('thematic-areas.index') }}">Thematic Areas</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('thematic-areas.index') }}">{{ __('Thematic Areas') }}</a></li>
                 <li class="breadcrumb-item active">{{ $thematicArea->name }}</li>
             </ol>
         </nav>
@@ -22,8 +22,8 @@
         @include('thematic-areas.form', ['thematicArea' => $thematicArea, 'statusOptions' => $statusOptions, 'projects' => $projects])
 
         <div class="d-flex form-actions">
-            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> Save Changes</button>
-            <a href="{{ route('thematic-areas.index') }}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> {{ __('Save Changes') }}</button>
+            <a href="{{ route('thematic-areas.index') }}" class="btn btn-outline-secondary">{{ __('Cancel') }}</a>
         </div>
     </form>
 </div>

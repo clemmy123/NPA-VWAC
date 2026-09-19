@@ -10,13 +10,17 @@
         </li>
         <li class="topbar-logo-sm align-items-center" style="padding-left:4px;">
             <a href="{{ route('dashboard') }}" style="display:flex; align-items:center;">
-                <img src="{{ asset('app-assets/images/logo-sm.png') }}" alt="{{ config('app.name') }}" height="32">
+                <img src="{{ asset('app-assets/logo.png') }}" alt="{{ config('app.name') }}" height="32">
             </a>
         </li>
     </ul>
 
-    <!-- Right: actions -->
+    <!-- Right: language + user -->
     <ul class="list-unstyled topnav-menu float-right mb-0">
+
+        <li class="d-flex align-items-center">
+            @include('components.language-switcher')
+        </li>
 
         <!-- User dropdown -->
         <li class="dropdown notification-list">
@@ -39,7 +43,7 @@
                 <span class="d-none d-sm-flex flex-column ms-2" style="line-height:1.3; text-align:left;">
                     <span style="font-size:0.82rem; font-weight:600; color:var(--heading-dark);">{{ Auth::user()->name }}</span>
                     <span style="font-size:0.7rem; font-weight:400; color:var(--muted-mid);">
-                        {{ Auth::user()->getRoleNames()->first() ?? 'No role' }}
+                        {{ Auth::user()->getRoleNames()->first() ?? __('No role') }}
                     </span>
                 </span>
 
@@ -58,12 +62,12 @@
                 @if (Auth::user()->auth_provider === 'local')
                 <a href="{{ route('local-password.edit') }}" class="dropdown-item" style="padding:9px 16px;">
                     <i class="mdi mdi-lock-outline me-2" style="font-size:0.95rem; color:var(--muted-mid);"></i>
-                    Change Password
+                    {{ __('Change Password') }}
                 </a>
                 @else
                 <a href="{{ route('profile.edit') }}" class="dropdown-item" style="padding:9px 16px;">
                     <i class="mdi mdi-account-outline me-2" style="font-size:0.95rem; color:var(--muted-mid);"></i>
-                    Profile
+                    {{ __('Profile') }}
                 </a>
                 @endif
 
@@ -75,7 +79,7 @@
                         <button type="submit" class="dropdown-item w-100 text-start border-0 bg-transparent"
                                 style="padding:9px 16px; font-size:0.82rem; color:#ef4444; font-weight:500; cursor:pointer;">
                             <i class="mdi mdi-logout-variant me-2" style="font-size:0.95rem;"></i>
-                            Sign out
+                            {{ __('Sign out') }}
                         </button>
                     </form>
                 </div>

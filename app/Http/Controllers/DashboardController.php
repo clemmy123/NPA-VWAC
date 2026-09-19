@@ -76,7 +76,7 @@ class DashboardController extends Controller
             ?? FinancialYear::query()->orderByDesc('start_date')->first();
 
         $performance = null;
-        $breakdown = ['type' => null, 'title' => 'Collected Data', 'labels' => [], 'values' => [], 'rows' => [], 'rollups' => []];
+        $breakdown = ['type' => null, 'title' => __('Collected Data'), 'labels' => [], 'values' => [], 'rows' => [], 'rollups' => []];
         $progressPercent = null;
 
         if ($selectedIndicator && $financialYear) {
@@ -142,7 +142,7 @@ class DashboardController extends Controller
         }
 
         if ($entries->isEmpty()) {
-            return ['type' => null, 'title' => 'Collected Data', 'labels' => [], 'values' => [], 'rows' => [], 'rollups' => []];
+            return ['type' => null, 'title' => __('Collected Data'), 'labels' => [], 'values' => [], 'rows' => [], 'rollups' => []];
         }
 
         $locationEntries = $entries->whereNotNull('location_level')->whereNotNull('location_id');
@@ -182,7 +182,7 @@ class DashboardController extends Controller
 
             return [
                 'type' => 'location',
-                'title' => 'Data by '.ucfirst(str_replace('_', ' ', $level)),
+                'title' => __('Data by :level', ['level' => __(ucfirst(str_replace('_', ' ', $level)))]),
                 'labels' => $rows->pluck('name')->all(),
                 'values' => $rows->pluck('value')->all(),
                 'rows' => $rows->all(),
@@ -199,7 +199,7 @@ class DashboardController extends Controller
                 'value' => $this->aggregateEntries($group, $indicator->aggregation_method),
             ])->sortBy('name')->values();
 
-            return ['type' => 'organization', 'title' => 'Data by Organization', 'labels' => $rows->pluck('name')->all(), 'values' => $rows->pluck('value')->all(), 'rows' => $rows->all(), 'rollups' => []];
+            return ['type' => 'organization', 'title' => __('Data by Organization'), 'labels' => $rows->pluck('name')->all(), 'values' => $rows->pluck('value')->all(), 'rows' => $rows->all(), 'rollups' => []];
         }
 
         $activityEntries = $entries->filter(fn (IndicatorDataEntry $entry): bool => filled($entry->activity_name));
@@ -210,10 +210,10 @@ class DashboardController extends Controller
                 'value' => $this->aggregateEntries($group, $indicator->aggregation_method),
             ])->sortBy('name')->values();
 
-            return ['type' => 'activity', 'title' => 'Data by Activity / Workstation', 'labels' => $rows->pluck('name')->all(), 'values' => $rows->pluck('value')->all(), 'rows' => $rows->all(), 'rollups' => []];
+            return ['type' => 'activity', 'title' => __('Data by Activity / Workstation'), 'labels' => $rows->pluck('name')->all(), 'values' => $rows->pluck('value')->all(), 'rows' => $rows->all(), 'rollups' => []];
         }
 
-        return ['type' => 'national', 'title' => 'National Collection', 'labels' => ['National'], 'values' => [$this->aggregateEntries($entries, $indicator->aggregation_method)], 'rows' => [], 'rollups' => []];
+        return ['type' => 'national', 'title' => __('National Collection'), 'labels' => [__('National')], 'values' => [$this->aggregateEntries($entries, $indicator->aggregation_method)], 'rows' => [], 'rollups' => []];
     }
 
     /**

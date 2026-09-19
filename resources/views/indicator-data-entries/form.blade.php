@@ -24,7 +24,7 @@
 
 <div class="row">
     <div class="col-md-6 mb-3">
-        <label for="indicator_id" class="form-label">Indicator</label>
+        <label for="indicator_id" class="form-label">{{ __('Indicator') }}</label>
         @if ($entry)
         <input type="hidden" name="indicator_id" id="indicator_id" value="{{ $entry->indicator_id }}"
                data-requires-location="{{ $entry->indicator->requires_location ? '1' : '0' }}"
@@ -49,7 +49,7 @@
         </div>
         @else
         <select name="indicator_id" id="indicator_id" class="form-control select2 @error('indicator_id') is-invalid @enderror" required>
-            <option value="">Select an indicator…</option>
+            <option value="">{{ __('Select an indicator…') }}</option>
             @foreach ($indicators as $indicator)
             <option value="{{ $indicator->id }}"
                     data-requires-location="{{ $indicator->requires_location ? '1' : '0' }}"
@@ -74,9 +74,9 @@
     </div>
 
     <div class="col-md-6 mb-3 d-none">
-        <label for="financial_year_id" class="form-label">Financial Year</label>
+        <label for="financial_year_id" class="form-label">{{ __('Financial Year') }}</label>
         <select name="financial_year_id" id="financial_year_id" class="form-control @error('financial_year_id') is-invalid @enderror" required>
-            <option value="">Select a financial year…</option>
+            <option value="">{{ __('Select a financial year…') }}</option>
             @foreach ($financialYears as $financialYear)
             <option value="{{ $financialYear->id }}" data-start-date="{{ $financialYear->start_date?->toDateString() }}" data-end-date="{{ $financialYear->end_date?->toDateString() }}" @selected((int) old('financial_year_id', $entry?->financial_year_id) === $financialYear->id)>{{ $financialYear->name }}</option>
             @endforeach
@@ -85,7 +85,7 @@
     </div>
 
     <div class="col-md-6 mb-3 js-reporting-period-field d-none">
-        <label for="reporting_period_id" class="form-label">Reporting Period</label>
+        <label for="reporting_period_id" class="form-label">{{ __('Reporting Period') }}</label>
         <select name="reporting_period_id" id="reporting_period_id" class="form-control @error('reporting_period_id') is-invalid @enderror">
             <option value="">—</option>
             @foreach ($reportingPeriods as $period)
@@ -96,21 +96,21 @@
     </div>
 
     <div class="col-md-6 mb-3 js-entry-date-field d-none">
-        <label for="entry_date" class="form-label">Entry Date</label>
+        <label for="entry_date" class="form-label">{{ __('Entry Date') }}</label>
         <input type="date" name="entry_date" id="entry_date" class="form-control @error('entry_date') is-invalid @enderror"
                value="{{ old('entry_date', $entry?->entry_date?->toDateString() ?? now()->toDateString()) }}" max="{{ now()->toDateString() }}" required>
         @error('entry_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
     <div class="col-md-6 mb-3 js-activity-field d-none">
-        <label for="activity_name" class="form-label">Activity Name <span class="text-danger d-none js-activity-required-mark">*</span></label>
+        <label for="activity_name" class="form-label">{{ __('Activity Name') }} <span class="text-danger d-none js-activity-required-mark">*</span></label>
         <input type="text" name="activity_name" id="activity_name" class="form-control @error('activity_name') is-invalid @enderror"
                value="{{ old('activity_name', $entry?->activity_name) }}" maxlength="255">
         @error('activity_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
     <div class="col-md-6 mb-3 js-organization-field d-none">
-        <label for="organization_id" class="form-label">Organization</label>
+        <label for="organization_id" class="form-label">{{ __('Organization') }}</label>
         <select name="organization_id" id="organization_id" class="form-control select2 @error('organization_id') is-invalid @enderror">
             <option value="">—</option>
             @foreach ($organizations as $organization)
@@ -121,7 +121,7 @@
     </div>
 
     <div class="col-12 mb-3 js-activity-field d-none">
-        <label for="activity_description" class="form-label">Activity Description</label>
+        <label for="activity_description" class="form-label">{{ __('Activity Description') }}</label>
         <textarea name="activity_description" id="activity_description" rows="2"
                   class="form-control @error('activity_description') is-invalid @enderror">{{ old('activity_description', $entry?->activity_description) }}</textarea>
         @error('activity_description')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -140,12 +140,12 @@
     </div>
 
     <div class="col-md-4 mb-3 js-actual-field">
-        <label for="actual_value" class="form-label" id="actual-value-label">Actual Value</label>
-        <input type="number" step="0.0001" name="actual_value" id="actual_value" class="form-control @error('actual_value') is-invalid @enderror"
-               value="{{ old('actual_value', \App\Support\DisplayNumber::input($entry?->actual_value)) }}">
+        <label for="actual_value" class="form-label" id="actual-value-label" data-base-label="{{ __('Actual Value') }}">{{ __('Actual Value') }} <span class="text-danger js-actual-required-mark">*</span></label>
+        <input type="text" inputmode="decimal" min="0" step="0.0001" name="actual_value" id="actual_value" class="form-control @error('actual_value') is-invalid @enderror"
+               value="{{ old('actual_value', \App\Support\DisplayNumber::input($entry?->actual_value)) }}" required>
         <select id="actual_value_yes_no" class="form-control d-none" data-no-select2 hidden disabled>
-            <option value="">Select…</option>
-            <option value="1">Yes</option>
+            <option value="">{{ __('Select…') }}</option>
+            <option value="1">{{ __('Yes') }}</option>
             <option value="0">No</option>
         </select>
         <textarea name="actual_text" id="actual_text" rows="3" class="form-control d-none @error('actual_text') is-invalid @enderror" hidden disabled
@@ -155,28 +155,28 @@
     </div>
 
     <div class="col-md-4 mb-3 js-budget-field">
-        <label for="budget_allocated" class="form-label">Budget Allocated <span class="text-muted small">(optional)</span></label>
+        <label for="budget_allocated" class="form-label">{{ __('Budget Allocated') }} <span class="text-muted small">{{ __('(optional)') }}</span></label>
         <input type="number" step="0.01" name="budget_allocated" id="budget_allocated" class="form-control @error('budget_allocated') is-invalid @enderror"
                value="{{ old('budget_allocated', \App\Support\DisplayNumber::input($entry?->budget_allocated, 2)) }}">
         @error('budget_allocated')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
     <div class="col-md-4 mb-3 js-budget-field">
-        <label for="budget_used" class="form-label">Budget Used</label>
+        <label for="budget_used" class="form-label">{{ __('Budget Used') }}</label>
         <input type="number" step="0.01" name="budget_used" id="budget_used" class="form-control @error('budget_used') is-invalid @enderror"
                value="{{ old('budget_used', \App\Support\DisplayNumber::input($entry?->budget_used, 2)) }}">
         @error('budget_used')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
     <div class="col-md-3 mb-3 js-budget-field">
-        <label for="currency" class="form-label">Currency</label>
+        <label for="currency" class="form-label">{{ __('Currency') }}</label>
         <input type="text" name="currency" id="currency" class="form-control @error('currency') is-invalid @enderror"
                value="{{ old('currency', $entry?->currency ?? 'TZS') }}" maxlength="3">
         @error('currency')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
     <div class="col-12 mb-3">
-        <label for="remarks" class="form-label">Remarks</label>
+        <label for="remarks" class="form-label">{{ __('Remarks') }}</label>
         <textarea name="remarks" id="remarks" rows="2"
                   class="form-control @error('remarks') is-invalid @enderror">{{ old('remarks', $entry?->remarks) }}</textarea>
         @error('remarks')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -186,10 +186,10 @@
 <div class="mb-4 js-activities-section">
     <div class="d-flex justify-content-between align-items-center mb-2">
         <div>
-            <label class="form-label mb-0">Activities</label>
+            <label class="form-label mb-0">{{ __('Activities') }}</label>
             <p class="text-muted small mb-0">Add every activity and its participant breakdown.</p>
         </div>
-        <button type="button" id="add-activity-btn" class="btn btn-outline-secondary btn-sm"><i class="mdi mdi-plus"></i> Add Activity</button>
+        <button type="button" id="add-activity-btn" class="btn btn-outline-secondary btn-sm"><i class="mdi mdi-plus"></i> {{ __('Add Activity') }}</button>
     </div>
     <div id="activities-list"></div>
     @error('activities')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
@@ -199,11 +199,11 @@
 <div class="mb-4 js-dimensions-section">
     <div class="d-flex justify-content-between align-items-center mb-2">
         <label class="form-label mb-0">Disaggregated Rows</label>
-        <button type="button" id="add-row-btn" class="btn btn-outline-secondary btn-sm"><i class="mdi mdi-plus"></i> Add Row</button>
+        <button type="button" id="add-row-btn" class="btn btn-outline-secondary btn-sm"><i class="mdi mdi-plus"></i> {{ __('Add Row') }}</button>
     </div>
     <table class="table table-sm mb-0" id="rows-table">
         <thead>
-            <tr><th>Label</th><th>Value</th><th class="text-end">Remove</th></tr>
+            <tr><th>{{ __('Label') }}</th><th>{{ __('Value') }}</th><th class="text-end">{{ __('Remove') }}</th></tr>
         </thead>
         <tbody id="rows-tbody"></tbody>
     </table>
@@ -214,11 +214,11 @@
 <div class="mb-4 js-budget-field">
     <div class="d-flex justify-content-between align-items-center mb-2">
         <label class="form-label mb-0">Expenses</label>
-        <button type="button" id="add-expense-btn" class="btn btn-outline-secondary btn-sm"><i class="mdi mdi-plus"></i> Add Expense</button>
+        <button type="button" id="add-expense-btn" class="btn btn-outline-secondary btn-sm"><i class="mdi mdi-plus"></i> {{ __('Add Expense') }}</button>
     </div>
     <table class="table table-sm mb-0" id="expenses-table">
         <thead>
-            <tr><th>Category</th><th>Description</th><th>Amount</th><th class="text-end">Remove</th></tr>
+            <tr><th>{{ __('Category') }}</th><th>{{ __('Description') }}</th><th>{{ __('Amount') }}</th><th class="text-end">{{ __('Remove') }}</th></tr>
         </thead>
         <tbody id="expenses-tbody"></tbody>
     </table>
@@ -232,12 +232,12 @@
 
 {{-- Evidence --}}
 <div class="mb-4 js-evidence-section">
-    <label class="form-label">Evidence <span class="text-muted small">(optional)</span></label>
+    <label class="form-label">{{ __('Evidence') }} <span class="text-muted small">{{ __('(optional)') }}</span></label>
 
     @if ($existingEvidence->isNotEmpty())
     <table class="table table-sm mb-2">
         <thead>
-            <tr><th>File</th><th>Size</th><th class="text-end">Actions</th></tr>
+            <tr><th>{{ __('File') }}</th><th>{{ __('Size') }}</th><th class="text-end">{{ __('Actions') }}</th></tr>
         </thead>
         <tbody>
             @foreach ($existingEvidence as $media)
@@ -247,12 +247,7 @@
                 <td class="text-end">
                     <a href="{{ route('indicator-data-entries.evidence.download', [$entry, $media]) }}" class="btn-icon" title="Download"><i class="mdi mdi-download-outline"></i></a>
                     @if ($canEditEvidence)
-                    <form action="{{ route('indicator-data-entries.evidence.destroy', [$entry, $media]) }}" method="POST" class="d-inline"
-                          onsubmit="return confirm('Remove this evidence file?');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn-icon danger" title="Remove"><i class="mdi mdi-trash-can-outline"></i></button>
-                    </form>
+                    <button type="submit" form="delete-evidence-{{ $media->id }}" class="btn-icon danger" title="{{ __('Remove') }}"><i class="mdi mdi-trash-can-outline"></i></button>
                     @endif
                 </td>
             </tr>
@@ -424,7 +419,13 @@
         var label = document.getElementById('actual-value-label');
         var isText = measurementType === 'text' || measurementType === 'qualitative';
         var isYesNo = measurementType === 'yes_no';
-        label.textContent = 'Actual Value' + (unitName ? ' (' + unitName + (unitSymbol ? ' - ' + unitSymbol : '') + ')' : '');
+        var unitSuffix = unitName ? ' (' + unitName + (unitSymbol ? ' - ' + unitSymbol : '') + ')' : '';
+        label.replaceChildren();
+        label.appendChild(document.createTextNode((label.dataset.baseLabel || 'Actual Value') + unitSuffix + ' '));
+        var requiredMark = document.createElement('span');
+        requiredMark.className = 'text-danger js-actual-required-mark';
+        requiredMark.textContent = '*';
+        label.appendChild(requiredMark);
         input.classList.toggle('d-none', isYesNo || isText);
         input.hidden = isYesNo || isText;
         input.disabled = isText;
@@ -435,8 +436,14 @@
         textInput.hidden = ! isText;
         textInput.disabled = ! isText;
         input.step = measurementType === 'count' ? '1' : (measurementType === 'currency' ? '0.01' : '0.0001');
-        input.min = ['count', 'percentage', 'currency'].indexOf(measurementType) !== -1 ? '0' : '';
+        input.min = isText ? '' : '0';
         input.max = measurementType === 'percentage' ? '100' : '';
+        input.required = ! isText && ! isYesNo;
+        yesNo.required = isYesNo;
+        textInput.required = isText;
+        document.querySelectorAll('.js-actual-required-mark').forEach(function (mark) {
+            mark.classList.toggle('d-none', isText);
+        });
         if (isYesNo) { yesNo.value = input.value; }
     }
 
@@ -472,7 +479,7 @@
         tr.innerHTML =
             '<td><input type="text" class="form-control form-control-sm" name="rows[' + i + '][label]" value="' + (data.label || '') + '"></td>' +
             '<td><input type="number" step="0.0001" class="form-control form-control-sm" name="rows[' + i + '][value]" value="' + (data.value != null ? data.value : '') + '" required></td>' +
-            '<td class="text-end"><button type="button" class="btn-icon danger btn-remove-row" title="Remove"><i class="mdi mdi-trash-can-outline"></i></button></td>';
+            '<td class="text-end"><button type="button" class="btn-icon danger btn-remove-row" title="{{ __('Remove') }}"><i class="mdi mdi-trash-can-outline"></i></button></td>';
         (data.dimension_option_ids || []).forEach(function (optionId) {
             var hidden = document.createElement('input');
             hidden.type = 'hidden';
@@ -492,7 +499,7 @@
             '<td><input type="text" class="form-control form-control-sm" name="expenses[' + i + '][expense_category]" value="' + (data.expense_category || '') + '"></td>' +
             '<td><input type="text" class="form-control form-control-sm" name="expenses[' + i + '][description]" value="' + (data.description || '') + '" required></td>' +
             '<td><input type="number" step="0.01" class="form-control form-control-sm" name="expenses[' + i + '][amount]" value="' + (data.amount != null ? data.amount : '') + '" required></td>' +
-            '<td class="text-end"><button type="button" class="btn-icon danger btn-remove-expense" title="Remove"><i class="mdi mdi-trash-can-outline"></i></button></td>';
+            '<td class="text-end"><button type="button" class="btn-icon danger btn-remove-expense" title="{{ __('Remove') }}"><i class="mdi mdi-trash-can-outline"></i></button></td>';
         document.getElementById('expenses-tbody').appendChild(tr);
         toggleHint('expenses-tbody', 'expenses-empty-hint');
     }
@@ -503,15 +510,15 @@
         var card = document.createElement('div');
         card.className = 'border rounded p-3 mb-2 activity-card';
         card.innerHTML =
-            '<div class="d-flex justify-content-between"><strong>Activity ' + (i + 1) + '</strong><button type="button" class="btn-icon danger btn-remove-activity" title="Remove"><i class="mdi mdi-trash-can-outline"></i></button></div>' +
+            '<div class="d-flex justify-content-between"><strong>' + @json(__('Activity')) + ' ' + (i + 1) + '</strong><button type="button" class="btn-icon danger btn-remove-activity" title="{{ __('Remove') }}"><i class="mdi mdi-trash-can-outline"></i></button></div>' +
             '<div class="row">' +
             '<div class="col-md-6 mb-2"><label class="form-label small">Activity name</label><input type="text" class="form-control" name="activities[' + i + '][name]" required></div>' +
-            '<div class="col-md-6 mb-2"><label class="form-label small">Description</label><input type="text" class="form-control" name="activities[' + i + '][description]"></div>' +
+            '<div class="col-md-6 mb-2"><label class="form-label small">{{ __('Description') }}</label><input type="text" class="form-control" name="activities[' + i + '][description]"></div>' +
             '<div class="col-md-2 mb-2"><label class="form-label small">Total participants</label><input type="number" min="0" class="form-control" name="activities[' + i + '][participants_total]" required></div>' +
-            '<div class="col-md-2 mb-2"><label class="form-label small">Women</label><input type="number" min="0" class="form-control" name="activities[' + i + '][women]"></div>' +
-            '<div class="col-md-2 mb-2"><label class="form-label small">Men</label><input type="number" min="0" class="form-control" name="activities[' + i + '][men]"></div>' +
-            '<div class="col-md-2 mb-2"><label class="form-label small">Children</label><input type="number" min="0" class="form-control" name="activities[' + i + '][children]"></div>' +
-            '<div class="col-md-2 mb-2"><label class="form-label small">Other</label><input type="number" min="0" class="form-control" name="activities[' + i + '][other]"></div>' +
+            '<div class="col-md-2 mb-2"><label class="form-label small">{{ __('Women') }}</label><input type="number" min="0" class="form-control" name="activities[' + i + '][women]"></div>' +
+            '<div class="col-md-2 mb-2"><label class="form-label small">{{ __('Men') }}</label><input type="number" min="0" class="form-control" name="activities[' + i + '][men]"></div>' +
+            '<div class="col-md-2 mb-2"><label class="form-label small">{{ __('Children') }}</label><input type="number" min="0" class="form-control" name="activities[' + i + '][children]"></div>' +
+            '<div class="col-md-2 mb-2"><label class="form-label small">{{ __('Other') }}</label><input type="number" min="0" class="form-control" name="activities[' + i + '][other]"></div>' +
             '</div>';
         var values = { name: '', description: '', participants_total: 0, women: 0, men: 0, children: 0, other: 0 };
         Object.keys(values).forEach(function (field) {

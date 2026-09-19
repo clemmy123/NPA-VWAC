@@ -7,8 +7,8 @@ use App\Http\Requests\UpdateIndicatorDataEntryRequest;
 use App\Http\Resources\IndicatorDataEntryResource;
 use App\Models\FinancialYear;
 use App\Models\Indicator;
-use App\Models\IndicatorDataEntry;
 use App\Models\IndicatorDataAssignment;
+use App\Models\IndicatorDataEntry;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ReportingPeriod;
@@ -16,9 +16,12 @@ use App\Models\User;
 use App\Services\IndicatorDataEntryService;
 use App\Services\IndicatorReviewService;
 use App\Support\AdminLocationLevel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -37,9 +40,10 @@ class IndicatorDataEntryController extends Controller
     {
         $user = $request->user();
 
+        $historyIndicatorId = $request->integer('indicator_id');
+
         $entryQuery = IndicatorDataEntry::query()
             ->with(['indicator', 'financialYear', 'reportingPeriod', 'enteredBy'])
-            ->when($request->integer('indicator_id'), fn ($query, $indicatorId) => $query->where('indicator_id', $indicatorId))
             ->when($request->string('status')->toString(), fn ($query, $status) => $query->where('status', $status))
             ->when($request->integer('entered_by'), fn ($query, $enteredBy) => $query->where('entered_by', $enteredBy))
             ->when(! $user->can('indicator.view-all'), fn ($query) => $query->where('entered_by', $user->id))
@@ -49,18 +53,40 @@ class IndicatorDataEntryController extends Controller
             }));
 
         $workspaceEntries = (clone $entryQuery)->get();
-        $entries = $entryQuery
+        $listedEntries = (clone $entryQuery)
+            ->where('status', '!=', 'draft')
+            ->when($historyIndicatorId, fn ($query) => $query->where('indicator_id', $historyIndicatorId))
             ->latest('id')
-            ->paginate($request->integer('per_page', 15));
+            ->get();
 
         if ($request->wantsJson()) {
+            $entries = $entryQuery
+                ->where('status', '!=', 'draft')
+                ->when($historyIndicatorId, fn ($query) => $query->where('indicator_id', $historyIndicatorId))
+                ->latest('id')
+                ->paginate($request->integer('per_page', 15))
+                ->withQueryString();
+
             return response()->json(IndicatorDataEntryResource::collection($entries)->response()->getData(true));
+        }
+
+        $entries = $this->paginateGroupedCollectionRecords($request, $listedEntries);
+
+        $viewData = $this->formData($user);
+
+        if ($user->hasRole('Thematic Manager')) {
+            $viewData['indicators'] = $this->prioritizeWorkspaceIndicators($viewData['indicators'], $workspaceEntries);
+        } elseif ($user->hasRole('Data Entry User')) {
+            $viewData['indicators'] = $this->prioritizeCollectorWorkspaceIndicators($viewData['indicators'], $workspaceEntries);
         }
 
         return view('indicator-data-entries.index', [
             'entries' => $entries,
             'workspaceEntries' => $workspaceEntries,
-        ] + $this->formData($user));
+            'historyIndicator' => $historyIndicatorId
+                ? $viewData['indicators']->firstWhere('id', $historyIndicatorId)
+                : null,
+        ] + $viewData);
     }
 
     public function create(Request $request): View
@@ -117,7 +143,7 @@ class IndicatorDataEntryController extends Controller
         }
 
         return redirect()->route('indicator-data-entries.edit', $entry)
-            ->with('success', 'Collection started. Complete the fields required for this indicator.');
+            ->with('success', __('Collection started. Complete the fields required for this indicator.'));
     }
 
     public function store(StoreIndicatorDataEntryRequest $request): JsonResponse|RedirectResponse
@@ -134,14 +160,72 @@ class IndicatorDataEntryController extends Controller
             return (new IndicatorDataEntryResource($entry->load(self::RELATIONS)))->response()->setStatusCode(201);
         }
 
-        return redirect()->route('indicator-data-entries.index')->with('success', 'Data collection created as a draft.');
+        return redirect()->route('indicator-data-entries.index')->with('success', __('Data collection created as a draft.'));
     }
 
-    public function show(Request $request, IndicatorDataEntry $indicatorDataEntry): IndicatorDataEntryResource
+    public function show(Request $request, IndicatorDataEntry $indicatorDataEntry): IndicatorDataEntryResource|View
     {
         $this->authorizeIndicatorAccess($request->user(), $indicatorDataEntry);
 
-        return new IndicatorDataEntryResource($indicatorDataEntry->load(self::RELATIONS));
+        $user = $request->user();
+        abort_if(
+            $user->can('indicator.view-all')
+                && (int) $indicatorDataEntry->entered_by !== (int) $user->id
+                && in_array($indicatorDataEntry->status, ['draft', 'rejected'], true),
+            403
+        );
+
+        $entry = $indicatorDataEntry->load([
+            ...self::RELATIONS,
+            'indicator.thematicArea',
+            'indicator.unitOfMeasure',
+            'financialYear',
+            'reportingPeriod',
+            'enteredBy',
+            'organization',
+            'approvedBy',
+        ]);
+
+        if ($request->wantsJson()) {
+            return new IndicatorDataEntryResource($entry);
+        }
+
+        $relatedReports = $this->visibleEntriesQuery($user)
+            ->where('indicator_id', $entry->indicator_id)
+            ->where('status', '!=', 'draft')
+            ->with([
+                ...self::RELATIONS,
+                'indicator.thematicArea',
+                'indicator.unitOfMeasure',
+                'financialYear',
+                'reportingPeriod',
+                'enteredBy',
+                'organization',
+            ])
+            ->latest('id')
+            ->get();
+
+        if ($entry->status === 'draft' && ! $relatedReports->contains(fn (IndicatorDataEntry $report): bool => $report->id === $entry->id)) {
+            $relatedReports = $relatedReports->prepend($entry);
+        }
+
+        if ($relatedReports->isEmpty()) {
+            $relatedReports = collect([$entry]);
+        }
+
+        $locationNames = $relatedReports->mapWithKeys(function (IndicatorDataEntry $report): array {
+            return [
+                $report->id => $report->location_level && $report->location_id
+                    ? AdminLocationLevel::name($report->location_level, (int) $report->location_id)
+                    : null,
+            ];
+        });
+
+        return view('indicator-data-entries.show', [
+            'entry' => $entry,
+            'relatedReports' => $relatedReports,
+            'locationNames' => $locationNames,
+        ]);
     }
 
     public function edit(Request $request, IndicatorDataEntry $indicatorDataEntry): View
@@ -161,6 +245,46 @@ class IndicatorDataEntryController extends Controller
         abort_if(! $user->can('indicator.view-all') && (int) $indicatorDataEntry->entered_by !== (int) $user->id, 403);
     }
 
+    /**
+     * @return Builder<IndicatorDataEntry>
+     */
+    private function visibleEntriesQuery(User $user)
+    {
+        return IndicatorDataEntry::query()
+            ->when(! $user->can('indicator.view-all'), fn ($query) => $query->where('entered_by', $user->id))
+            ->when($user->can('indicator.view-all'), fn ($query) => $query->where(function ($visible) use ($user): void {
+                $visible->where('entered_by', $user->id)
+                    ->orWhereNotIn('status', ['draft', 'rejected']);
+            }));
+    }
+
+    /**
+     * @param  Collection<int, IndicatorDataEntry>  $listedEntries
+     */
+    private function paginateGroupedCollectionRecords(Request $request, Collection $listedEntries): LengthAwarePaginator
+    {
+        $records = $listedEntries
+            ->groupBy('indicator_id')
+            ->map(function (Collection $group): IndicatorDataEntry {
+                return $group->first(fn (IndicatorDataEntry $entry): bool => in_array($entry->status, ['submitted', 'pending_approval'], true))
+                    ?? $group->first();
+            })
+            ->values();
+
+        $perPage = max(1, $request->integer('per_page', 15));
+        $total = $records->count();
+        $lastPage = max(1, (int) ceil($total / $perPage));
+        $page = min(max(1, $request->integer('page', 1)), $lastPage);
+
+        return (new LengthAwarePaginator(
+            $records->forPage($page, $perPage)->values(),
+            $total,
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'pageName' => 'page'],
+        ))->withQueryString()->fragment('collection-records');
+    }
+
     public function update(UpdateIndicatorDataEntryRequest $request, IndicatorDataEntry $indicatorDataEntry): JsonResponse|RedirectResponse|IndicatorDataEntryResource
     {
         $data = $request->validated();
@@ -171,16 +295,31 @@ class IndicatorDataEntryController extends Controller
 
         $entry = $this->entryService->update($indicatorDataEntry, $data, $rows, $expenses, $request->file('evidence', []), $request->user(), $activities);
 
+        if ($request->input('intent') === 'submit') {
+            abort_unless($request->user()?->can('indicator-data.submit'), 403);
+            $entry = $this->reviewService->submit($entry->fresh(), $request->user());
+        }
+
         if ($request->wantsJson()) {
             return new IndicatorDataEntryResource($entry->load(self::RELATIONS));
         }
 
         if ($request->boolean('embedded')) {
+            if ($request->input('intent') === 'submit') {
+                return redirect()->route('indicator-data-entries.edit', [
+                    'indicator_data_entry' => $entry,
+                    'embedded' => 1,
+                    'submitted' => 1,
+                ]);
+            }
+
             return redirect()->route('indicator-data-entries.edit', ['indicator_data_entry' => $entry, 'embedded' => 1])
-                ->with('success', 'Data collection saved. You can review it and submit when ready.');
+                ->with('success', __('Data collection saved. You can review it and submit when ready.'));
         }
 
-        return redirect()->route('indicator-data-entries.index')->with('success', 'Data collection updated.');
+        return redirect()->route('indicator-data-entries.index')->with('success', $request->input('intent') === 'submit'
+            ? __('Data collection submitted for review.')
+            : __('Data collection updated.'));
     }
 
     public function submit(Request $request, IndicatorDataEntry $indicatorDataEntry): JsonResponse|RedirectResponse|IndicatorDataEntryResource
@@ -192,11 +331,14 @@ class IndicatorDataEntryController extends Controller
         }
 
         if ($request->boolean('embedded')) {
-            return redirect()->route('indicator-data-entries.edit', ['indicator_data_entry' => $entry, 'embedded' => 1])
-                ->with('success', 'Collection submitted for review. You can close this window.');
+            return redirect()->route('indicator-data-entries.edit', [
+                'indicator_data_entry' => $entry,
+                'embedded' => 1,
+                'submitted' => 1,
+            ]);
         }
 
-        return redirect()->route('indicator-data-entries.index')->with('success', 'Data collection submitted for review.');
+        return redirect()->route('indicator-data-entries.index')->with('success', __('Data collection submitted for review.'));
     }
 
     public function approve(Request $request, IndicatorDataEntry $indicatorDataEntry): JsonResponse|RedirectResponse|IndicatorDataEntryResource
@@ -207,7 +349,7 @@ class IndicatorDataEntryController extends Controller
             return new IndicatorDataEntryResource($entry->load(self::RELATIONS));
         }
 
-        return redirect()->route('indicator-data-entries.index')->with('success', 'Data collection approved.');
+        return redirect()->route('indicator-data-entries.index')->with('success', __('Data collection approved.'));
     }
 
     public function returnEntry(Request $request, IndicatorDataEntry $indicatorDataEntry): JsonResponse|RedirectResponse|IndicatorDataEntryResource
@@ -218,7 +360,7 @@ class IndicatorDataEntryController extends Controller
             return new IndicatorDataEntryResource($entry->load(self::RELATIONS));
         }
 
-        return redirect()->route('indicator-data-entries.index')->with('success', 'Data collection returned to the submitter.');
+        return redirect()->route('indicator-data-entries.index')->with('success', __('Data collection returned to the submitter.'));
     }
 
     public function downloadEvidence(IndicatorDataEntry $indicatorDataEntry, Media $media): BinaryFileResponse
@@ -232,7 +374,7 @@ class IndicatorDataEntryController extends Controller
     {
         $this->entryService->removeEvidence($indicatorDataEntry, $media);
 
-        return $this->redirectBackOrTo($request, 'indicator-data-entries.edit', [$indicatorDataEntry])->with('success', 'Evidence file removed.');
+        return $this->redirectBackOrTo($request, 'indicator-data-entries.edit', [$indicatorDataEntry])->with('success', __('Evidence file removed.'));
     }
 
     /** @return array<string, mixed> */
@@ -303,6 +445,45 @@ class IndicatorDataEntryController extends Controller
             'assignmentScopes' => $assignmentScopes,
             'dimensionConfig' => $dimensionConfig,
         ];
+    }
+
+    /**
+     * @param  Collection<int, Indicator>  $indicators
+     * @param  Collection<int, IndicatorDataEntry>  $workspaceEntries
+     * @return Collection<int, Indicator>
+     */
+    private function prioritizeWorkspaceIndicators(Collection $indicators, Collection $workspaceEntries): Collection
+    {
+        return $indicators->sortBy(function (Indicator $indicator) use ($workspaceEntries): array {
+            $statuses = $workspaceEntries->where('indicator_id', $indicator->id)->pluck('status');
+            $rank = match (true) {
+                $statuses->contains(fn (string $status): bool => in_array($status, ['submitted', 'pending_approval'], true)) => 0,
+                $statuses->contains('approved') => 1,
+                default => 2,
+            };
+
+            return [$rank, mb_strtolower($indicator->name)];
+        })->values();
+    }
+
+    /**
+     * @param  Collection<int, Indicator>  $indicators
+     * @param  Collection<int, IndicatorDataEntry>  $workspaceEntries
+     * @return Collection<int, Indicator>
+     */
+    private function prioritizeCollectorWorkspaceIndicators(Collection $indicators, Collection $workspaceEntries): Collection
+    {
+        return $indicators->sortBy(function (Indicator $indicator) use ($workspaceEntries): array {
+            $latest = $workspaceEntries->where('indicator_id', $indicator->id)->sortByDesc('entry_date')->first();
+            $rank = match (true) {
+                $latest !== null && in_array($latest->status, ['draft', 'rejected'], true) => 0,
+                $latest === null => 1,
+                in_array($latest->status, ['submitted', 'pending_approval'], true) => 2,
+                default => 3,
+            };
+
+            return [$rank, mb_strtolower($indicator->name)];
+        })->values();
     }
 
     private function assignmentsForUser(User $user)

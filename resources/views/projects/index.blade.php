@@ -1,19 +1,19 @@
 @extends('components.main-layout')
-@section('title', 'Projects')
+@section('title', __('Projects'))
 
 @section('content')
 <div class="page-header">
     <div>
-        <h4 class="page-title">Projects</h4>
-        <nav aria-label="breadcrumb">
+        <h4 class="page-title">{{ __('Projects') }}</h4>
+        <nav aria-label="{{ __('breadcrumb') }}">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item active">Projects</li>
+                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
+                <li class="breadcrumb-item active">{{ __('Projects') }}</li>
             </ol>
         </nav>
     </div>
     @can('project.create')
-    <a href="{{ route('projects.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> New Project</a>
+    <a href="{{ route('projects.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Project') }}</a>
     @endcan
 </div>
 
@@ -23,12 +23,12 @@
         <thead>
             <tr>
                 <th>#</th>
-                <th>Code</th>
-                <th>Name</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>{{ __('Code') }}</th>
+                <th>{{ __('Name') }}</th>
+                <th>{{ __('Start Date') }}</th>
+                <th>{{ __('End Date') }}</th>
+                <th>{{ __('Status') }}</th>
+                <th>{{ __('Actions') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -45,19 +45,19 @@
                         'completed' => 's-received',
                         'closed' => 's-inactive',
                         default => 's-default',
-                    } }}">{{ ucfirst($project->status) }}</span>
+                    } }}">{{ __(ucfirst($project->status)) }}</span>
                 </td>
                 <td>
-                    <a href="{{ route('projects.show', $project) }}" class="btn-icon" title="View"><i class="mdi mdi-eye-outline"></i></a>
+                    <a href="{{ route('projects.show', $project) }}" class="btn-icon" title="{{ __('View') }}"><i class="mdi mdi-eye-outline"></i></a>
                     @can('project.update')
-                    <a href="{{ route('projects.edit', $project) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
+                    <a href="{{ route('projects.edit', $project) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
                     @endcan
                     @can('project.delete')
                     <form action="{{ route('projects.destroy', $project) }}" method="POST" class="d-inline"
-                          onsubmit="return confirm('Delete project &quot;{{ $project->name }}&quot;?');">
+                          data-confirm="{{ __('Delete project ":name"?', ['name' => $project->name]) }}">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn-icon danger" title="Delete"><i class="mdi mdi-trash-can-outline"></i></button>
+                        <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
                     </form>
                     @endcan
                 </td>
@@ -67,7 +67,7 @@
                 <td colspan="7">
                     <div class="tbl-empty">
                         <i class="mdi mdi-folder-open-outline"></i>
-                        <p>No projects found.</p>
+                        <p>{{ __('No projects found.') }}</p>
                     </div>
                 </td>
             </tr>
@@ -92,7 +92,7 @@
                 'completed' => 's-received',
                 'closed' => 's-inactive',
                 default => 's-default',
-            } }}">{{ ucfirst($project->status) }}</span>
+            } }}">{{ __(ucfirst($project->status)) }}</span>
         </div>
         <div class="mob-card-body">
             <p class="mob-card-title"><span class="ref-pill">{{ $project->code }}</span></p>
@@ -102,20 +102,20 @@
             <span><i class="mdi mdi-calendar-end"></i> {{ $project->end_date?->format('d M Y') ?? '—' }}</span>
         </div>
         <div class="mob-card-footer">
-            <a href="{{ route('projects.show', $project) }}" class="btn-icon" title="View">
+            <a href="{{ route('projects.show', $project) }}" class="btn-icon" title="{{ __('View') }}">
                 <i class="mdi mdi-eye-outline"></i>
             </a>
             @can('project.update')
-            <a href="{{ route('projects.edit', $project) }}" class="btn-icon" title="Edit">
+            <a href="{{ route('projects.edit', $project) }}" class="btn-icon" title="{{ __('Edit') }}">
                 <i class="mdi mdi-pencil-outline"></i>
             </a>
             @endcan
             @can('project.delete')
             <form action="{{ route('projects.destroy', $project) }}" method="POST" class="d-inline"
-                  onsubmit="return confirm('Delete project &quot;{{ $project->name }}&quot;?');">
+                  data-confirm="{{ __('Delete project ":name"?', ['name' => $project->name]) }}">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn-icon danger" title="Delete"><i class="mdi mdi-trash-can-outline"></i></button>
+                <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
             </form>
             @endcan
         </div>
@@ -123,7 +123,7 @@
     @empty
     <div class="tbl-empty">
         <i class="mdi mdi-folder-open-outline"></i>
-        <p>No projects found.</p>
+        <p>{{ __('No projects found.') }}</p>
     </div>
     @endforelse
 

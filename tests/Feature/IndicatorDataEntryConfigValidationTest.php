@@ -80,6 +80,7 @@ class IndicatorDataEntryConfigValidationTest extends TestCase
             'indicator_id' => $indicator->id,
             'financial_year_id' => $financialYear->id,
             'entry_date' => now()->toDateString(),
+            'actual_value' => 0,
         ]);
 
         $response->assertCreated();
@@ -108,6 +109,7 @@ class IndicatorDataEntryConfigValidationTest extends TestCase
             'location_level' => 'region',
             'location_id' => $region->region_id,
             'budget_allocated' => 5000,
+            'actual_value' => 0,
         ]);
 
         $response->assertCreated();
@@ -127,6 +129,7 @@ class IndicatorDataEntryConfigValidationTest extends TestCase
             'indicator_id' => $indicator->id,
             'financial_year_id' => $financialYear->id,
             'entry_date' => now()->toDateString(),
+            'actual_value' => 0,
         ]);
 
         $response->assertCreated();
@@ -253,6 +256,7 @@ class IndicatorDataEntryConfigValidationTest extends TestCase
         $this->actingAs($entrant)->postJson('/indicator-data-entries', [
             'indicator_id' => $indicator->id,
             'financial_year_id' => $financialYear->id,
+            'actual_value' => 0,
             'activities' => [
                 ['name' => 'Community dialogue', 'participants_total' => 30, 'women' => 12, 'men' => 8, 'children' => 9, 'other' => 1],
                 ['name' => 'School session', 'participants_total' => 20, 'women' => 4, 'men' => 3, 'children' => 13, 'other' => 0],
@@ -261,5 +265,61 @@ class IndicatorDataEntryConfigValidationTest extends TestCase
 
         $this->assertDatabaseCount('indicator_data_entry_activities', 2);
         $this->assertDatabaseHas('indicator_data_entry_activities', ['name' => 'Community dialogue', 'women' => 12, 'children' => 9]);
+    }
+
+    public function test_numeric_actual_value_cannot_be_left_empty(): void
+    {
+        $indicator = Indicator::factory()->create();
+        $financialYear = FinancialYear::factory()->started()->create();
+        $entrant = $this->assignedDataEntryUser($indicator);
+
+        $this->actingAs($entrant)->postJson('/indicator-data-entries', [
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'entry_date' => now()->toDateString(),
+        ])->assertUnprocessable()->assertJsonValidationErrors('actual_value');
+
+        $this->actingAs($entrant)->postJson('/indicator-data-entries', [
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'entry_date' => now()->toDateString(),
+            'actual_value' => '',
+        ])->assertUnprocessable()->assertJsonValidationErrors('actual_value');
+    }
+
+    public function test_numeric_actual_value_accepts_zero_and_rejects_negatives(): void
+    {
+        $indicator = Indicator::factory()->create();
+        $financialYear = FinancialYear::factory()->started()->create();
+        $entrant = $this->assignedDataEntryUser($indicator);
+
+        $this->actingAs($entrant)->postJson('/indicator-data-entries', [
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'entry_date' => now()->toDateString(),
+            'actual_value' => 0,
+        ])->assertCreated();
+
+        $this->actingAs($entrant)->postJson('/indicator-data-entries', [
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'entry_date' => now()->toDateString(),
+            'actual_value' => -1,
+        ])->assertUnprocessable()->assertJsonValidationErrors('actual_value');
+    }
+
+    public function test_updating_a_collection_cannot_clear_the_actual_value(): void
+    {
+        $indicator = Indicator::factory()->create();
+        $entrant = $this->assignedDataEntryUser($indicator);
+        $entry = IndicatorDataEntry::factory()->create([
+            'indicator_id' => $indicator->id,
+            'entered_by' => $entrant->id,
+            'actual_value' => 12,
+        ]);
+
+        $this->actingAs($entrant)->putJson("/indicator-data-entries/{$entry->id}", [
+            'actual_value' => '',
+        ])->assertUnprocessable()->assertJsonValidationErrors('actual_value');
     }
 }

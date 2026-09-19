@@ -23,5 +23,9 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::defaultView('vendor.pagination.bootstrap-5');
         Paginator::defaultSimpleView('vendor.pagination.simple-bootstrap-5');
+
+        if (app()->bound('debugbar')) {
+            app('debugbar')->disable();
+        }
     }
 }

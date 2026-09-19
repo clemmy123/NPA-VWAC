@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="referrer" content="no-referrer">
     <title>@yield('title', config('app.name'))</title>
-    <link rel="shortcut icon" href="{{ asset('app-assets/images/logo-sm.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('app-assets/logo.png') }}">
+    <link rel="shortcut icon" href="{{ asset('app-assets/logo.png') }}">
 
     {{-- Deliberately not @vite-dependent: this page must still render correctly
          even when the asset build itself is the thing that's broken. --}}

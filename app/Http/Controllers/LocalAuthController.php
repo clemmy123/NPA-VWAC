@@ -63,6 +63,6 @@ class LocalAuthController extends Controller
 
         $request->user()->update(['password' => $data['password']]);
 
-        return redirect()->route('dashboard')->with('success', 'Your password has been updated.');
+        return redirect()->route('dashboard')->with('success', __('Your password has been updated.'));
     }
 }

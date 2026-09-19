@@ -8,7 +8,9 @@
     <meta content="{{ config('app.name') }}" name="description" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="shortcut icon" href="{{ asset('app-assets/images/logo-sm.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('app-assets/logo.png') }}">
+    <link rel="shortcut icon" href="{{ asset('app-assets/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('app-assets/logo.png') }}">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -53,7 +55,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
                 </div>
                 <div class="modal-body"></div>
             </div>
@@ -100,52 +102,7 @@
     <script src="{{ asset('app-assets/js/pages/sweetalerts.init.js') }}"></script>
     <script src="{{ asset('app-assets/select2/js/select2Init.js') }}?v={{ filemtime(public_path('app-assets/select2/js/select2Init.js')) }}"></script>
 
-    @php
-        $flashToasts = [];
-
-        if (session('success')) {
-            $flashToasts[] = ['type' => 'success', 'message' => session('success')];
-        }
-
-        if (session('warning')) {
-            $flashToasts[] = ['type' => 'warning', 'message' => session('warning')];
-        }
-
-        foreach ($errors->all() as $error) {
-            $flashToasts[] = ['type' => 'danger', 'message' => $error];
-        }
-    @endphp
-    <script>
-        window.showToast = function (type, message, duration) {
-            duration = duration || 10000;
-            var icons = { success: 'mdi-check-circle', warning: 'mdi-alert', danger: 'mdi-alert-circle' };
-            var container = document.getElementById('toast-container');
-            if (!container) return;
-
-            var toast = document.createElement('div');
-            toast.className = 'toast-item toast-' + type;
-            toast.innerHTML =
-                '<i class="mdi ' + (icons[type] || 'mdi-information') + ' toast-icon"></i>' +
-                '<span class="toast-message"></span>' +
-                '<button type="button" class="toast-close" aria-label="Dismiss">&times;</button>';
-            toast.querySelector('.toast-message').textContent = message;
-            container.appendChild(toast);
-
-            var timer = setTimeout(function () { dismiss(); }, duration);
-
-            function dismiss() {
-                clearTimeout(timer);
-                toast.classList.add('toast-leaving');
-                toast.addEventListener('animationend', function () { toast.remove(); }, { once: true });
-            }
-
-            toast.querySelector('.toast-close').addEventListener('click', dismiss);
-        };
-
-        @foreach ($flashToasts as $toast)
-        window.showToast(@json($toast['type']), @json($toast['message']));
-        @endforeach
-    </script>
+    @include('partials.app-alerts')
 
     <script>
         document.addEventListener('click', function (e) {
@@ -159,7 +116,7 @@
             var body = modalEl.querySelector('.modal-body');
             body.innerHTML = '';
             body.appendChild(template.content.cloneNode(true));
-            modalEl.querySelector('.modal-title').textContent = trigger.getAttribute('data-quick-add-title') || 'Add';
+            modalEl.querySelector('.modal-title').textContent = trigger.getAttribute('data-quick-add-title') || @json(__('Add'));
 
             // Select2 selects (e.g. Intervention's Linked Indicators, or a
             // long lookup list like Thematic Area) only exist in the DOM from
@@ -170,13 +127,13 @@
             if (window.initAppSelect2In) {
                 window.initAppSelect2In(body, { dropdownParent: jQuery(modalEl) });
                 jQuery(body).find('select[multiple], .select2-multi').select2({
-                    placeholder: 'Select indicators…',
+                    placeholder: @json(__('Select indicators…')),
                     width: '100%',
                     dropdownParent: jQuery(modalEl),
                 });
             } else if (window.jQuery) {
                 jQuery(body).find('.select2-multi').select2({
-                    placeholder: 'Select indicators…',
+                    placeholder: @json(__('Select indicators…')),
                     width: '100%',
                     dropdownParent: jQuery(modalEl),
                 });

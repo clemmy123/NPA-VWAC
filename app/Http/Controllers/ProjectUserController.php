@@ -23,7 +23,7 @@ class ProjectUserController extends Controller
         ]);
 
         return $this->redirectBackOrTo($request, 'projects.show', ['project' => $project])
-            ->with('success', 'Project Manager assigned.');
+            ->with('success', __('Project Manager assigned.'));
     }
 
     public function destroy(Request $request, Project $project, User $user): RedirectResponse
@@ -33,7 +33,7 @@ class ProjectUserController extends Controller
         $project->users()->detach($user->id);
 
         return $this->redirectBackOrTo($request, 'projects.show', ['project' => $project])
-            ->with('success', 'Project Manager removed.');
+            ->with('success', __('Project Manager removed.'));
     }
 
     /**

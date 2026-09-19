@@ -126,6 +126,7 @@ class WorkstationReportController extends Controller
                 ];
             }
 
+            $rows = $this->performanceService->prioritizeOffTrackRows($rows);
             $analysis = $this->performanceService->analyse($rows);
         }
 

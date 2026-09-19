@@ -1,19 +1,19 @@
 @extends('components.main-layout')
-@section('title', 'Indicator Baselines')
+@section('title', __('Indicator Baselines'))
 
 @section('content')
 <div class="page-header">
     <div>
-        <h4 class="page-title">Indicator Baselines</h4>
-        <nav aria-label="breadcrumb">
+        <h4 class="page-title">{{ __('Indicator Baselines') }}</h4>
+        <nav aria-label="{{ __('breadcrumb') }}">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item active">Baselines</li>
+                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
+                <li class="breadcrumb-item active">{{ __('Baselines') }}</li>
             </ol>
         </nav>
     </div>
     @can('indicator.set-baseline')
-    <a href="{{ route('indicator-baselines.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> New Baseline</a>
+    <a href="{{ route('indicator-baselines.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Baseline') }}</a>
     @endcan
 </div>
 
@@ -23,12 +23,12 @@
         <thead>
             <tr>
                 <th>#</th>
-                <th>Indicator</th>
-                <th>Financial Year</th>
-                <th>Value</th>
-                <th>Date</th>
-                <th>Source</th>
-                <th>Actions</th>
+                <th>{{ __('Indicator') }}</th>
+                <th>{{ __('Financial Year') }}</th>
+                <th>{{ __('Value') }}</th>
+                <th>{{ __('Date') }}</th>
+                <th>{{ __('Source') }}</th>
+                <th>{{ __('Actions') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -42,12 +42,12 @@
                 <td>{{ $baseline->organization?->name ?? '—' }}</td>
                 <td>
                     @can('indicator.set-baseline')
-                    <a href="{{ route('indicator-baselines.edit', $baseline) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
+                    <a href="{{ route('indicator-baselines.edit', $baseline) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
                     <form action="{{ route('indicator-baselines.destroy', $baseline) }}" method="POST" class="d-inline"
-                          onsubmit="return confirm('Delete this baseline?');">
+                          data-confirm="{{ __('Delete this baseline?') }}">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn-icon danger" title="Delete"><i class="mdi mdi-trash-can-outline"></i></button>
+                        <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
                     </form>
                     @endcan
                 </td>
@@ -57,7 +57,7 @@
                 <td colspan="7">
                     <div class="tbl-empty">
                         <i class="mdi mdi-bullseye-arrow"></i>
-                        <p>No baselines found.</p>
+                        <p>{{ __('No baselines found.') }}</p>
                     </div>
                 </td>
             </tr>
@@ -85,12 +85,12 @@
         </div>
         <div class="mob-card-footer">
             @can('indicator.set-baseline')
-            <a href="{{ route('indicator-baselines.edit', $baseline) }}" class="btn-icon" title="Edit"><i class="mdi mdi-pencil-outline"></i></a>
+            <a href="{{ route('indicator-baselines.edit', $baseline) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
             <form action="{{ route('indicator-baselines.destroy', $baseline) }}" method="POST" class="d-inline"
-                  onsubmit="return confirm('Delete this baseline?');">
+                  data-confirm="{{ __('Delete this baseline?') }}">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn-icon danger" title="Delete"><i class="mdi mdi-trash-can-outline"></i></button>
+                <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
             </form>
             @endcan
         </div>
@@ -98,7 +98,7 @@
     @empty
     <div class="tbl-empty">
         <i class="mdi mdi-bullseye-arrow"></i>
-        <p>No baselines found.</p>
+        <p>{{ __('No baselines found.') }}</p>
     </div>
     @endforelse
 

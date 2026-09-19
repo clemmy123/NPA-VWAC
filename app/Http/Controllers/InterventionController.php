@@ -54,7 +54,7 @@ class InterventionController extends Controller
             return (new InterventionResource($intervention->load('indicators')))->response()->setStatusCode(201);
         }
 
-        return $this->redirectBackOrTo($request, 'interventions.index')->with('success', "Intervention \"{$intervention->name}\" created.");
+        return $this->redirectBackOrTo($request, 'interventions.index')->with('success', __('Intervention ":name" created.', ['name' => $intervention->name]));
     }
 
     public function show(Intervention $intervention): InterventionResource
@@ -87,7 +87,7 @@ class InterventionController extends Controller
             return new InterventionResource($intervention->load('indicators'));
         }
 
-        return $this->redirectBackOrTo($request, 'interventions.index')->with('success', "Intervention \"{$intervention->name}\" updated.");
+        return $this->redirectBackOrTo($request, 'interventions.index')->with('success', __('Intervention ":name" updated.', ['name' => $intervention->name]));
     }
 
     public function destroy(Request $request, Intervention $intervention): JsonResponse|RedirectResponse
@@ -98,6 +98,6 @@ class InterventionController extends Controller
             return response()->json(null, 204);
         }
 
-        return $this->redirectBackOrTo($request, 'interventions.index')->with('success', "Intervention \"{$intervention->name}\" deleted.");
+        return $this->redirectBackOrTo($request, 'interventions.index')->with('success', __('Intervention ":name" deleted.', ['name' => $intervention->name]));
     }
 }

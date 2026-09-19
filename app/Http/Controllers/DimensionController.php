@@ -27,7 +27,7 @@ class DimensionController extends Controller
 
         $dimension = Dimension::create($data);
 
-        return redirect()->route('dimensions.index')->with('success', "Dimension \"{$dimension->name}\" created.");
+        return redirect()->route('dimensions.index')->with('success', __('Dimension ":name" created.', ['name' => $dimension->name]));
     }
 
     public function edit(Dimension $dimension): View
@@ -44,14 +44,14 @@ class DimensionController extends Controller
 
         $dimension->update($data);
 
-        return redirect()->route('dimensions.index')->with('success', "Dimension \"{$dimension->name}\" updated.");
+        return redirect()->route('dimensions.index')->with('success', __('Dimension ":name" updated.', ['name' => $dimension->name]));
     }
 
     public function destroy(Dimension $dimension): RedirectResponse
     {
         $dimension->delete();
 
-        return redirect()->route('dimensions.index')->with('success', "Dimension \"{$dimension->name}\" deleted.");
+        return redirect()->route('dimensions.index')->with('success', __('Dimension ":name" deleted.', ['name' => $dimension->name]));
     }
 
     /** @return array<string, mixed> */

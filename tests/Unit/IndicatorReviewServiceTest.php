@@ -2,11 +2,16 @@
 
 namespace Tests\Unit;
 
+use App\Models\Council;
+use App\Models\District;
+use App\Models\Division;
 use App\Models\Indicator;
+use App\Models\IndicatorApprovalAssignment;
 use App\Models\IndicatorDataEntry;
 use App\Models\IndicatorDimension;
-use App\Models\IndicatorApprovalAssignment;
+use App\Models\Region;
 use App\Models\User;
+use App\Models\Ward;
 use App\Services\IndicatorReviewService;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -68,6 +73,23 @@ class IndicatorReviewServiceTest extends TestCase
         $this->assertNotNull($submitted->submitted_at);
     }
 
+    public function test_submit_rejects_a_numeric_entry_without_an_actual_value(): void
+    {
+        $user = User::factory()->create();
+        $entry = IndicatorDataEntry::factory()->create([
+            'entered_by' => $user->id,
+            'status' => 'draft',
+            'actual_value' => null,
+        ]);
+
+        try {
+            $this->service->submit($entry, $user);
+            $this->fail('Expected submit to reject a missing actual value.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('actual_value', $exception->errors());
+        }
+    }
+
     public function test_approve_rejects_a_non_submitted_entry(): void
     {
         $reviewer = User::factory()->create();
@@ -111,11 +133,11 @@ class IndicatorReviewServiceTest extends TestCase
 
     public function test_ward_entry_follows_ward_council_district_region_approval_chain(): void
     {
-        $region = \App\Models\Region::factory()->create();
-        $district = \App\Models\District::factory()->create(['region_id' => $region->region_id]);
-        $council = \App\Models\Council::factory()->create(['district_id' => $district->district_id]);
-        $division = \App\Models\Division::factory()->create(['council_id' => $council->council_id]);
-        $ward = \App\Models\Ward::factory()->create(['division_id' => $division->division_id]);
+        $region = Region::factory()->create();
+        $district = District::factory()->create(['region_id' => $region->region_id]);
+        $council = Council::factory()->create(['district_id' => $district->district_id]);
+        $division = Division::factory()->create(['council_id' => $council->council_id]);
+        $ward = Ward::factory()->create(['division_id' => $division->division_id]);
         $indicator = Indicator::factory()->create(['requires_hierarchical_approval' => true]);
         $owner = User::factory()->create();
         $entry = IndicatorDataEntry::factory()->create([
