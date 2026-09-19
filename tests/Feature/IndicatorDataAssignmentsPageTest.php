@@ -2,6 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Indicator;
+use App\Models\Region;
+use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
@@ -12,10 +15,23 @@ class IndicatorDataAssignmentsPageTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(RolePermissionSeeder::class);
+    }
+
+    private function userWithRole(string $role): User
+    {
+        $user = User::factory()->create();
+        $user->assignRole($role);
+
+        return $user;
+    }
+
     public function test_data_assignment_workflow_is_available_to_authorized_managers(): void
     {
-        $this->seed(RolePermissionSeeder::class);
-
         $this->assertTrue(Route::has('indicator-data-assignments.index'));
         $this->assertTrue(Route::has('indicator-data-assignments.store'));
         $this->assertTrue(Permission::where('name', 'indicator.assign-user')->exists());

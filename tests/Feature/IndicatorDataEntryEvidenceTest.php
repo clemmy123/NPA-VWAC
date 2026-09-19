@@ -64,6 +64,7 @@ class IndicatorDataEntryEvidenceTest extends TestCase
             'indicator_id' => $indicator->id,
             'financial_year_id' => $financialYear->id,
             'entry_date' => now()->toDateString(),
+            'actual_value' => 0,
         ]);
 
         $response->assertRedirect(route('indicator-data-entries.index'));
@@ -81,6 +82,7 @@ class IndicatorDataEntryEvidenceTest extends TestCase
             'indicator_id' => $indicator->id,
             'financial_year_id' => $financialYear->id,
             'entry_date' => now()->toDateString(),
+            'actual_value' => 0,
             'evidence' => [$file],
         ]);
 
@@ -101,6 +103,7 @@ class IndicatorDataEntryEvidenceTest extends TestCase
             'indicator_id' => $indicator->id,
             'financial_year_id' => $financialYear->id,
             'entry_date' => now()->toDateString(),
+            'actual_value' => 0,
             'evidence' => [$file],
         ]);
 
