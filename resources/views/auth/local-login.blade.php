@@ -4,9 +4,9 @@
 
 @section('form')
     <h1 class="auth-title">{{ __('Login') }}</h1>
-    <p class="auth-subtitle">{{ __('For reporting-organization accounts (e.g. banks). Government staff should use the main Sign In instead.') }}</p>
+    <p class="auth-subtitle">{{ __('Sign in with your module account.') }}</p>
 
-    <form method="POST" action="{{ route('local-login.store') }}">
+    <form method="POST" action="{{ route('login.store') }}">
         @csrf
 
         <div class="auth-group">
@@ -39,10 +39,6 @@
 
         <button type="submit" class="auth-btn">{{ __('Sign In') }}</button>
     </form>
-
-    <p class="text-center mt-3 mb-0" style="font-size:.8rem;">
-        <a href="{{ route('login') }}" class="auth-link">{{ __('Government staff? Sign in with Jumuishi') }}</a>
-    </p>
 
     <script>
         document.getElementById('togglePwd').addEventListener('click', function () {

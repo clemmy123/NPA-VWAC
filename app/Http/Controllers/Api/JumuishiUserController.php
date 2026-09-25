@@ -59,7 +59,19 @@ class JumuishiUserController extends Controller
     {
         $data = $request->validated();
         $duplicate = DB::transaction(function () use ($data): bool {
-            $user = User::query()->where('global_user_id', $data['global_user_id'])->lockForUpdate()->firstOrFail();
+            $user = User::query()->where('global_user_id', $data['global_user_id'])->lockForUpdate()->first();
+            $byEmail = User::query()->whereRaw('LOWER(email) = ?', [$data['email']])->lockForUpdate()->first();
+
+            if (($user && $byEmail && ! $user->is($byEmail))
+                || ($byEmail?->global_user_id && (string) $byEmail->global_user_id !== (string) $data['global_user_id'])) {
+                throw ValidationException::withMessages(['global_user_id' => 'The email is linked to a different identity.']);
+            }
+
+            $user ??= $byEmail;
+
+            if (! $user) {
+                throw ValidationException::withMessages(['global_user_id' => 'The user does not exist in this module.']);
+            }
 
             if ($this->isDuplicate($data)) {
                 return true;
@@ -73,7 +85,7 @@ class JumuishiUserController extends Controller
             } elseif ($data['event_type'] === 'password.changed') {
                 $this->setPassword($user, $data['password_hash']);
             } elseif ($data['event_type'] === 'user.disabled') {
-                $user->status = 'deactivated';
+                $user->status = 'inactive';
             } elseif ($data['event_type'] === 'user.enabled') {
                 $user->status = 'active';
             }
@@ -112,7 +124,7 @@ class JumuishiUserController extends Controller
             'gender' => isset($data['gender']) ? ucfirst($data['gender']) : null,
             'email' => $data['email'],
             'global_user_id' => $data['global_user_id'],
-            'status' => $data['status'] === 'active' ? 'active' : 'deactivated',
+            'status' => $data['status'] === 'active' ? 'active' : 'inactive',
             'auth_provider' => 'jumuishi',
             'password_login_enabled' => false,
             'jumuishi_sync_status' => 'synced',

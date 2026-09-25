@@ -12,9 +12,19 @@
             </ol>
         </nav>
     </div>
-    @can('user.create')
-    <a href="{{ route('users.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> {{ __('New User') }}</a>
-    @endcan
+    <div class="d-flex gap-2">
+        @if (auth()->user()?->hasRole('Super Admin'))
+        <form action="{{ route('users.sync-jumuishi') }}" method="POST" data-confirm="{{ __('Sync all pending or failed Jumuishi users now?') }}">
+            @csrf
+            <button type="submit" class="btn btn-outline-primary btn-sm">
+                <i class="mdi mdi-sync"></i> {{ __('Sync Jumuishi') }}
+            </button>
+        </form>
+        @endif
+        @can('user.create')
+        <a href="{{ route('users.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> {{ __('New User') }}</a>
+        @endcan
+    </div>
 </div>
 
 <div class="table-card d-none d-md-block">

@@ -9,7 +9,7 @@
             </button>
         </li>
         <li class="topbar-logo-sm align-items-center" style="padding-left:4px;">
-            <a href="{{ route('dashboard') }}" style="display:flex; align-items:center;">
+            <a href="{{ route('home') }}" style="display:flex; align-items:center;">
                 <img src="{{ asset('app-assets/logo.png') }}" alt="{{ config('app.name') }}" height="32">
             </a>
         </li>

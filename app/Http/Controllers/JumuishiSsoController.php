@@ -102,7 +102,8 @@ class JumuishiSsoController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->away(JumuishiUrl::central(config('jumuishi.central_logout_path')));
+        return redirect()->route('local-login')
+            ->with('status', __('You have been signed out of this module.'));
     }
 
     private function issue(string $message, int $status): Response

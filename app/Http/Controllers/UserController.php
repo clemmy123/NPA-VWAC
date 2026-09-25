@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\IndicatorApprovalAssignment;
 use App\Models\Organization;
 use App\Models\User;
+use App\Services\LocalUserSyncService;
 use App\Support\AdminLocationLevel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -57,7 +58,13 @@ class UserController extends Controller
         $user->syncRoles([$role]);
         $this->syncApproval($user, $role, $approval);
 
-        return redirect()->route('users.index')->with('success', __('User ":name" created.', ['name' => $user->name]));
+        $redirect = redirect()->route('users.index')->with('success', __('User ":name" created.', ['name' => $user->name]));
+
+        if (! app(LocalUserSyncService::class)->sync($user->fresh())) {
+            $redirect->with('warning', __('The user was saved locally, but Jumuishi synchronization failed. Please retry sync.'));
+        }
+
+        return $redirect;
     }
 
     public function edit(User $user): View
@@ -92,7 +99,13 @@ class UserController extends Controller
         $user->syncRoles([$role]);
         $this->syncApproval($user, $role, $approval);
 
-        return redirect()->route('users.index')->with('success', __('User ":name" updated.', ['name' => $user->name]));
+        $redirect = redirect()->route('users.index')->with('success', __('User ":name" updated.', ['name' => $user->name]));
+
+        if (! app(LocalUserSyncService::class)->sync($user->fresh())) {
+            $redirect->with('warning', __('User updated locally, but Jumuishi synchronization failed. Please retry sync.'));
+        }
+
+        return $redirect;
     }
 
     public function destroy(User $user): RedirectResponse
@@ -103,7 +116,41 @@ class UserController extends Controller
             ? __('User ":name" reactivated.', ['name' => $user->name])
             : __('User ":name" deactivated.', ['name' => $user->name]);
 
-        return redirect()->route('users.index')->with('success', $message);
+        $redirect = redirect()->route('users.index')->with('success', $message);
+
+        if (! app(LocalUserSyncService::class)->sync($user->fresh())) {
+            $redirect->with('warning', __('User status changed locally, but Jumuishi synchronization failed. Please retry sync.'));
+        }
+
+        return $redirect;
+    }
+
+    public function syncJumuishi(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()?->hasRole('Super Admin'), 403);
+
+        $processed = 0;
+        $failed = 0;
+        $service = app(LocalUserSyncService::class);
+
+        User::query()
+            ->where('auth_provider', 'jumuishi')
+            ->whereIn('jumuishi_sync_status', ['pending', 'failed'])
+            ->eachById(function (User $user) use ($service, &$processed, &$failed): void {
+                $processed++;
+
+                if (! $service->sync($user)) {
+                    $failed++;
+                }
+            });
+
+        $message = __('Jumuishi sync processed :processed user(s); :failed failed.', [
+            'processed' => $processed,
+            'failed' => $failed,
+        ]);
+
+        return redirect()->route('users.index')
+            ->with($failed > 0 ? 'warning' : 'success', $message);
     }
 
     /** @return array<string, mixed> */
