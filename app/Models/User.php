@@ -29,6 +29,8 @@ class User extends Authenticatable
         'region_id',
         'auth_provider',
         'password_login_enabled',
+        'password_changed_at',
+        'force_password_change',
         'external_verified_at',
         'global_user_id',
         'jumuishi_sync_status',
@@ -48,6 +50,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'password_login_enabled' => 'boolean',
+            'password_changed_at' => 'datetime',
+            'force_password_change' => 'boolean',
             'external_verified_at' => 'datetime',
             'jumuishi_synced_at' => 'datetime',
             'global_user_id' => 'integer',
@@ -96,6 +100,27 @@ class User extends Authenticatable
     public function isActive(): bool
     {
         return $this->status === 'active';
+    }
+
+    /**
+     * Only local-password accounts (e.g. reporting organizations) have a
+     * password we manage — Jumuishi-provider accounts never fall under this.
+     */
+    public function mustChangePassword(): bool
+    {
+        if ($this->auth_provider !== 'local') {
+            return false;
+        }
+
+        if ($this->force_password_change) {
+            return true;
+        }
+
+        if (! $this->password_changed_at) {
+            return false;
+        }
+
+        return $this->password_changed_at->lt(now()->subDays(90));
     }
 
     public function organization(): BelongsTo

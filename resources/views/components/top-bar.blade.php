@@ -43,7 +43,7 @@
                 <span class="d-none d-sm-flex flex-column ms-2" style="line-height:1.3; text-align:left;">
                     <span style="font-size:0.82rem; font-weight:600; color:var(--heading-dark);">{{ Auth::user()->name }}</span>
                     <span style="font-size:0.7rem; font-weight:400; color:var(--muted-mid);">
-                        {{ Auth::user()->getRoleNames()->first() ?? __('No role') }}
+                        {{ Auth::user()->getRoleNames()->join(', ') ?: __('No role') }}
                     </span>
                 </span>
 
@@ -55,7 +55,7 @@
                 <div style="padding:10px 16px 10px; border-bottom:1px solid var(--divider-faint);">
                     <div style="font-size:0.82rem; font-weight:600; color:var(--heading-dark);">{{ Auth::user()->name }}</div>
                     <div style="font-size:0.72rem; color:var(--muted-mid); margin-top:1px;">
-                        {{ Auth::user()->getRoleNames()->first() }}
+                        {{ Auth::user()->getRoleNames()->join(', ') }}
                     </div>
                 </div>
 

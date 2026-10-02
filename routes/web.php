@@ -83,7 +83,7 @@ if (app()->environment('local')) {
 Route::get('/login', [LocalAuthController::class, 'create'])
     ->middleware('guest')->name('login');
 Route::post('/login', [LocalAuthController::class, 'store'])
-    ->middleware(['guest', 'throttle:10,1'])->name('login.store');
+    ->middleware(['guest', 'throttle:5,1'])->name('login.store');
 Route::get('/jumuishi/sso/consume', [JumuishiSsoController::class, 'consume'])
     ->middleware('throttle:30,1')->name('jumuishi.sso.consume');
 Route::post('/logout', [JumuishiSsoController::class, 'logout'])->name('logout');
@@ -94,7 +94,7 @@ Route::post('/logout', [JumuishiSsoController::class, 'logout'])->name('logout')
 Route::get('/local-login', [LocalAuthController::class, 'create'])
     ->middleware('guest')->name('local-login');
 Route::post('/local-login', [LocalAuthController::class, 'store'])
-    ->middleware(['guest', 'throttle:10,1'])->name('local-login.store');
+    ->middleware(['guest', 'throttle:5,1'])->name('local-login.store');
 Route::post('/local-logout', [LocalAuthController::class, 'destroy'])
     ->middleware('auth')->name('local-logout');
 Route::get('/local-password', [LocalAuthController::class, 'editPassword'])
@@ -281,6 +281,8 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
         ->middleware('can:user.update')->name('users.edit');
     Route::post('users/sync-jumuishi', [UserController::class, 'syncJumuishi'])
         ->middleware('can:user.update')->name('users.sync-jumuishi');
+    Route::post('users/{user}/force-password-change', [UserController::class, 'forcePasswordChange'])
+        ->middleware('can:user.update')->name('users.force-password-change');
 
     Route::resource('users', UserController::class)
         ->except(['create', 'edit', 'show'])

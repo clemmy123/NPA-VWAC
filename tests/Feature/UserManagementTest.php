@@ -46,7 +46,7 @@ class UserManagementTest extends TestCase
             'email' => 'grace.mushi@example.test',
             'auth_provider' => 'jumuishi',
             'status' => 'active',
-            'role' => 'Project Manager',
+            'roles' => ['Project Manager'],
         ]);
 
         $response->assertRedirect(route('users.index'));
@@ -69,7 +69,7 @@ class UserManagementTest extends TestCase
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'status' => 'active',
-            'role' => 'Data Entry User',
+            'roles' => ['Data Entry User'],
         ]);
 
         $response->assertRedirect(route('users.index'));
@@ -104,7 +104,7 @@ class UserManagementTest extends TestCase
             'email' => 'regional.approver@example.test',
             'auth_provider' => 'jumuishi',
             'status' => 'active',
-            'role' => 'Data Approver',
+            'roles' => ['Data Approver'],
             'approval_location_level' => 'region',
             'approval_location_id' => $region->region_id,
         ]);
@@ -128,12 +128,54 @@ class UserManagementTest extends TestCase
             'email' => 'invalid.approver@example.test',
             'auth_provider' => 'jumuishi',
             'status' => 'active',
-            'role' => 'Data Approver',
+            'roles' => ['Data Approver'],
             'approval_location_level' => 'region',
             'approval_location_id' => 999999,
         ])->assertSessionHasErrors('approval_location_id');
 
         $this->assertDatabaseMissing('users', ['email' => 'invalid.approver@example.test']);
+    }
+
+    public function test_a_user_can_be_created_with_more_than_one_role(): void
+    {
+        $admin = $this->superAdmin();
+        $region = Region::factory()->create();
+
+        $response = $this->actingAs($admin)->post(route('users.store'), [
+            'name' => 'Dual Role User',
+            'email' => 'dual.role@example.test',
+            'auth_provider' => 'jumuishi',
+            'status' => 'active',
+            'roles' => ['Data Approver', 'Project Manager'],
+            'approval_location_level' => 'region',
+            'approval_location_id' => $region->region_id,
+        ]);
+
+        $response->assertRedirect(route('users.index'));
+        $user = User::where('email', 'dual.role@example.test')->firstOrFail();
+        $this->assertTrue($user->hasRole('Data Approver'));
+        $this->assertTrue($user->hasRole('Project Manager'));
+        $this->assertCount(2, $user->roles);
+    }
+
+    public function test_updating_a_user_can_change_their_set_of_roles(): void
+    {
+        $admin = $this->superAdmin();
+        $target = User::factory()->create();
+        $target->assignRole('Project Manager');
+
+        $this->actingAs($admin)->put(route('users.update', $target), [
+            'name' => $target->name,
+            'email' => $target->email,
+            'auth_provider' => 'jumuishi',
+            'status' => 'active',
+            'roles' => ['Data Entry User', 'Thematic Manager'],
+        ])->assertRedirect(route('users.index'));
+
+        $target->refresh();
+        $this->assertFalse($target->hasRole('Project Manager'));
+        $this->assertTrue($target->hasRole('Data Entry User'));
+        $this->assertTrue($target->hasRole('Thematic Manager'));
     }
 
     public function test_approval_location_is_ignored_for_non_approver_roles(): void
@@ -146,7 +188,7 @@ class UserManagementTest extends TestCase
             'email' => 'project.user@example.test',
             'auth_provider' => 'jumuishi',
             'status' => 'active',
-            'role' => 'Project Manager',
+            'roles' => ['Project Manager'],
             'approval_location_level' => 'region',
             'approval_location_id' => $region->region_id,
         ])->assertRedirect(route('users.index'));

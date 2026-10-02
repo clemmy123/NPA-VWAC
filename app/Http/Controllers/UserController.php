@@ -39,9 +39,9 @@ class UserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $this->validated($request);
-        $role = $data['role'];
+        $roles = $data['roles'];
         $approval = $this->extractApproval($data);
-        unset($data['role']);
+        unset($data['roles']);
 
         // All new users sign in via Jumuishi SSO. The `password` column is NOT NULL
         // with no DB default, so it still needs a value — an unusable random hash
@@ -51,8 +51,8 @@ class UserController extends Controller
         $data['password_login_enabled'] = false;
 
         $user = User::create($data);
-        $user->syncRoles([$role]);
-        $this->syncApproval($user, $role, $approval);
+        $user->syncRoles($roles);
+        $this->syncApproval($user, $roles, $approval);
 
         $redirect = redirect()->route('users.index')->with('success', __('User ":name" created.', ['name' => $user->name]));
 
@@ -77,15 +77,15 @@ class UserController extends Controller
     public function update(Request $request, User $user): RedirectResponse
     {
         $data = $this->validated($request, $user);
-        $role = $data['role'];
+        $roles = $data['roles'];
         $approval = $this->extractApproval($data);
-        unset($data['role']);
+        unset($data['roles']);
 
         // Sign-in method and password are no longer editable from this form; leave
         // the user's existing auth_provider/password_login_enabled untouched.
         $user->update($data);
-        $user->syncRoles([$role]);
-        $this->syncApproval($user, $role, $approval);
+        $user->syncRoles($roles);
+        $this->syncApproval($user, $roles, $approval);
 
         $redirect = redirect()->route('users.index')->with('success', __('User ":name" updated.', ['name' => $user->name]));
 
@@ -111,6 +111,19 @@ class UserController extends Controller
         }
 
         return $redirect;
+    }
+
+    public function forcePasswordChange(User $user): RedirectResponse
+    {
+        if ($user->auth_provider !== 'local') {
+            return redirect()->route('users.index')
+                ->with('warning', __('Only local-password accounts have a password to change. This user signs in via Jumuishi SSO.'));
+        }
+
+        $user->update(['force_password_change' => true]);
+
+        return redirect()->route('users.index')
+            ->with('success', __('":name" will be required to change their password on next sign-in.', ['name' => $user->name]));
     }
 
     public function syncJumuishi(Request $request): RedirectResponse
@@ -161,16 +174,25 @@ class UserController extends Controller
             'gender' => ['nullable', 'string', 'in:male,female'],
             'organization_id' => ['nullable', 'integer', 'exists:organizations,id'],
             'status' => ['required', 'string', 'in:active,inactive'],
-            'role' => ['required', 'string', 'exists:roles,name'],
-            'approval_location_level' => ['exclude_unless:role,Data Approver', 'required_if:role,Data Approver', 'string', 'in:region,district,council,ward'],
-            'approval_location_id' => ['exclude_unless:role,Data Approver', 'required_if:role,Data Approver', 'integer'],
+            'roles' => ['required', 'array', 'min:1'],
+            'roles.*' => ['string', 'exists:roles,name'],
+            'approval_location_level' => ['nullable', 'string', 'in:region,district,council,ward'],
+            'approval_location_id' => ['nullable', 'integer'],
         ]);
 
-        if (($data['role'] ?? null) === 'Data Approver'
-            && ! AdminLocationLevel::exists($data['approval_location_level'], (int) $data['approval_location_id'])) {
+        $isApprover = in_array('Data Approver', $data['roles'], true);
+
+        if ($isApprover
+            && (! $data['approval_location_level'] || ! $data['approval_location_id']
+                || ! AdminLocationLevel::exists($data['approval_location_level'], (int) $data['approval_location_id']))) {
             throw ValidationException::withMessages([
                 'approval_location_id' => 'Select a valid location at the chosen approval level.',
             ]);
+        }
+
+        if (! $isApprover) {
+            $data['approval_location_level'] = null;
+            $data['approval_location_id'] = null;
         }
 
         return $data;
@@ -187,10 +209,11 @@ class UserController extends Controller
         return $approval;
     }
 
-    private function syncApproval(User $user, string $role, array $approval): void
+    /** @param  list<string>  $roles */
+    private function syncApproval(User $user, array $roles, array $approval): void
     {
         $user->approvalAssignments()->update(['is_active' => false]);
-        if ($role !== 'Data Approver' || ! $approval['location_level'] || ! $approval['location_id']) {
+        if (! in_array('Data Approver', $roles, true) || ! $approval['location_level'] || ! $approval['location_id']) {
             return;
         }
         IndicatorApprovalAssignment::query()->updateOrCreate([
