@@ -7,7 +7,6 @@ use App\Models\Region;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class UserManagementTest extends TestCase
@@ -57,7 +56,7 @@ class UserManagementTest extends TestCase
         $this->assertTrue($user->hasRole('Project Manager'));
     }
 
-    public function test_super_admin_can_create_a_local_organization_user(): void
+    public function test_new_users_are_always_created_as_jumuishi_sso_even_if_local_is_requested(): void
     {
         $admin = $this->superAdmin();
         $organization = Organization::factory()->create(['name' => 'CRDB Bank']);
@@ -75,26 +74,10 @@ class UserManagementTest extends TestCase
 
         $response->assertRedirect(route('users.index'));
         $user = User::where('email', 'reporter@crdb.example.test')->firstOrFail();
-        $this->assertSame('local', $user->auth_provider);
-        $this->assertTrue($user->password_login_enabled);
+        $this->assertSame('jumuishi', $user->auth_provider);
+        $this->assertFalse($user->password_login_enabled);
         $this->assertSame($organization->id, $user->organization_id);
         $this->assertTrue($user->hasRole('Data Entry User'));
-        $this->assertTrue(Hash::check('password123', $user->password));
-    }
-
-    public function test_creating_a_local_user_without_a_password_fails_validation(): void
-    {
-        $admin = $this->superAdmin();
-
-        $response = $this->actingAs($admin)->post(route('users.store'), [
-            'name' => 'No Password',
-            'email' => 'nopassword@example.test',
-            'auth_provider' => 'local',
-            'status' => 'active',
-            'role' => 'Data Entry User',
-        ]);
-
-        $response->assertSessionHasErrors('password');
     }
 
     public function test_super_admin_can_deactivate_and_reactivate_a_user(): void

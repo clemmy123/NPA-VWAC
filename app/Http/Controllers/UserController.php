@@ -43,16 +43,12 @@ class UserController extends Controller
         $approval = $this->extractApproval($data);
         unset($data['role']);
 
-        if ($data['auth_provider'] === 'local') {
-            $data['password_login_enabled'] = true;
-        } else {
-            // No local password ever logs in for jumuishi-provider accounts, but the
-            // `password` column is NOT NULL with no DB default, so it still needs a
-            // value — an unusable random hash reserves the row without granting
-            // local sign-in (password_login_enabled stays false).
-            $data['password'] = Str::random(40);
-            $data['password_login_enabled'] = false;
-        }
+        // All new users sign in via Jumuishi SSO. The `password` column is NOT NULL
+        // with no DB default, so it still needs a value — an unusable random hash
+        // reserves the row without granting local sign-in.
+        $data['auth_provider'] = 'jumuishi';
+        $data['password'] = Str::random(40);
+        $data['password_login_enabled'] = false;
 
         $user = User::create($data);
         $user->syncRoles([$role]);
@@ -85,16 +81,8 @@ class UserController extends Controller
         $approval = $this->extractApproval($data);
         unset($data['role']);
 
-        if ($data['auth_provider'] === 'local') {
-            if (empty($data['password'])) {
-                unset($data['password']);
-            }
-            $data['password_login_enabled'] = true;
-        } else {
-            unset($data['password']);
-            $data['password_login_enabled'] = false;
-        }
-
+        // Sign-in method and password are no longer editable from this form; leave
+        // the user's existing auth_provider/password_login_enabled untouched.
         $user->update($data);
         $user->syncRoles([$role]);
         $this->syncApproval($user, $role, $approval);
@@ -166,19 +154,12 @@ class UserController extends Controller
     /** @return array<string, mixed> */
     private function validated(Request $request, ?User $user = null): array
     {
-        $passwordRules = ['nullable', 'string', 'min:8', 'confirmed'];
-        if (! $user) {
-            $passwordRules[] = 'required_if:auth_provider,local';
-        }
-
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'.($user ? ",{$user->id}" : '')],
             'phone_number' => ['nullable', 'string', 'max:50'],
             'gender' => ['nullable', 'string', 'in:male,female'],
             'organization_id' => ['nullable', 'integer', 'exists:organizations,id'],
-            'auth_provider' => ['required', 'string', 'in:jumuishi,local'],
-            'password' => $passwordRules,
             'status' => ['required', 'string', 'in:active,inactive'],
             'role' => ['required', 'string', 'exists:roles,name'],
             'approval_location_level' => ['exclude_unless:role,Data Approver', 'required_if:role,Data Approver', 'string', 'in:region,district,council,ward'],

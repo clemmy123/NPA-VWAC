@@ -92,28 +92,13 @@
         @error('approval_location_id')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
     </div>
 
-    <div class="col-md-6 mb-3">
-        <label for="auth_provider" class="form-label">{{ __('Sign-in Method') }}</label>
-        <select name="auth_provider" id="auth_provider" class="form-control @error('auth_provider') is-invalid @enderror" required>
-            <option value="jumuishi" @selected(old('auth_provider', $user?->auth_provider ?? 'jumuishi') === 'jumuishi')>{{ __('Jumuishi SSO (government staff)') }}</option>
-            <option value="local" @selected(old('auth_provider', $user?->auth_provider) === 'local')>{{ __('Local email / password (reporting organizations)') }}</option>
-        </select>
-        @error('auth_provider')<div class="invalid-feedback">{{ $message }}</div>@enderror
-    </div>
-
-    <div class="col-md-6 mb-3">
-        <label for="password" class="form-label">
-            {{ __('Password') }} @if ($user) <span class="text-muted">{{ __('(leave blank to keep current)') }}</span> @endif
-        </label>
-        <input type="password" name="password" id="password" class="form-control @error('password') is-invalid @enderror" autocomplete="new-password">
-        @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
-        <small class="text-muted">{{ __('Only used when Sign-in Method is Local.') }}</small>
-    </div>
-
-    <div class="col-md-6 mb-3">
-        <label for="password_confirmation" class="form-label">{{ __('Confirm Password') }}</label>
-        <input type="password" name="password_confirmation" id="password_confirmation" class="form-control" autocomplete="new-password">
-    </div>
+    @if ($user && $user->auth_provider === 'local')
+        <div class="col-md-6 mb-3">
+            <label class="form-label">{{ __('Sign-in Method') }}</label>
+            <input type="text" class="form-control" value="{{ __('Local email / password') }}" disabled>
+            <small class="text-muted">{{ __('Manage this account\'s password from the local sign-in page.') }}</small>
+        </div>
+    @endif
 </div>
 
 @push('scripts')
