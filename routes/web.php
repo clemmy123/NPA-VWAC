@@ -38,7 +38,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Role;
 
-Route::redirect('/', '/dashboard');
+Route::get('/', fn () => redirect()->away(JumuishiUrl::central('/')))->name('home');
+Route::get('/home', fn () => redirect()->away(JumuishiUrl::central('/')));
 
 Route::get('/locale/{locale}', function (string $locale) {
     abort_unless(array_key_exists($locale, config('app.available_locales')), 404);
@@ -79,7 +80,10 @@ if (app()->environment('local')) {
     })->name('dev-login');
 }
 
-Route::get('/login', [JumuishiSsoController::class, 'login'])->name('login');
+Route::get('/login', [LocalAuthController::class, 'create'])
+    ->middleware('guest')->name('login');
+Route::post('/login', [LocalAuthController::class, 'store'])
+    ->middleware(['guest', 'throttle:5,1'])->name('login.store');
 Route::get('/jumuishi/sso/consume', [JumuishiSsoController::class, 'consume'])
     ->middleware('throttle:30,1')->name('jumuishi.sso.consume');
 Route::post('/logout', [JumuishiSsoController::class, 'logout'])->name('logout');
@@ -90,7 +94,7 @@ Route::post('/logout', [JumuishiSsoController::class, 'logout'])->name('logout')
 Route::get('/local-login', [LocalAuthController::class, 'create'])
     ->middleware('guest')->name('local-login');
 Route::post('/local-login', [LocalAuthController::class, 'store'])
-    ->middleware(['guest', 'throttle:10,1'])->name('local-login.store');
+    ->middleware(['guest', 'throttle:5,1'])->name('local-login.store');
 Route::post('/local-logout', [LocalAuthController::class, 'destroy'])
     ->middleware('auth')->name('local-logout');
 Route::get('/local-password', [LocalAuthController::class, 'editPassword'])
@@ -98,21 +102,19 @@ Route::get('/local-password', [LocalAuthController::class, 'editPassword'])
 Route::put('/local-password', [LocalAuthController::class, 'updatePassword'])
     ->middleware(['auth', 'auth.session'])->name('local-password.update');
 
-Route::get('/forgot-password', fn () => redirect()->away(JumuishiUrl::central('/forgot-password')))
+Route::get('/forgot-password', fn () => redirect()->route('local-login')->with('status', __('Use your module login details or contact your administrator for password support.')))
     ->name('password.request');
-Route::get('/reset-password/{token}', fn (string $token) => redirect()->away(
-    JumuishiUrl::central('/reset-password/'.rawurlencode($token))
-    .(request()->filled('email') ? '?'.http_build_query(['email' => request()->query('email')]) : '')
-))->name('password.reset');
+Route::get('/reset-password/{token}', fn (string $token) => redirect()->route('local-login')->with('status', __('Password reset is handled inside this module by an administrator.')))
+    ->name('password.reset');
 
 Route::middleware(['auth', 'auth.session'])->group(function (): void {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('admin-locations/{level}', [AdminLocationController::class, 'options'])
         ->name('admin-locations.options');
-    Route::get('/profile', fn () => redirect()->away(JumuishiUrl::central(config('jumuishi.password_path'))))
+    Route::get('/profile', fn () => redirect()->route('dashboard')->with('status', __('Profile updates are managed by the module administrator.')))
         ->name('profile.edit');
-    Route::match(['get', 'put'], '/password', fn () => redirect()->away(JumuishiUrl::central(config('jumuishi.password_path'))))
+    Route::match(['get', 'put'], '/password', fn () => redirect()->route('dashboard')->with('status', __('Password updates are managed by the module administrator.')))
         ->name('password.update');
 
     Route::get('projects/create', [ProjectController::class, 'create'])
@@ -277,6 +279,10 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
         ->middleware('can:user.create')->name('users.create');
     Route::get('users/{user}/edit', [UserController::class, 'edit'])
         ->middleware('can:user.update')->name('users.edit');
+    Route::post('users/sync-jumuishi', [UserController::class, 'syncJumuishi'])
+        ->middleware('can:user.update')->name('users.sync-jumuishi');
+    Route::post('users/{user}/force-password-change', [UserController::class, 'forcePasswordChange'])
+        ->middleware('can:user.update')->name('users.force-password-change');
 
     Route::resource('users', UserController::class)
         ->except(['create', 'edit', 'show'])

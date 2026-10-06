@@ -12,9 +12,19 @@
             </ol>
         </nav>
     </div>
-    @can('user.create')
-    <a href="{{ route('users.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> {{ __('New User') }}</a>
-    @endcan
+    <div class="d-flex gap-2">
+        @if (auth()->user()?->hasRole('Super Admin'))
+        <form action="{{ route('users.sync-jumuishi') }}" method="POST" data-confirm="{{ __('Sync all pending or failed Jumuishi users now?') }}">
+            @csrf
+            <button type="submit" class="btn btn-outline-primary btn-sm">
+                <i class="mdi mdi-sync"></i> {{ __('Sync Jumuishi') }}
+            </button>
+        </form>
+        @endif
+        @can('user.create')
+        <a href="{{ route('users.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> {{ __('New User') }}</a>
+        @endcan
+    </div>
 </div>
 
 <div class="table-card d-none d-md-block">
@@ -35,6 +45,19 @@
                 <td>
                     @can('user.update')
                     <a href="{{ route('users.edit', $user) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
+                    @if ($user->auth_provider === 'local')
+                        @if ($user->force_password_change)
+                            <span class="btn-icon" title="{{ __('Password change already pending') }}"><i class="mdi mdi-key-alert-outline"></i></span>
+                        @else
+                            <form action="{{ route('users.force-password-change', $user) }}" method="POST" class="d-inline"
+                                  data-confirm="{{ __('Force :name to change their password on next sign-in?', ['name' => $user->name]) }}">
+                                @csrf
+                                <button type="submit" class="btn-icon" title="{{ __('Force Password Change') }}">
+                                    <i class="mdi mdi-key-outline"></i>
+                                </button>
+                            </form>
+                        @endif
+                    @endif
                     <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline"
                           data-confirm="{{ $user->status === 'active' ? __('Deactivate this user?') : __('Reactivate this user?') }}">
                         @csrf
@@ -77,6 +100,15 @@
         <div class="mob-card-footer">
             @can('user.update')
             <a href="{{ route('users.edit', $user) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
+            @if ($user->auth_provider === 'local' && ! $user->force_password_change)
+                <form action="{{ route('users.force-password-change', $user) }}" method="POST" class="d-inline"
+                      data-confirm="{{ __('Force :name to change their password on next sign-in?', ['name' => $user->name]) }}">
+                    @csrf
+                    <button type="submit" class="btn-icon" title="{{ __('Force Password Change') }}">
+                        <i class="mdi mdi-key-outline"></i>
+                    </button>
+                </form>
+            @endif
             <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline"
                   data-confirm="{{ $user->status === 'active' ? __('Deactivate this user?') : __('Reactivate this user?') }}">
                 @csrf

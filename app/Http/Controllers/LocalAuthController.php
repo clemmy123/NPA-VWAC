@@ -61,7 +61,11 @@ class LocalAuthController extends Controller
             'password' => ['required', 'confirmed', 'min:8'],
         ]);
 
-        $request->user()->update(['password' => $data['password']]);
+        $request->user()->update([
+            'password' => $data['password'],
+            'password_changed_at' => now(),
+            'force_password_change' => false,
+        ]);
 
         return redirect()->route('dashboard')->with('success', __('Your password has been updated.'));
     }

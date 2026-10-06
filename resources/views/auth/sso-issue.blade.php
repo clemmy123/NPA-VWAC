@@ -16,7 +16,7 @@
 @section('message', $message)
 
 @section('actions')
-<a href="{{ \App\Services\JumuishiUrl::central('/') }}" class="status-btn status-btn-primary">
-    <i class="mdi mdi-arrow-left"></i> Return to Jumuishi
+<a href="{{ route('local-login') }}" class="status-btn status-btn-primary">
+    <i class="mdi mdi-arrow-left"></i> Return to module login
 </a>
 @endsection
