@@ -3,13 +3,13 @@
 
     <!-- Brand (top of sidebar) -->
     <div class="sidebar-brand">
-        <a href="{{ route('home') }}" class="sidebar-brand-link">
+        <a href="{{ route('dashboard') }}" class="sidebar-brand-link">
             <span class="brand-logo-wrap">
                 <img class="brand-logo-sm" src="{{ asset('app-assets/logo.png') }}" alt="{{ config('app.name') }}">
             </span>
             <span class="brand-text">{{ config('app.name') }}</span>
         </a>
-        <a href="{{ route('home') }}" class="sidebar-home">{{ __('Home') }}</a>
+        <a href="{{ route('dashboard') }}" class="sidebar-home">{{ __('Home') }}</a>
     </div>
 
     <!-- Navigation -->

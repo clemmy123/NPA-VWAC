@@ -9,7 +9,7 @@
             </button>
         </li>
         <li class="topbar-logo-sm align-items-center" style="padding-left:4px;">
-            <a href="{{ route('home') }}" style="display:flex; align-items:center;">
+            <a href="{{ route('dashboard') }}" style="display:flex; align-items:center;">
                 <img src="{{ asset('app-assets/logo.png') }}" alt="{{ config('app.name') }}" height="32">
             </a>
         </li>
@@ -43,7 +43,7 @@
                 <span class="d-none d-sm-flex flex-column ms-2" style="line-height:1.3; text-align:left;">
                     <span style="font-size:0.82rem; font-weight:600; color:var(--heading-dark);">{{ Auth::user()->name }}</span>
                     <span style="font-size:0.7rem; font-weight:400; color:var(--muted-mid);">
-                        {{ Auth::user()->getRoleNames()->join(', ') ?: __('No role') }}
+                        {{ Auth::user()->getRoleNames()->first() ?? __('No role') }}
                     </span>
                 </span>
 
@@ -55,7 +55,7 @@
                 <div style="padding:10px 16px 10px; border-bottom:1px solid var(--divider-faint);">
                     <div style="font-size:0.82rem; font-weight:600; color:var(--heading-dark);">{{ Auth::user()->name }}</div>
                     <div style="font-size:0.72rem; color:var(--muted-mid); margin-top:1px;">
-                        {{ Auth::user()->getRoleNames()->join(', ') }}
+                        {{ Auth::user()->getRoleNames()->first() }}
                     </div>
                 </div>
 
