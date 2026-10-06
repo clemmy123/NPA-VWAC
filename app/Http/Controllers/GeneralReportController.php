@@ -10,13 +10,17 @@ use App\Models\IndicatorDataEntry;
 use App\Models\Organization;
 use App\Models\ReportingPeriod;
 use App\Services\IndicatorPerformanceService;
+use App\Services\ReportVisualizationService;
 use App\Support\AdminLocationLevel;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class GeneralReportController extends Controller
 {
@@ -25,9 +29,77 @@ class GeneralReportController extends Controller
 
     public const array FREQUENCIES = ['monthly', 'quarterly', 'yearly'];
 
-    public function __construct(private readonly IndicatorPerformanceService $performanceService) {}
+    private const int MAX_CHART_IMAGE_LENGTH = 15_000_000;
+
+    public function __construct(
+        private readonly IndicatorPerformanceService $performanceService,
+        private readonly ReportVisualizationService $visualizationService,
+    ) {}
 
     public function index(Request $request): View
+    {
+        $report = $this->buildReport($request);
+
+        return view('reports.general', $report + [
+            'rowPaginator' => $this->paginateRows($request, $report['rows']),
+        ]);
+    }
+
+    public function exportPdf(Request $request): Response
+    {
+        $request->validate([
+            'chart_image' => ['nullable', 'string', 'max:'.self::MAX_CHART_IMAGE_LENGTH, 'starts_with:data:image/png;base64,'],
+        ]);
+        $request->merge(['apply' => 1]);
+        $report = $this->buildReport($request);
+
+        if (! $report['selectedFinancialYear'] || $report['analysis'] === null) {
+            return redirect()->route('reports.general', $request->only(['frequency', 'visualization']))
+                ->with('warning', __('There is no report data to export for these filters.'));
+        }
+
+        $pdf = Pdf::loadView('reports.pdf.general', $report + [
+            'chartImage' => $this->validChartImage($request->input('chart_image')),
+            'generatedAt' => now(),
+            'generatedBy' => $request->user()->name,
+            'coatImage' => 'data:image/jpeg;base64,'.base64_encode((string) file_get_contents(public_path('app-assets/coat.png'))),
+        ])->setPaper('a4');
+
+        $pdf->render();
+        $canvas = $pdf->getDomPDF()->getCanvas();
+        $canvas->page_text(
+            $canvas->get_width() - 110,
+            $canvas->get_height() - 30,
+            __('Page :page of :total', ['page' => '{PAGE_NUM}', 'total' => '{PAGE_COUNT}']),
+            $pdf->getDomPDF()->getFontMetrics()->getFont('DejaVu Sans'),
+            8,
+            [0.39, 0.45, 0.55],
+        );
+
+        $filename = Str::slug(implode(' ', array_filter([
+            'jamii fuatilia',
+            $report['frequency'],
+            $report['periodLabel'],
+            $report['visualizationType'],
+        ]))).'.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    private function validChartImage(?string $dataUri): ?string
+    {
+        if ($dataUri === null) {
+            return null;
+        }
+
+        $binary = base64_decode(substr($dataUri, strlen('data:image/png;base64,')), true);
+        $size = $binary === false ? false : @getimagesizefromstring($binary);
+
+        return $size !== false && $size['mime'] === 'image/png' ? $dataUri : null;
+    }
+
+    /** @return array<string, mixed> */
+    private function buildReport(Request $request): array
     {
         $data = $request->validate([
             'frequency' => ['nullable', 'in:'.implode(',', self::FREQUENCIES)],
@@ -37,10 +109,12 @@ class GeneralReportController extends Controller
             'project_id' => ['nullable', 'integer', 'exists:projects,id'],
             'thematic_area_id' => ['nullable', 'integer', 'exists:thematic_areas,id'],
             'indicator_id' => ['nullable', 'integer', 'exists:indicators,id'],
+            'visualization' => ['nullable', 'string', 'in:'.implode(',', array_keys(ReportVisualizationService::TYPES))],
             'apply' => ['nullable', 'boolean'],
         ]);
 
         $frequency = $data['frequency'] ?? 'monthly';
+        $visualizationType = $data['visualization'] ?? ReportVisualizationService::DEFAULT_TYPE;
         $applied = $request->boolean('apply');
         $projects = $this->visibleProjects($request)->with('thematicAreas')->orderBy('name')->get();
         $visibleAreaIds = $request->user()->hasRole('Super Admin') ? null : $this->visibleThematicAreaIds($request);
@@ -101,6 +175,7 @@ class GeneralReportController extends Controller
 
         $rows = [];
         $analysis = null;
+        $visualization = null;
 
         if ($applied && $areasToAnalyse->isNotEmpty() && $selectedFinancialYear) {
             $indicatorList = Indicator::query()->with(['unitOfMeasure', 'thematicArea'])
@@ -124,6 +199,16 @@ class GeneralReportController extends Controller
 
             $rows = $this->performanceService->prioritizeOffTrackRows($rows);
             $analysis = $this->performanceService->analyse($rows);
+            $visualization = $this->visualizationService->build(
+                $visualizationType,
+                $rows,
+                $analysis,
+                $selectedFinancialYear,
+                $to ?? $selectedReportingPeriod?->end_date ?? $selectedFinancialYear->end_date,
+                $selectedReportingPeriod,
+                $from,
+                $to,
+            );
         }
 
         $periodLabel = match ($frequency) {
@@ -132,7 +217,7 @@ class GeneralReportController extends Controller
             default => $selectedFinancialYear?->name,
         };
 
-        return view('reports.general', [
+        return [
             'frequency' => $frequency,
             'month' => $month,
             'applied' => $applied,
@@ -149,8 +234,10 @@ class GeneralReportController extends Controller
             'periodLabel' => $periodLabel,
             'rows' => $rows,
             'analysis' => $analysis,
-            'rowPaginator' => $this->paginateRows($request, $rows),
-        ]);
+            'visualizationTypes' => ReportVisualizationService::TYPES,
+            'visualizationType' => $visualizationType,
+            'visualization' => $visualization,
+        ];
     }
 
     /** @return array{locations: list<array{label: string, value: float}>, organizations: list<array{label: string, value: float}>, activities: list<array{label: string, value: float}>} */

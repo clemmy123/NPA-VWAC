@@ -289,6 +289,10 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
         ->middleware('can:report.view')
         ->name('reports.general');
 
+    Route::post('reports/general/pdf', [GeneralReportController::class, 'exportPdf'])
+        ->middleware('can:report.view')
+        ->name('reports.general.pdf');
+
     Route::get('reports/workstation', [WorkstationReportController::class, 'index'])
         ->middleware('can:report.view')
         ->name('reports.workstation');

@@ -6,6 +6,7 @@
         'project_id' => $selectedProject?->id,
         'thematic_area_id' => $selectedThematicArea?->id,
         'indicator_id' => $selectedIndicator?->id,
+        'visualization' => $visualizationType !== \App\Services\ReportVisualizationService::DEFAULT_TYPE ? $visualizationType : null,
         'apply' => $applied ? 1 : null,
     ]);
 @endphp
@@ -106,6 +107,15 @@
         </select>
     </div>
 
+    <div class="rf-field">
+        <label for="visualization">{{ __('Visualization') }}</label>
+        <select name="visualization" id="visualization" class="form-control">
+            @foreach ($visualizationTypes as $type => $label)
+            <option value="{{ $type }}" @selected($visualizationType === $type)>{{ __($label) }}</option>
+            @endforeach
+        </select>
+    </div>
+
     <div class="rf-actions">
         <button type="submit" class="btn btn-dark">{{ __('Filter') }}</button>
         <a href="{{ route('reports.general', ['frequency' => $frequency]) }}" class="btn btn-outline-secondary">{{ __('Reset') }}</a>
@@ -125,12 +135,16 @@
     <p class="mb-0 text-muted">{{ __('No financial year covers this period. Create one in Settings.') }}</p>
 </div>
 @else
-@include('reports.partials.analysis')
+@include('reports.partials.analysis', ['hideAnalysisCharts' => true])
+@include('reports.partials.visualization')
 @include('reports.partials.indicator-results')
 @endif
 @endsection
 
 @push('scripts')
 @include('reports.partials.filter-selects-script', ['formId' => 'general-report-filters'])
-@include('reports.partials.charts-script')
+@include('reports.partials.visualization-script')
+@if ($applied && $visualization)
+@include('reports.partials.visualization-export-script')
+@endif
 @endpush

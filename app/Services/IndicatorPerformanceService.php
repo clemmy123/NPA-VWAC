@@ -330,7 +330,7 @@ class IndicatorPerformanceService
 
     /**
      * @param  list<array{indicator: Indicator, performance: array{target_value: float|null, actual_value: float|null, achievement_percent: float|null, aggregation_method: string}}>  $rows
-     * @return array{title: string, caption: string, height: int, labels: list<string>, values: list<float>, bar_colors: list<string>}
+     * @return array{title: string, caption: string, height: int, labels: list<string>, full_labels: list<string>, values: list<float>, bar_colors: list<string>}
      */
     private function chartSeries(array $rows): array
     {
@@ -355,6 +355,7 @@ class IndicatorPerformanceService
             'caption' => $caption,
             'height' => max(140, min(280, max(1, count($labels)) * 36 + 48)),
             'labels' => $labels,
+            'full_labels' => array_column($items, 'full_label'),
             'values' => $values,
             'bar_colors' => $indicatorBars
                 ? array_fill(0, count($values), '#188ae2')
@@ -385,6 +386,7 @@ class IndicatorPerformanceService
         foreach ($buckets as $bucket) {
             $items[] = [
                 'label' => $this->shortenChartLabel($bucket['label']),
+                'full_label' => $bucket['label'],
                 'value' => $bucket['percents'] === []
                     ? 0.0
                     : round(array_sum($bucket['percents']) / count($bucket['percents']), 1),
@@ -416,6 +418,7 @@ class IndicatorPerformanceService
 
             $items[] = [
                 'label' => $this->shortenChartLabel($name, 34).' · '.__($this->achievementStatus($percent)),
+                'full_label' => $name,
                 'value' => (float) $percent,
             ];
         }

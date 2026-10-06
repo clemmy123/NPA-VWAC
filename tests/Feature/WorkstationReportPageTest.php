@@ -2,6 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Council;
+use App\Models\District;
+use App\Models\Division;
 use App\Models\FinancialYear;
 use App\Models\Indicator;
 use App\Models\IndicatorDataEntry;
@@ -9,8 +12,10 @@ use App\Models\IndicatorTarget;
 use App\Models\Organization;
 use App\Models\OrganizationType;
 use App\Models\Project;
+use App\Models\Region;
 use App\Models\ThematicArea;
 use App\Models\User;
+use App\Models\Ward;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -196,6 +201,193 @@ class WorkstationReportPageTest extends TestCase
         $response->assertSee('400</td>', false);
         $response->assertDontSee('200</td>', false);
         $response->assertSee('40%');
+    }
+
+    public function test_location_filter_limits_the_report_to_workstations_in_that_area(): void
+    {
+        $user = $this->userWithRole('Super Admin');
+        $dar = Region::factory()->create(['name' => 'Dar es Salaam']);
+        $mwanza = Region::factory()->create(['name' => 'Mwanza']);
+        $district = District::factory()->create(['region_id' => $dar->region_id, 'name' => 'Ilala']);
+        $council = Council::factory()->create(['district_id' => $district->district_id, 'name' => 'Ilala MC']);
+        $division = Division::factory()->create(['council_id' => $council->council_id]);
+        $ward = Ward::factory()->create(['division_id' => $division->division_id, 'name' => 'Kariakoo']);
+
+        $inWard = Organization::factory()->create([
+            'name' => 'Kariakoo Desk',
+            'location_level' => 'ward',
+            'location_id' => $ward->ward_id,
+        ]);
+        $inMwanza = Organization::factory()->create([
+            'name' => 'Mwanza Desk',
+            'location_level' => 'region',
+            'location_id' => $mwanza->region_id,
+        ]);
+        Organization::factory()->create(['name' => 'Unplaced Desk']);
+
+        [$project, $thematicArea, $indicator, $financialYear] = $this->reportFixture();
+        foreach ([[$inWard, 400], [$inMwanza, 200]] as [$organization, $actual]) {
+            IndicatorDataEntry::factory()->approved()->create([
+                'indicator_id' => $indicator->id,
+                'financial_year_id' => $financialYear->id,
+                'organization_id' => $organization->id,
+                'entry_date' => '2025-12-10',
+                'actual_value' => $actual,
+            ]);
+        }
+
+        $response = $this->actingAs($user)->get(route('reports.workstation', [
+            'frequency' => 'monthly',
+            'month' => '2025-12-01',
+            'project_id' => $project->id,
+            'thematic_area_id' => $thematicArea->id,
+            'location_level' => 'council',
+            'location_id' => $council->council_id,
+            'apply' => 1,
+        ]));
+
+        $response->assertOk();
+        $response->assertSee('data-location-select="region"', false);
+        $response->assertSee('data-location-select="village_mtaa"', false);
+        $response->assertSee('Dar es Salaam / Ilala / Ilala MC');
+        $response->assertSee('Kariakoo Desk');
+        $response->assertDontSee('Mwanza Desk');
+        $response->assertDontSee('Unplaced Desk');
+        $response->assertSee('400</td>', false);
+        $response->assertDontSee('600</td>', false);
+        $response->assertSee('name="location_level" value="council"', false);
+    }
+
+    public function test_invalid_location_is_ignored(): void
+    {
+        $user = $this->userWithRole('Super Admin');
+
+        $this->actingAs($user)->get(route('reports.workstation', [
+            'location_level' => 'region',
+            'location_id' => 999999,
+        ]))->assertOk()->assertSee('name="location_level" value=""', false);
+
+        $this->actingAs($user)->get(route('reports.workstation', [
+            'location_level' => 'planet',
+            'location_id' => 1,
+        ]))->assertSessionHasErrors('location_level');
+    }
+
+    public function test_report_compares_workstations_with_insight_kpis_and_a_monthly_trend(): void
+    {
+        $user = $this->userWithRole('Super Admin');
+        $busy = Organization::factory()->create(['name' => 'Busy Desk']);
+        $quiet = Organization::factory()->create(['name' => 'Quiet Desk']);
+        Organization::factory()->create(['name' => 'Silent Desk']);
+
+        [$project, $thematicArea, $indicator, $financialYear] = $this->reportFixture();
+        $otherIndicator = Indicator::factory()->create([
+            'thematic_area_id' => $thematicArea->id,
+            'aggregation_method' => 'sum',
+        ]);
+
+        foreach ([$indicator, $indicator, $otherIndicator] as $reportedIndicator) {
+            IndicatorDataEntry::factory()->approved()->create([
+                'indicator_id' => $reportedIndicator->id,
+                'financial_year_id' => $financialYear->id,
+                'organization_id' => $busy->id,
+                'entry_date' => '2025-12-10',
+                'actual_value' => 10,
+            ]);
+        }
+        IndicatorDataEntry::factory()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'organization_id' => $quiet->id,
+            'entry_date' => '2025-12-12',
+            'actual_value' => 5,
+            'status' => 'submitted',
+        ]);
+        IndicatorDataEntry::factory()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'organization_id' => $quiet->id,
+            'entry_date' => '2025-12-14',
+            'actual_value' => 7,
+            'status' => 'draft',
+        ]);
+        IndicatorDataEntry::factory()->approved()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'organization_id' => $quiet->id,
+            'entry_date' => '2025-11-05',
+            'actual_value' => 3,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('reports.workstation', [
+            'frequency' => 'monthly',
+            'month' => '2025-12-01',
+            'project_id' => $project->id,
+            'thematic_area_id' => $thematicArea->id,
+            'apply' => 1,
+        ]));
+
+        $response->assertOk();
+        $response->assertSee('Workstations reporting');
+        $response->assertSee('1 of 3');
+        $response->assertSee('Approved collections');
+        $response->assertSee('1 pending · 0 rejected');
+        $response->assertSee('2 of 2 reported');
+        $response->assertSee('Indicator status');
+        $response->assertSee('me-status-bar', false);
+        $response->assertDontSee('Indicator coverage');
+        $response->assertSee('id="workstations"', false);
+        $response->assertSeeInOrder(['>Busy Desk</div>', '>Quiet Desk</div>', '>Silent Desk</div>'], false);
+        $response->assertSee('id="report-trend-chart"', false);
+        $response->assertSee('id="report-workstation-chart"', false);
+
+        $insights = $response->viewData('insights');
+        $this->assertSame(3, $insights['comparison']['totals']['approved']);
+        $this->assertSame(1, $insights['comparison']['totals']['pending']);
+        $this->assertSame(['Busy Desk', 'Quiet Desk'], $insights['comparisonChart']['labels']);
+        $this->assertSame([3, 0], $insights['comparisonChart']['approved']);
+        $this->assertSame([0, 1], $insights['comparisonChart']['pending']);
+        $this->assertSame(['Busy Desk', 'Quiet Desk'], $insights['comparisonChart']['names']);
+        $this->assertSame(3, $insights['comparisonChart']['total_approved']);
+        $this->assertNotNull($insights['comparisonChart']['last_approved'][0]);
+        $this->assertNull($insights['comparisonChart']['last_approved'][1]);
+        $response->assertSee('window.ReportTip', false);
+        $response->assertSee('ReportTip.chartTooltips(workstationCanvas', false);
+
+        $trend = $insights['trend'];
+        $november = array_search('Nov 2025', $trend['labels'], true);
+        $december = array_search('Dec 2025', $trend['labels'], true);
+        $this->assertSame('Jul 2025', $trend['labels'][0]);
+        $this->assertSame(1, $trend['approved'][$november]);
+        $this->assertSame(3, $trend['approved'][$december]);
+        $this->assertSame(1, $trend['pending'][$december]);
+    }
+
+    /**
+     * @return array{0: Project, 1: ThematicArea, 2: Indicator, 3: FinancialYear}
+     */
+    private function reportFixture(): array
+    {
+        $project = Project::factory()->create();
+        $thematicArea = ThematicArea::factory()->create(['project_id' => $project->id]);
+        $indicator = Indicator::factory()->create([
+            'thematic_area_id' => $thematicArea->id,
+            'name' => 'Women reached with savings groups',
+            'aggregation_method' => 'sum',
+        ]);
+        $financialYear = FinancialYear::factory()->create([
+            'name' => '2025/26',
+            'start_date' => '2025-07-01',
+            'end_date' => '2026-06-30',
+            'is_current' => true,
+        ]);
+        IndicatorTarget::factory()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'target_value' => 1000,
+        ]);
+
+        return [$project, $thematicArea, $indicator, $financialYear];
     }
 
     public function test_project_manager_can_open_the_workstation_report(): void

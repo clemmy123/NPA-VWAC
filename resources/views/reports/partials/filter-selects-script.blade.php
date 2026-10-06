@@ -50,10 +50,12 @@
         );
     }
 
-    form.querySelectorAll('select.form-control').forEach(enhance);
+    var enhancedSelector = 'select.form-control:not([data-location-select])';
+
+    form.querySelectorAll(enhancedSelector).forEach(enhance);
 
     form.addEventListener('submit', function () {
-        form.querySelectorAll('select.form-control').forEach(function (select) {
+        form.querySelectorAll(enhancedSelector).forEach(function (select) {
             if (select.value === emptyValue) {
                 select.disabled = true;
             }
