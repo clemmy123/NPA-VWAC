@@ -30,6 +30,17 @@
             </ol>
         </nav>
     </div>
+    @if ($applied)
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+            <i class="mdi mdi-download-outline"></i> {{ __('Download') }}
+        </button>
+        <div class="dropdown-menu dropdown-menu-right">
+            <a class="dropdown-item" href="{{ route('reports.general.export', ['format' => 'pdf'] + request()->query()) }}">{{ __('PDF') }}</a>
+            <a class="dropdown-item" href="{{ route('reports.general.export', ['format' => 'excel'] + request()->query()) }}">{{ __('Excel') }}</a>
+        </div>
+    </div>
+    @endif
 </div>
 
 <form method="GET" action="{{ route('reports.general') }}" class="filter-card report-filters" id="general-report-filters">

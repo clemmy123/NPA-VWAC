@@ -292,10 +292,18 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
     Route::get('reports/general', [GeneralReportController::class, 'index'])
         ->middleware('can:report.view')
         ->name('reports.general');
+    Route::get('reports/general/export/{format}', [GeneralReportController::class, 'exportPreview'])
+        ->whereIn('format', ['pdf', 'excel'])
+        ->middleware('can:report.view')
+        ->name('reports.general.export');
 
     Route::get('reports/workstation', [WorkstationReportController::class, 'index'])
         ->middleware('can:report.view')
         ->name('reports.workstation');
+    Route::get('reports/workstation/export/{format}', [WorkstationReportController::class, 'exportPreview'])
+        ->whereIn('format', ['pdf', 'excel'])
+        ->middleware('can:report.view')
+        ->name('reports.workstation.export');
 
     // Indicator data assignments: who (which user/organization) reports on which
     // indicator, optionally scoped to a location — this is what lets an
