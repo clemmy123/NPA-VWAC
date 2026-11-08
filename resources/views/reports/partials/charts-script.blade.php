@@ -1,10 +1,39 @@
 @if ($applied && $analysis && $analysis['total'] > 0)
 <script src="{{ asset('app-assets/libs/chart-js/Chart.bundle.min.js') }}"></script>
+@include('reports.partials.chart-tip-script')
 <script>
 (function () {
     var chart = @json($analysis['chart']);
+    var text = ReportTip.text;
+    var format = ReportTip.format;
     Chart.defaults.global.defaultFontColor = '#64748b';
     Chart.defaults.global.defaultFontFamily = 'Inter, sans-serif';
+
+    function describeAchievement(index) {
+        var value = chart.values[index];
+        var status = ReportTip.statusOf(value);
+
+        return {
+            title: (chart.full_labels && chart.full_labels[index]) || chart.labels[index],
+            color: status.color,
+            rows: [{ label: text.achievement, value: format(value) + '%', tone: 'blue' }],
+            status: status
+        };
+    }
+
+    function describeStatus(index) {
+        var count = chart.status_values[index];
+        var total = ReportTip.sum(chart.status_values);
+
+        return {
+            title: chart.status_labels[index],
+            color: ['#22c55e', '#d97706', '#dc2626', '#94a3b8'][index],
+            rows: [
+                { label: text.indicators, value: format(count, 0) },
+                { label: text.share, value: format(total ? count / total * 100 : 0) + '%' }
+            ]
+        };
+    }
 
     var bar = document.getElementById('report-achievement-chart');
     if (bar) {
@@ -46,11 +75,7 @@
                     xAxes: [{ ticks: { beginAtZero: true, suggestedMax: 100, callback: function (value) { return value + '%'; } }, gridLines: { display: false } }],
                     yAxes: [{ ticks: { autoSkip: false }, gridLines: { display: false } }]
                 },
-                tooltips: {
-                    callbacks: {
-                        label: function (item) { return item.xLabel + '%'; }
-                    }
-                }
+                tooltips: ReportTip.chartTooltips(bar, describeAchievement, false)
             }
         });
     }
@@ -77,7 +102,8 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 legend: { position: 'bottom' },
-                cutoutPercentage: 62
+                cutoutPercentage: 62,
+                tooltips: ReportTip.chartTooltips(status, describeStatus, false)
             }
         });
     }

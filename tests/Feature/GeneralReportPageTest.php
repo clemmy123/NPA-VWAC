@@ -2,14 +2,18 @@
 
 namespace Tests\Feature;
 
+use App\Models\District;
 use App\Models\FinancialYear;
 use App\Models\Indicator;
 use App\Models\IndicatorDataEntry;
 use App\Models\IndicatorTarget;
+use App\Models\Organization;
 use App\Models\Project;
+use App\Models\Region;
 use App\Models\ReportingPeriod;
 use App\Models\ThematicArea;
 use App\Models\User;
+use App\Services\ReportVisualizationService;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -115,6 +119,7 @@ class GeneralReportPageTest extends TestCase
             'month' => '2025-12-01',
             'project_id' => $project->id,
             'thematic_area_id' => $thematicArea->id,
+            'visualization' => 'bar',
             'apply' => 1,
         ]));
 
@@ -126,15 +131,275 @@ class GeneralReportPageTest extends TestCase
         $response->assertSee('40%');
         $response->assertSee('Monitoring & Evaluation');
         $response->assertSee('Off track');
-        $response->assertSee('id="report-achievement-chart"', false);
-        $response->assertSee('chart.bar_colors', false);
+        $response->assertSee('id="visualization"', false);
+        $response->assertSee('id="report-visual-chart"', false);
+        $response->assertSee("type: 'horizontalBar'", false);
         $response->assertSee("hoverBackgroundColor: '#2563eb'", false);
         $response->assertSee('#188ae2', false);
         $response->assertSee('#dc2626', false);
         $response->assertSee('#22c55e', false);
         $response->assertSee('gridLines: { display: false }', false);
         $response->assertDontSee('rgba(59, 130, 246, 0.35)', false);
-        $response->assertSee('id="report-status-chart"', false);
+        $response->assertDontSee('id="report-achievement-chart"', false);
+        $this->assertSame('bar', $response->viewData('visualization')['type']);
+    }
+
+    public function test_visualization_filter_offers_every_visual_type(): void
+    {
+        $response = $this->actingAs($this->userWithRole('Super Admin'))->get(route('reports.general'));
+
+        $response->assertOk();
+        $response->assertSee('id="visualization"', false);
+
+        foreach (['Map', 'Bar chart', 'List', 'Histogram', 'Pie chart', 'Doughnut chart', 'Line chart', 'Area chart', 'Radar chart'] as $label) {
+            $response->assertSee('>'.$label.'</option>', false);
+        }
+    }
+
+    public function test_each_visualization_type_summarizes_the_report(): void
+    {
+        $this->travelTo('2026-01-20');
+        $fixture = $this->visualizationFixture();
+
+        $visual = fn (string $type): array => $this->actingAs($fixture['user'])
+            ->get(route('reports.general', $fixture['query'] + ['visualization' => $type]))
+            ->assertOk()
+            ->viewData('visualization');
+
+        $list = $visual('list');
+        $this->assertSame(['off-track', 'at-risk', 'on-track', 'no-data'], array_column($list['groups'], 'key'));
+        $this->assertSame([1, 1, 1, 1], array_map(fn (array $group): int => count($group['items']), $list['groups']));
+
+        $histogram = $visual('histogram');
+        $this->assertSame([1, 0, 1, 0, 1], $histogram['chart']['values']);
+        $this->assertStringContainsString('1 have no score yet', $histogram['caption']);
+
+        $this->assertSame([1, 1, 1, 1], $visual('pie')['chart']['values']);
+        $this->assertSame('doughnut', $visual('doughnut')['type']);
+
+        $line = $visual('line');
+        $this->assertSame(['Jul 2025', 'Aug 2025', 'Sep 2025', 'Oct 2025', 'Nov 2025', 'Dec 2025', 'Jan 2026'], $line['chart']['labels']);
+        $this->assertNull($line['chart']['values'][0]);
+        $this->assertEqualsWithDelta(23.3, $line['chart']['values'][5], 0.1);
+        $this->assertEqualsWithDelta(63.3, $line['chart']['values'][6], 0.1);
+
+        $area = $visual('area');
+        $this->assertSame([0, 0, 0, 0, 0, 3, 1], $area['chart']['values']);
+
+        $radar = $visual('radar');
+        $this->assertNull($radar['empty']);
+        $this->assertCount(3, $radar['chart']['labels']);
+
+        $this->actingAs($fixture['user'])
+            ->get(route('reports.general', $fixture['query'] + ['visualization' => 'list']))
+            ->assertSee('Indicator summary')
+            ->assertDontSee('id="report-visual-chart"', false);
+
+        $this->actingAs($fixture['user'])
+            ->get(route('reports.general', $fixture['query'] + ['visualization' => 'area']))
+            ->assertSee('id="report-visual-chart"', false)
+            ->assertSee('fill: true', false);
+    }
+
+    public function test_visualization_card_offers_a_pdf_export_carrying_the_filters(): void
+    {
+        $this->travelTo('2026-01-20');
+        $fixture = $this->visualizationFixture();
+
+        $this->actingAs($fixture['user'])
+            ->get(route('reports.general', $fixture['query'] + ['visualization' => 'pie']))
+            ->assertOk()
+            ->assertSee('action="'.route('reports.general.pdf').'"', false)
+            ->assertSee('name="visualization" value="pie"', false)
+            ->assertSee('name="thematic_area_id" value="'.$fixture['query']['thematic_area_id'].'"', false)
+            ->assertSee('Export PDF');
+    }
+
+    public function test_pdf_export_downloads_a_report_for_each_visualization(): void
+    {
+        $this->travelTo('2026-01-20');
+        $fixture = $this->visualizationFixture();
+        $pixel = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+        foreach (array_keys(ReportVisualizationService::TYPES) as $type) {
+            $response = $this->actingAs($fixture['user'])
+                ->post(route('reports.general.pdf'), $fixture['query'] + ['visualization' => $type, 'chart_image' => $pixel]);
+
+            $response->assertOk()->assertHeader('content-type', 'application/pdf');
+            $this->assertStringStartsWith('%PDF', $response->getContent(), "{$type} export is not a PDF");
+            $this->assertStringContainsString("-{$type}.pdf", $response->headers->get('content-disposition'));
+        }
+    }
+
+    public function test_pdf_export_rejects_a_chart_image_that_is_not_a_png_data_uri(): void
+    {
+        $this->travelTo('2026-01-20');
+        $fixture = $this->visualizationFixture();
+
+        $this->actingAs($fixture['user'])
+            ->post(route('reports.general.pdf'), $fixture['query'] + ['chart_image' => 'https://example.com/chart.png'])
+            ->assertSessionHasErrors('chart_image');
+    }
+
+    public function test_list_visualization_collapses_long_groups_behind_show_more(): void
+    {
+        $this->travelTo('2026-01-20');
+        $fixture = $this->visualizationFixture();
+        $thematicAreaId = $fixture['query']['thematic_area_id'];
+
+        foreach (range(1, 6) as $number) {
+            Indicator::factory()->create([
+                'thematic_area_id' => $thematicAreaId,
+                'code' => "EMPTY{$number}",
+                'aggregation_method' => 'sum',
+            ]);
+        }
+
+        $this->actingAs($fixture['user'])
+            ->get(route('reports.general', $fixture['query'] + ['visualization' => 'list']))
+            ->assertOk()
+            ->assertSee('class="me-visual-more"', false)
+            ->assertSee('Show 2 more')
+            ->assertSee('Show less');
+    }
+
+    public function test_default_visualization_is_a_tanzania_map_of_collections_by_region(): void
+    {
+        $this->travelTo('2026-01-20');
+        $fixture = $this->visualizationFixture();
+        $dar = Region::factory()->create(['name' => 'Dar es Salaam']);
+        $mwanza = Region::factory()->create(['name' => 'Mwanza']);
+        $district = District::factory()->create(['region_id' => $dar->region_id]);
+        $mwanzaDesk = Organization::factory()->create(['location_level' => 'region', 'location_id' => $mwanza->region_id]);
+        $indicatorId = Indicator::where('code', 'RISK')->value('id');
+        $financialYearId = $fixture['query']['financial_year_id'];
+
+        IndicatorDataEntry::factory()->approved()->count(2)->create([
+            'indicator_id' => $indicatorId,
+            'financial_year_id' => $financialYearId,
+            'entry_date' => '2025-11-10',
+            'location_level' => 'district',
+            'location_id' => $district->district_id,
+            'actual_value' => 0,
+        ]);
+        IndicatorDataEntry::factory()->approved()->create([
+            'indicator_id' => $indicatorId,
+            'financial_year_id' => $financialYearId,
+            'entry_date' => '2025-11-10',
+            'organization_id' => $mwanzaDesk->id,
+            'actual_value' => 0,
+        ]);
+        IndicatorDataEntry::factory()->create([
+            'indicator_id' => $indicatorId,
+            'financial_year_id' => $financialYearId,
+            'entry_date' => '2025-11-10',
+            'location_level' => 'region',
+            'location_id' => $mwanza->region_id,
+            'status' => 'draft',
+        ]);
+
+        $response = $this->actingAs($fixture['user'])->get(route('reports.general', $fixture['query']));
+
+        $response->assertOk();
+        $response->assertSee('Collections by region');
+        $response->assertSee('class="me-map-svg"', false);
+        $response->assertSee('data-region="Songwe"', false);
+        $response->assertSee('data-region="Dar es Salaam"', false);
+        $response->assertSee('data-share="66.7"', false);
+        $response->assertSee('window.ReportTip', false);
+        $response->assertSee('ReportTip.show', false);
+        $response->assertSee('<g class="me-map-score has-score"', false);
+        $response->assertSee('class="me-map-lake"', false);
+        $response->assertSee('Lake Victoria');
+        $response->assertSee('Lake Tanganyika');
+        $response->assertSee('Lake Nyasa');
+        $response->assertSee('<text y="13.5" class="me-map-badge-value">2</text>', false);
+        $response->assertSee('Not tracked in this system');
+        $response->assertSee('Share of collections');
+        $response->assertSee('4 approved collections have no location set.');
+        $response->assertDontSee('id="report-visual-chart"', false);
+
+        $map = $response->viewData('visualization')['map'];
+        $this->assertSame('map', $response->viewData('visualization')['type']);
+        $this->assertCount(31, $map['regions']);
+        $this->assertSame([
+            ['name' => 'Dar es Salaam', 'collections' => 2, 'indicators' => 1],
+            ['name' => 'Mwanza', 'collections' => 1, 'indicators' => 1],
+        ], $map['ranking']);
+        $regions = collect($map['regions'])->keyBy('name');
+        $this->assertSame(5, $regions['Dar es Salaam']['shade']);
+        $this->assertSame(1, $regions['Dar es Salaam']['rank']);
+        $this->assertSame(66.7, $regions['Dar es Salaam']['share']);
+        $this->assertSame(2, $regions['Mwanza']['rank']);
+        $this->assertNull($regions['Arusha']['rank']);
+        $this->assertFalse($regions['Kusini Pemba']['tracked']);
+        $this->assertSame(3, $regions['Mwanza']['shade']);
+        $this->assertFalse($regions['Arusha']['tracked']);
+    }
+
+    public function test_unknown_visualization_type_is_rejected(): void
+    {
+        $this->actingAs($this->userWithRole('Super Admin'))
+            ->get(route('reports.general', ['visualization' => 'sparkles', 'apply' => 1]))
+            ->assertSessionHasErrors('visualization');
+    }
+
+    /**
+     * Four indicators: on track (120%), at risk (60%), off track (10%) and one with no data.
+     *
+     * @return array{user: User, query: array<string, mixed>}
+     */
+    private function visualizationFixture(): array
+    {
+        $user = $this->userWithRole('Super Admin');
+        $project = Project::factory()->create();
+        $thematicArea = ThematicArea::factory()->create(['project_id' => $project->id]);
+        $financialYear = FinancialYear::factory()->create([
+            'name' => '2025/26',
+            'start_date' => '2025-07-01',
+            'end_date' => '2026-06-30',
+            'is_current' => true,
+        ]);
+
+        foreach ([['ON', 120], ['RISK', 60], ['OFF', 10], ['NONE', null]] as [$code, $actual]) {
+            $indicator = Indicator::factory()->create([
+                'thematic_area_id' => $thematicArea->id,
+                'code' => $code,
+                'aggregation_method' => 'sum',
+            ]);
+            IndicatorTarget::factory()->create([
+                'indicator_id' => $indicator->id,
+                'financial_year_id' => $financialYear->id,
+                'target_value' => 100,
+            ]);
+
+            if ($actual !== null) {
+                IndicatorDataEntry::factory()->approved()->create([
+                    'indicator_id' => $indicator->id,
+                    'financial_year_id' => $financialYear->id,
+                    'entry_date' => $code === 'ON' ? '2026-01-05' : '2025-12-05',
+                    'actual_value' => $actual,
+                ]);
+            }
+        }
+
+        IndicatorDataEntry::factory()->approved()->create([
+            'indicator_id' => Indicator::where('code', 'ON')->value('id'),
+            'financial_year_id' => $financialYear->id,
+            'entry_date' => '2025-12-01',
+            'actual_value' => 0,
+        ]);
+
+        return [
+            'user' => $user,
+            'query' => [
+                'frequency' => 'yearly',
+                'financial_year_id' => $financialYear->id,
+                'project_id' => $project->id,
+                'thematic_area_id' => $thematicArea->id,
+                'apply' => 1,
+            ],
+        ];
     }
 
     public function test_quarterly_and_yearly_tabs_swap_the_period_filter(): void
@@ -325,6 +590,7 @@ class GeneralReportPageTest extends TestCase
             'frequency' => 'monthly',
             'month' => '2025-12-01',
             'project_id' => $project->id,
+            'visualization' => 'bar',
             'apply' => 1,
         ]));
 
@@ -373,6 +639,7 @@ class GeneralReportPageTest extends TestCase
             'month' => '2025-12-01',
             'project_id' => $project->id,
             'thematic_area_id' => $thematicArea->id,
+            'visualization' => 'bar',
             'apply' => 1,
         ]));
 

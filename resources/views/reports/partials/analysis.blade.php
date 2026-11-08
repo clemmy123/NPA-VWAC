@@ -9,15 +9,27 @@
         @if ($selectedOrganization ?? null) · {{ $selectedOrganization->name }}
         @elseif ($workstationScopeLabel ?? null) · {{ $workstationScopeLabel }}
         @endif
+        @if ($locationScopeLabel ?? null) · {{ $locationScopeLabel }} @endif
     </p>
 </div>
+
+@php
+    $statusSegments = [
+        ['key' => 'on-track', 'label' => __('On track'), 'count' => $analysis['on_track'], 'percent' => $analysis['on_track_percent']],
+        ['key' => 'at-risk', 'label' => __('At risk'), 'count' => $analysis['at_risk'], 'percent' => $analysis['at_risk_percent']],
+        ['key' => 'off-track', 'label' => __('Off track'), 'count' => $analysis['off_track'], 'percent' => $analysis['off_track_percent']],
+        ['key' => 'no-data', 'label' => __('No data'), 'count' => $analysis['no_data'], 'percent' => $analysis['no_data_percent']],
+    ];
+@endphp
 
 <div class="me-kpis">
     <div class="me-kpi">
         <div class="me-kpi-label">{{ __('Indicators') }}</div>
         <div class="me-kpi-value">{{ $analysis['total'] }}</div>
         <div class="me-kpi-meta">
-            @if ($selectedIndicator ?? null)
+            @if (isset($indicatorsReported))
+            {{ __(':reported of :total reported', ['reported' => $indicatorsReported, 'total' => $analysis['total']]) }}
+            @elseif ($selectedIndicator ?? null)
             {{ __('this indicator') }}
             @elseif ($selectedThematicArea ?? null)
             {{ __('in this thematic area') }}
@@ -31,23 +43,31 @@
         <div class="me-kpi-value">{{ $analysis['average_achievement'] === null ? '—' : \App\Support\DisplayNumber::format($analysis['average_achievement']).'%' }}</div>
         <div class="me-kpi-meta">{{ __('of scored indicators') }}</div>
     </div>
-    <div class="me-kpi is-on-track">
-        <div class="me-kpi-label">{{ __('On track') }}</div>
-        <div class="me-kpi-value">{{ \App\Support\DisplayNumber::format($analysis['on_track_percent']) }}%</div>
-        <div class="me-kpi-meta">{{ __(':count at or above target', ['count' => $analysis['on_track']]) }}</div>
+    <div class="me-kpi me-kpi-status">
+        <div class="me-kpi-label">{{ __('Indicator status') }}</div>
+        <div class="me-status-bar" role="img" aria-label="{{ collect($statusSegments)->map(fn ($segment) => $segment['label'].' '.$segment['count'])->implode(', ') }}">
+            @foreach ($statusSegments as $segment)
+            @if ($segment['count'] > 0)
+            <span class="is-{{ $segment['key'] }}" style="flex-grow: {{ $segment['count'] }}" title="{{ $segment['label'] }}: {{ $segment['count'] }} ({{ \App\Support\DisplayNumber::format($segment['percent']) }}%)"></span>
+            @endif
+            @endforeach
+        </div>
+        <div class="me-status-legend">
+            @foreach ($statusSegments as $segment)
+            <span class="is-{{ $segment['key'] }}"><i></i>{{ $segment['label'] }} <strong>{{ $segment['count'] }}</strong></span>
+            @endforeach
+        </div>
     </div>
-    <div class="me-kpi is-at-risk">
-        <div class="me-kpi-label">{{ __('At risk') }}</div>
-        <div class="me-kpi-value">{{ \App\Support\DisplayNumber::format($analysis['at_risk_percent']) }}%</div>
-        <div class="me-kpi-meta">{{ __(':count between 50% and 99%', ['count' => $analysis['at_risk']]) }}</div>
+    @foreach (($extraKpis ?? []) as $kpi)
+    <div class="me-kpi is-insight">
+        <div class="me-kpi-label">{{ $kpi['label'] }}</div>
+        <div class="me-kpi-value">{{ $kpi['value'] }}</div>
+        <div class="me-kpi-meta">{{ $kpi['meta'] }}</div>
     </div>
-    <div class="me-kpi is-off-track">
-        <div class="me-kpi-label">{{ __('Off track') }}</div>
-        <div class="me-kpi-value">{{ \App\Support\DisplayNumber::format($analysis['off_track_percent']) }}%</div>
-        <div class="me-kpi-meta">{{ __(':count below 50%', ['count' => $analysis['off_track']]) }}</div>
-    </div>
+    @endforeach
 </div>
 
+@unless ($hideAnalysisCharts ?? false)
 <div class="me-charts">
     <div class="chart-card me-chart-card">
         <div class="chart-card-title">{{ $analysis['chart']['title'] ?? __('Achievement by indicator') }}</div>
@@ -75,3 +95,4 @@
         @endif
     </div>
 </div>
+@endunless

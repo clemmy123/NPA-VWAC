@@ -11,7 +11,9 @@ use App\Models\IndicatorDataEntry;
 use App\Models\Organization;
 use App\Models\ReportingPeriod;
 use App\Services\IndicatorPerformanceService;
+use App\Services\ReportVisualizationService;
 use App\Support\AdminLocationLevel;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -20,7 +22,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -31,56 +35,14 @@ class GeneralReportController extends Controller
 
     public const array FREQUENCIES = ['monthly', 'quarterly', 'yearly'];
 
-    public function __construct(private readonly IndicatorPerformanceService $performanceService) {}
+    private const int MAX_CHART_IMAGE_LENGTH = 15_000_000;
+
+    public function __construct(
+        private readonly IndicatorPerformanceService $performanceService,
+        private readonly ReportVisualizationService $visualizationService,
+    ) {}
 
     public function index(Request $request): View
-    {
-        $data = $this->reportData($request);
-
-        return view('reports.general', $data + [
-            'rowPaginator' => $this->paginateRows($request, $data['rows']),
-        ]);
-    }
-
-    public function exportPreview(Request $request, string $format): View|RedirectResponse|Response|BinaryFileResponse
-    {
-        abort_unless(in_array($format, ['pdf', 'excel'], true), 404);
-
-        $data = $this->reportData($request);
-
-        if (! $data['applied']) {
-            return redirect()->route('reports.general', ['frequency' => $data['frequency']])
-                ->with('warning', __('Apply filters before exporting.'));
-        }
-
-        $filename = 'general-report-'.now()->format('Ymd-His');
-
-        if ($request->boolean('download')) {
-            if ($format === 'excel') {
-                return Excel::download(new SimpleReportExport($this->excelRows($data)), $filename.'.xlsx');
-            }
-
-            return Pdf::loadView('reports.exports.simple-pdf', $data + [
-                'title' => ucfirst($data['frequency']).' General Report',
-                'context' => $this->contextLines($data),
-                'executiveSummary' => $this->executiveSummary($data, false),
-                'sectionIntro' => $this->sectionIntro($data, false),
-                'tableRows' => $this->tableRows($data),
-            ])->setPaper('a4', 'landscape')->stream($filename.'.pdf');
-        }
-
-        return view('reports.export-preview', $data + [
-            'title' => ucfirst($data['frequency']).' General Report',
-            'format' => $format,
-            'downloadRoute' => route('reports.general.export', [$format] + $request->query() + ['download' => 1]),
-            'context' => $this->contextLines($data),
-            'executiveSummary' => $this->executiveSummary($data, false),
-            'sectionIntro' => $this->sectionIntro($data, false),
-            'tableRows' => $this->tableRows($data),
-        ]);
-    }
-
-    private function reportData(Request $request): array
     {
         $data = $request->validate([
             'frequency' => ['nullable', 'in:'.implode(',', self::FREQUENCIES)],
@@ -90,10 +52,12 @@ class GeneralReportController extends Controller
             'project_id' => ['nullable', 'integer', 'exists:projects,id'],
             'thematic_area_id' => ['nullable', 'integer', 'exists:thematic_areas,id'],
             'indicator_id' => ['nullable', 'integer', 'exists:indicators,id'],
+            'visualization' => ['nullable', 'string', 'in:'.implode(',', array_keys(ReportVisualizationService::TYPES))],
             'apply' => ['nullable', 'boolean'],
         ]);
 
         $frequency = $data['frequency'] ?? 'monthly';
+        $visualizationType = $data['visualization'] ?? ReportVisualizationService::DEFAULT_TYPE;
         $applied = $request->boolean('apply');
         $projects = $this->visibleProjects($request)->with('thematicAreas')->orderBy('name')->get();
         $visibleAreaIds = $request->user()->hasRole('Super Admin') ? null : $this->visibleThematicAreaIds($request);
@@ -154,6 +118,7 @@ class GeneralReportController extends Controller
 
         $rows = [];
         $analysis = null;
+        $visualization = null;
 
         if ($applied && $areasToAnalyse->isNotEmpty() && $selectedFinancialYear) {
             $indicatorList = Indicator::query()->with(['unitOfMeasure', 'thematicArea'])
@@ -177,6 +142,16 @@ class GeneralReportController extends Controller
 
             $rows = $this->performanceService->prioritizeOffTrackRows($rows);
             $analysis = $this->performanceService->analyse($rows);
+            $visualization = $this->visualizationService->build(
+                $visualizationType,
+                $rows,
+                $analysis,
+                $selectedFinancialYear,
+                $to ?? $selectedReportingPeriod?->end_date ?? $selectedFinancialYear->end_date,
+                $selectedReportingPeriod,
+                $from,
+                $to,
+            );
         }
 
         $periodLabel = match ($frequency) {
@@ -202,61 +177,8 @@ class GeneralReportController extends Controller
             'periodLabel' => $periodLabel,
             'rows' => $rows,
             'analysis' => $analysis,
-        ];
-    }
-
-    private function excelRows(array $data): array
-    {
-        return array_merge([['Indicator', 'Code', 'Thematic Area', 'Unit', 'Target', 'Actual Approved', 'Achievement Percent']], $this->tableRows($data));
-    }
-
-    private function tableRows(array $data): array
-    {
-        return collect($data['rows'])->map(function (array $row): array {
-            $perf = $row['performance'];
-
-            return [
-                $row['indicator']->name,
-                $row['indicator']->code,
-                $row['indicator']->thematicArea?->name,
-                $row['indicator']->unitOfMeasure?->name,
-                $perf['target_value'],
-                $perf['actual_value'],
-                $perf['achievement_percent'] === null ? null : round((float) $perf['achievement_percent'], 2),
-            ];
-        })->all();
-    }
-
-    private function contextLines(array $data): array
-    {
-        return array_values(array_filter([
-            'Period: '.($data['periodLabel'] ?: 'Not specified'),
-            'Plan: '.($data['selectedProject']?->name ?: 'All visible plans'),
-            'Thematic area: '.($data['selectedThematicArea']?->name ?: 'All thematic areas'),
-            'Indicator: '.($data['selectedIndicator']?->name ?: 'All indicators'),
-        ]));
-    }
-
-    private function executiveSummary(array $data, bool $workstation): array
-    {
-        $analysis = $data['analysis'] ?? ['total' => 0, 'average_achievement' => null, 'on_track' => 0, 'at_risk' => 0, 'off_track' => 0];
-        $average = $analysis['average_achievement'] === null ? 'not yet scored' : round((float) $analysis['average_achievement'], 2).'%';
-
-        return [
-            'This report reviews approved implementation performance for '.$data['periodLabel'].'.',
-            'It covers '.$analysis['total'].' indicator(s) within the selected plan and thematic scope.',
-            'Average achievement is '.$average.' based on indicators with measurable targets.',
-            $analysis['on_track'].' indicator(s) are on track, '.$analysis['at_risk'].' are at risk, and '.$analysis['off_track'].' are off track.',
-            'The findings should guide management review, follow-up with responsible teams, and evidence-based planning.',
-        ];
-    }
-
-    private function sectionIntro(array $data, bool $workstation): array
-    {
-        return [
-            'The table below presents each indicator with its approved actual value against the target for the selected reporting period.',
-            'Achievement percentages are calculated from approved data only, so indicators without approved entries may show low or blank performance until reporting is completed.',
-        ];
+            'rowPaginator' => $this->paginateRows($request, $rows),
+        ]);
     }
 
     /** @return array{locations: list<array{label: string, value: float}>, organizations: list<array{label: string, value: float}>, activities: list<array{label: string, value: float}>} */

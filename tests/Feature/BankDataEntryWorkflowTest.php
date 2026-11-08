@@ -42,18 +42,19 @@ class BankDataEntryWorkflowTest extends TestCase
         ])->assertRedirect(route('organizations.index'));
         $bank = Organization::where('name', 'NMB Bank')->firstOrFail();
 
-        // 2. Super Admin creates a local-login user for the bank's staff.
-        $this->actingAs($admin)->post(route('users.store'), [
+        // 2. The bank's staff member is provisioned as a local-login account. New
+        // users created via the admin "New User" screen are always Jumuishi SSO now,
+        // so local accounts (kept only as an SSO-outage fallback) are set up directly.
+        $bankUser = User::factory()->create([
             'name' => 'NMB Reporter',
             'email' => 'reporter@nmb.example.test',
             'organization_id' => $bank->id,
             'auth_provider' => 'local',
-            'password' => 'bank-secret-1',
-            'password_confirmation' => 'bank-secret-1',
+            'password' => Hash::make('bank-secret-1'),
+            'password_login_enabled' => true,
             'status' => 'active',
-            'role' => 'Data Entry User',
-        ])->assertRedirect(route('users.index'));
-        $bankUser = User::where('email', 'reporter@nmb.example.test')->firstOrFail();
+        ]);
+        $bankUser->assignRole('Data Entry User');
 
         // 3. Assign one active indicator to the bank organization.
         $assignedIndicator = Indicator::factory()->create(['name' => 'Loans disbursed to women', 'status' => 'active']);

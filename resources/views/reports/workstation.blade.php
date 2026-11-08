@@ -7,6 +7,8 @@
         'project_id' => $selectedProject?->id,
         'thematic_area_id' => $selectedThematicArea?->id,
         'search' => $search !== '' ? $search : null,
+        'location_level' => $locationLevel,
+        'location_id' => $locationId,
         'apply' => $applied ? 1 : null,
     ]);
 @endphp
@@ -91,6 +93,8 @@
         </select>
     </div>
 
+    @include('reports.partials.location-filter')
+
     <div class="rf-field">
         <label for="project_id">{{ __('Plan') }}</label>
         <select name="project_id" id="project_id" class="form-control">
@@ -150,6 +154,9 @@
 </div>
 @else
 @include('reports.partials.analysis')
+@if ($insights)
+@include('reports.partials.workstation-insights')
+@endif
 @include('reports.partials.indicator-results')
 @endif
 @endsection
@@ -157,4 +164,7 @@
 @push('scripts')
 @include('reports.partials.filter-selects-script', ['formId' => 'workstation-report-filters'])
 @include('reports.partials.charts-script')
+@if ($applied && $insights)
+@include('reports.partials.workstation-insights-script')
+@endif
 @endpush

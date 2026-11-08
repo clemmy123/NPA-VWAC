@@ -1,6 +1,6 @@
 @php
     $user = $user ?? null;
-    $currentRole = old('role', $user?->roles?->first()?->name);
+    $currentRoles = old('roles', $user?->roles?->pluck('name')->all() ?? []);
     $approvalAssignment = $approvalAssignment ?? null;
 @endphp
 
@@ -49,14 +49,15 @@
     </div>
 
     <div class="col-md-6 mb-3">
-        <label for="role" class="form-label">{{ __('Role') }}</label>
-        <select name="role" id="role" class="form-control @error('role') is-invalid @enderror" required>
-            <option value="">{{ __('Select a role…') }}</option>
+        <label for="roles" class="form-label">{{ __('Roles') }}</label>
+        <select name="roles[]" id="roles" class="form-control @error('roles') is-invalid @error('roles.*') is-invalid @enderror @enderror" multiple size="5" required>
             @foreach ($roles as $availableRole)
-            <option value="{{ $availableRole->name }}" @selected($currentRole === $availableRole->name)>{{ $availableRole->name }}</option>
+            <option value="{{ $availableRole->name }}" @selected(in_array($availableRole->name, $currentRoles, true))>{{ $availableRole->name }}</option>
             @endforeach
         </select>
-        @error('role')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        <small class="text-muted">{{ __('Hold Ctrl/Cmd (or Shift) to select more than one role.') }}</small>
+        @error('roles')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        @error('roles.*')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
     <div class="col-md-6 mb-3">
@@ -68,8 +69,8 @@
         @error('status')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
-    <div id="approval-area-heading" class="col-12 {{ $currentRole === 'Data Approver' ? '' : 'd-none' }}"><hr><h6>{{ __('Data Approval Area') }}</h6><p class="text-muted small">{{ __('Select the approval level, then navigate to the exact location.') }}</p></div>
-    <div id="approval-level-field" class="col-md-4 mb-3 {{ $currentRole === 'Data Approver' ? '' : 'd-none' }}">
+    <div id="approval-area-heading" class="col-12 {{ in_array('Data Approver', $currentRoles, true) ? '' : 'd-none' }}"><hr><h6>{{ __('Data Approval Area') }}</h6><p class="text-muted small">{{ __('Select the approval level, then navigate to the exact location.') }}</p></div>
+    <div id="approval-level-field" class="col-md-4 mb-3 {{ in_array('Data Approver', $currentRoles, true) ? '' : 'd-none' }}">
         <label for="approval_location_level" class="form-label">{{ __('Approval Level') }}</label>
         <select name="approval_location_level" id="approval_location_level" class="form-control @error('approval_location_level') is-invalid @enderror">
             <option value="">—</option>
@@ -79,7 +80,7 @@
         </select>
         @error('approval_location_level')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
-    <div id="approval-location-field" class="col-md-8 mb-3 {{ $currentRole === 'Data Approver' ? '' : 'd-none' }}">
+    <div id="approval-location-field" class="col-md-8 mb-3 {{ in_array('Data Approver', $currentRoles, true) ? '' : 'd-none' }}">
         <label class="form-label">{{ __('Approval Location') }}</label>
         @include('components.location-cascade', [
             'levelSelectId' => 'approval_location_level',
@@ -92,28 +93,13 @@
         @error('approval_location_id')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
     </div>
 
-    <div class="col-md-6 mb-3">
-        <label for="auth_provider" class="form-label">{{ __('Sign-in Method') }}</label>
-        <select name="auth_provider" id="auth_provider" class="form-control @error('auth_provider') is-invalid @enderror" required>
-            <option value="jumuishi" @selected(old('auth_provider', $user?->auth_provider ?? 'jumuishi') === 'jumuishi')>{{ __('Jumuishi SSO (government staff)') }}</option>
-            <option value="local" @selected(old('auth_provider', $user?->auth_provider) === 'local')>{{ __('Local email / password (reporting organizations)') }}</option>
-        </select>
-        @error('auth_provider')<div class="invalid-feedback">{{ $message }}</div>@enderror
-    </div>
-
-    <div class="col-md-6 mb-3">
-        <label for="password" class="form-label">
-            {{ __('Password') }} @if ($user) <span class="text-muted">{{ __('(leave blank to keep current)') }}</span> @endif
-        </label>
-        <input type="password" name="password" id="password" class="form-control @error('password') is-invalid @enderror" autocomplete="new-password">
-        @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
-        <small class="text-muted">{{ __('Only used when Sign-in Method is Local.') }}</small>
-    </div>
-
-    <div class="col-md-6 mb-3">
-        <label for="password_confirmation" class="form-label">{{ __('Confirm Password') }}</label>
-        <input type="password" name="password_confirmation" id="password_confirmation" class="form-control" autocomplete="new-password">
-    </div>
+    @if ($user && $user->auth_provider === 'local')
+        <div class="col-md-6 mb-3">
+            <label class="form-label">{{ __('Sign-in Method') }}</label>
+            <input type="text" class="form-control" value="{{ __('Local email / password') }}" disabled>
+            <small class="text-muted">{{ __('Manage this account\'s password from the local sign-in page.') }}</small>
+        </div>
+    @endif
 </div>
 
 @push('scripts')
@@ -121,7 +107,7 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     var role =
-        document.getElementById('role');
+        document.getElementById('roles');
 
     var heading =
         document.getElementById(
@@ -163,9 +149,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updateRoleFields() {
 
+        var selected =
+            Array.prototype.map.call(
+                role.selectedOptions,
+                function (option) { return option.value; }
+            );
+
         var enabled =
-            role.value ===
-            'Data Approver';
+            selected.indexOf('Data Approver') !== -1;
 
 
         heading.classList.toggle(

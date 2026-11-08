@@ -148,6 +148,14 @@
   height: 34px;
 }
 
+.report-location-filter {
+  display: contents;
+}
+
+.report-filters .rf-field[hidden] {
+  display: none;
+}
+
 .report-filters .rf-actions {
   display: flex;
   gap: 10px;
