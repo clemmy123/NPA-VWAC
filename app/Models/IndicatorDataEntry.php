@@ -76,6 +76,8 @@ class IndicatorDataEntry extends Model implements HasMedia
         'approved_by',
 
         'status',
+        'indicator_plan_id', 'plan_snapshot', 'institution_confirmed_by', 'institution_confirmed_at',
+        'domestic_released', 'external_released', 'domestic_spent', 'external_spent', 'implementation_status',
 
     ];
 
@@ -94,8 +96,16 @@ class IndicatorDataEntry extends Model implements HasMedia
             'submitted_at' => 'datetime',
 
             'approved_at' => 'datetime',
+            'institution_confirmed_at' => 'datetime', 'plan_snapshot' => 'array',
+            'domestic_released' => 'decimal:2', 'external_released' => 'decimal:2',
+            'domestic_spent' => 'decimal:2', 'external_spent' => 'decimal:2',
 
         ];
+    }
+
+    public function plan()
+    {
+        return $this->belongsTo(IndicatorPlan::class, 'indicator_plan_id');
     }
 
     public function indicator()

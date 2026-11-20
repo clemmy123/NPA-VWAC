@@ -68,6 +68,11 @@ class Indicator extends Model
         ];
     }
 
+    public function plans()
+    {
+        return $this->hasMany(IndicatorPlan::class);
+    }
+
     public function thematicArea()
     {
 

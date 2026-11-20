@@ -8,6 +8,8 @@ use App\Http\Controllers\FinancialYearController;
 use App\Http\Controllers\GeneralReportController;
 use App\Http\Controllers\IndicatorBaselineController;
 use App\Http\Controllers\IndicatorController;
+use App\Http\Controllers\IndicatorPlanController;
+use App\Http\Controllers\InstitutionInboxController;
 use App\Http\Controllers\IndicatorDataAssignmentController;
 use App\Http\Controllers\IndicatorDataEntryController;
 use App\Http\Controllers\IndicatorTargetController;
@@ -134,6 +136,23 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
 
     Route::get('plan-builder', [PlanBuilderController::class, 'index'])
         ->middleware('can:thematic-area.view')->name('plan-builder.index');
+    Route::get('institution-inbox', [InstitutionInboxController::class, 'index'])
+        ->middleware('can:institution.confirm')->name('institution-inbox.index');
+
+    Route::get('annual-plans/{thematicArea}', [IndicatorPlanController::class, 'index'])
+        ->middleware('can:thematic-area.view')->name('indicator-plans.index');
+    Route::post('annual-plans/{thematicArea}', [IndicatorPlanController::class, 'store'])
+        ->middleware('can:indicator.set-target')->name('indicator-plans.store');
+    Route::post('annual-plans/{indicatorPlan}/documents', [IndicatorPlanController::class, 'uploadDocument'])
+        ->middleware('can:indicator.set-target')->name('indicator-plans.documents.upload');
+    Route::get('annual-plans/{indicatorPlan}/documents/{media}', [IndicatorPlanController::class, 'downloadDocument'])
+        ->middleware('auth')->name('indicator-plans.documents.download');
+    Route::delete('annual-plans/{indicatorPlan}/documents/{media}', [IndicatorPlanController::class, 'deleteDocument'])
+        ->middleware('can:indicator.set-target')->name('indicator-plans.documents.delete');
+
+    Route::post('annual-plans/review/{indicatorPlan}', [IndicatorPlanController::class, 'action'])
+        ->middleware('auth')->name('indicator-plans.action');
+
     Route::get('plan-builder/{thematic_area}', [PlanBuilderController::class, 'show'])
         ->middleware('can:thematic-area.view')->name('plan-builder.show');
 
@@ -235,6 +254,12 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
     Route::post('indicator-data-entries/{indicator_data_entry}/return', [IndicatorDataEntryController::class, 'returnEntry'])
         ->middleware('can:indicator-data.return')
         ->name('indicator-data-entries.return');
+
+    Route::post('indicator-data-entries/{indicator_data_entry}/institution-return', [IndicatorDataEntryController::class, 'returnFromInstitution'])
+        ->middleware('can:institution.confirm')->name('indicator-data-entries.institution-return');
+
+    Route::post('indicator-data-entries/{indicator_data_entry}/institution-confirm', [IndicatorDataEntryController::class, 'confirmInstitution'])
+        ->middleware('can:institution.confirm')->name('indicator-data-entries.institution-confirm');
 
     Route::get('indicator-data-entries/{indicator_data_entry}/evidence/{media}', [IndicatorDataEntryController::class, 'downloadEvidence'])
         ->middleware('can:indicator-data.view')

@@ -98,7 +98,7 @@
             <option value="" @selected(! $selectedThematicArea)>{{ __('All Thematic Areas') }}</option>
             @forelse ($thematicAreas as $thematicArea)
             <option value="{{ $thematicArea->id }}" data-project-id="{{ $thematicArea->project_id }}" @selected($selectedThematicArea?->id === $thematicArea->id)>
-                {{ $thematicArea->name }}
+                {{ $thematicArea->localized_name }}
             </option>
             @empty
             <option value="">{{ __('No thematic areas yet') }}</option>

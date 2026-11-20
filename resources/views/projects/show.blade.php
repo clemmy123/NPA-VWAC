@@ -36,8 +36,8 @@
 
 @can('project.assign-manager')
 <div class="d-flex justify-content-between align-items-center mb-2">
-    <h5 class="mb-0">{{ __('Project Managers') }}</h5>
-    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-manager" data-quick-add-title="{{ __('Assign Project Manager to ":name"', ['name' => $project->name]) }}">
+    <h5 class="mb-0">{{ __('NPA VAWC Coordinators') }}</h5>
+    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-manager" data-quick-add-title="{{ __('Assign NPA VAWC Coordinator to ":name"', ['name' => $project->name]) }}">
         <i class="mdi mdi-plus"></i> {{ __('Assign Manager') }}
     </button>
 </div>
@@ -74,12 +74,12 @@
         <div class="mb-3">
             <label for="user_id" class="form-label">{{ __('User') }}</label>
             <select name="user_id" id="user_id" class="form-control select2" required>
-                <option value="">{{ __('Select a Project Manager…') }}</option>
+                <option value="">{{ __('Select a NPA VAWC Coordinator…') }}</option>
                 @foreach ($assignableManagers as $user)
                 <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
                 @endforeach
             </select>
-            <div class="form-text">{{ __('Only users with the "Project Manager" role are listed. Assign the role first under Users if it\'s missing.') }}</div>
+            <div class="form-text">{{ __('Only users with the "NPA VAWC Coordinator" role are listed. Assign the role first under Users if it\'s missing.') }}</div>
         </div>
         <div class="d-flex form-actions">
             <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> {{ __('Assign') }}</button>
@@ -106,7 +106,7 @@
         <tbody>
             @forelse ($thematicAreas as $thematicArea)
             <tr>
-                <td><a href="{{ route('thematic-areas.show', $thematicArea) }}">{{ $thematicArea->name }}</a></td>
+                <td><a href="{{ route('thematic-areas.show', $thematicArea) }}">{{ $thematicArea->localized_name }}</a></td>
                 <td>
                     <span class="s-badge {{ match ($thematicArea->status) {
                         'active' => 's-active', 'completed' => 's-received', 'closed', 'inactive' => 's-inactive', default => 's-default',
@@ -137,7 +137,7 @@
     @forelse ($thematicAreas as $thematicArea)
     <div class="mob-card">
         <div class="mob-card-top">
-            <a href="{{ route('thematic-areas.show', $thematicArea) }}" class="fw-600">{{ $thematicArea->name }}</a>
+            <a href="{{ route('thematic-areas.show', $thematicArea) }}" class="fw-600">{{ $thematicArea->localized_name }}</a>
             <span class="s-badge {{ match ($thematicArea->status) {
                 'active' => 's-active', 'completed' => 's-received', 'closed', 'inactive' => 's-inactive', default => 's-default',
             } }}">{{ __(ucfirst($thematicArea->status)) }}</span>

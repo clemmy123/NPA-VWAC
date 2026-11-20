@@ -85,11 +85,9 @@ class IndicatorDataAssignmentController extends Controller
 
         if ($delegatedCollector) {
             $indicatorQuery->whereIn('id', $ownAssignments->pluck('indicator_id'));
-        } elseif ($actor->hasRole('Thematic Manager')) {
-            $areaIds = $actor->assignedThematicAreaIds();
-            if ($areaIds !== []) {
-                $indicatorQuery->whereIn('thematic_area_id', $areaIds);
-            }
+        } elseif ($actor->hasAnyRole(['Thematic Manager', 'Project Manager'])) {
+            $areaIds = $actor->visibleThematicAreaIds();
+            $indicatorQuery->whereIn('thematic_area_id', $areaIds);
         }
 
         $delegationScopes = $ownAssignments->filter(fn (IndicatorDataAssignment $assignment): bool => $assignment->location_level !== null && $assignment->location_id !== null
@@ -159,9 +157,9 @@ class IndicatorDataAssignmentController extends Controller
             return;
         }
 
-        if ($actor->hasRole('Thematic Manager')) {
-            $areaIds = $actor->assignedThematicAreaIds();
-            abort_if($areaIds !== [] && ! Indicator::query()->whereKey($data['indicator_id'])->whereIn('thematic_area_id', $areaIds)->exists(), 403);
+        if ($actor->hasAnyRole(['Thematic Manager', 'Project Manager'])) {
+            $areaIds = $actor->visibleThematicAreaIds();
+            abort_unless(Indicator::query()->whereKey($data['indicator_id'])->whereIn('thematic_area_id', $areaIds)->exists(), 403);
 
             return;
         }
@@ -195,9 +193,9 @@ class IndicatorDataAssignmentController extends Controller
             return;
         }
 
-        if ($actor->hasRole('Thematic Manager')) {
-            $areaIds = $actor->assignedThematicAreaIds();
-            abort_if($areaIds !== [] && ! Indicator::query()->whereKey($assignment->indicator_id)->whereIn('thematic_area_id', $areaIds)->exists(), 403);
+        if ($actor->hasAnyRole(['Thematic Manager', 'Project Manager'])) {
+            $areaIds = $actor->visibleThematicAreaIds();
+            abort_unless(Indicator::query()->whereKey($assignment->indicator_id)->whereIn('thematic_area_id', $areaIds)->exists(), 403);
 
             return;
         }
@@ -214,11 +212,9 @@ class IndicatorDataAssignmentController extends Controller
             return;
         }
 
-        if ($actor->hasRole('Thematic Manager')) {
-            $areaIds = $actor->assignedThematicAreaIds();
-            if ($areaIds !== []) {
-                $query->whereHas('indicator', fn (Builder $indicator) => $indicator->whereIn('thematic_area_id', $areaIds));
-            }
+        if ($actor->hasAnyRole(['Thematic Manager', 'Project Manager'])) {
+            $areaIds = $actor->visibleThematicAreaIds();
+            $query->whereHas('indicator', fn (Builder $indicator) => $indicator->whereIn('thematic_area_id', $areaIds));
 
             return;
         }

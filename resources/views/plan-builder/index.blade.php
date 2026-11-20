@@ -37,7 +37,7 @@
     @endphp
     <a href="{{ route('plan-builder.show', $thematicArea) }}" class="plan-pick-card">
         <div class="plan-pick-project">{{ $thematicArea->project?->name ?? __('No project') }}</div>
-        <div class="plan-pick-name">{{ $thematicArea->name }}</div>
+        <div class="plan-pick-name">{{ $thematicArea->localized_name }}</div>
         <div class="plan-pick-meta">
             <div class="plan-pick-progress"><span style="width: {{ $pct }}%"></span></div>
             <span>{{ $thematicArea->indicator_count === 1 ? __(':count indicator', ['count' => $thematicArea->indicator_count]) : __(':count indicators', ['count' => $thematicArea->indicator_count]) }}</span>

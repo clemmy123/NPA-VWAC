@@ -71,6 +71,11 @@ class StoreIndicatorDataEntryRequest extends FormRequest
             'budget_used' => ['nullable', 'numeric'],
             'currency' => ['nullable', 'string', 'size:3'],
             'remarks' => ['nullable', 'string'],
+            'implementation_status' => ['nullable','string','max:5000'],
+            'domestic_released' => ['nullable','numeric','min:0'],
+            'external_released' => ['nullable','numeric','min:0'],
+            'domestic_spent' => ['nullable','numeric','min:0'],
+            'external_spent' => ['nullable','numeric','min:0'],
 
             'activities' => ['nullable', 'array'],
             'activities.*.name' => ['required', 'string', 'max:255'],

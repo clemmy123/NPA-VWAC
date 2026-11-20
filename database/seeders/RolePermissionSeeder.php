@@ -23,6 +23,7 @@ class RolePermissionSeeder extends Seeder
             'indicator-data.review', 'indicator-data.approve', 'indicator-data.return', 'indicator-data.override-period',
             'report.view', 'report.export',
             'user.view', 'user.create', 'user.update', 'user.assign-role',
+            'institution.confirm',
             'settings.manage',
         ];
 
@@ -41,8 +42,8 @@ class RolePermissionSeeder extends Seeder
         $pm->syncPermissions([
             'project.view', 'project.update', 'project.assign-manager',
             'thematic-area.view', 'thematic-area.create', 'thematic-area.update', 'thematic-area.assign-manager',
-            'indicator.view', 'indicator.view-all', 'intervention.view',
-            'indicator-data.view', 'report.view', 'report.export',
+            'indicator.view', 'indicator.view-all', 'indicator.create', 'indicator.update', 'indicator.configure', 'indicator.set-baseline', 'intervention.view',
+            'indicator-data.view', 'indicator-data.create', 'indicator-data.update', 'indicator-data.submit', 'indicator.assign-user', 'indicator.set-target', 'report.view', 'report.export',
         ]);
 
         $tm->syncPermissions([
@@ -50,7 +51,7 @@ class RolePermissionSeeder extends Seeder
             'indicator.view', 'indicator.view-all', 'indicator.create', 'indicator.update', 'indicator.configure',
             'indicator.set-baseline', 'indicator.set-target', 'indicator.assign-user',
             'intervention.view', 'intervention.create', 'intervention.update', 'intervention.delete',
-            'indicator-data.view', 'indicator-data.review', 'indicator-data.approve', 'indicator-data.return',
+            'indicator-data.view', 'indicator-data.create', 'indicator-data.update', 'indicator-data.submit', 'indicator-data.review', 'indicator-data.approve', 'indicator-data.return',
             'report.view', 'report.export',
         ]);
 
@@ -64,7 +65,7 @@ class RolePermissionSeeder extends Seeder
 
         $approver->syncPermissions([
             'indicator.view', 'indicator-data.view', 'indicator-data.review',
-            'indicator-data.approve', 'indicator-data.return', 'report.view', 'report.export',
+            'indicator-data.approve', 'indicator-data.return', 'institution.confirm', 'report.view', 'report.export',
         ]);
     }
 }

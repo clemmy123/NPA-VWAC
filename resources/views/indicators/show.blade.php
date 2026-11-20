@@ -10,7 +10,7 @@
                 <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
                 <li class="breadcrumb-item"><a href="{{ route('indicators.index') }}">{{ __('Indicators') }}</a></li>
                 @if ($indicator->thematicArea)
-                <li class="breadcrumb-item"><a href="{{ route('thematic-areas.show', $indicator->thematicArea) }}">{{ $indicator->thematicArea->name }}</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('thematic-areas.show', $indicator->thematicArea) }}">{{ $indicator->thematicArea->localized_name }}</a></li>
                 @endif
                 <li class="breadcrumb-item active">{{ $indicator->name }}</li>
             </ol>

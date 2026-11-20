@@ -3,10 +3,12 @@
 namespace App\Services;
 
 use App\Models\IndicatorDataEntry;
+use App\Models\IndicatorPlan;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class IndicatorDataEntryService
@@ -21,6 +23,15 @@ class IndicatorDataEntryService
     {
         $this->authorizeAssignedIndicator($user, (int) $data['indicator_id']);
 
+        $plan = $this->approvedPlan((int) $data['indicator_id'], (int) $data['financial_year_id']);
+        if (! empty($data['organization_id']) && (int) $data['organization_id'] !== (int) $plan->lead_organization_id
+            && ! in_array((int) $data['organization_id'], array_map('intval', $plan->participating_organization_ids ?? []), true)) {
+            throw ValidationException::withMessages(['organization_id' => 'The reporting institution is not part of the approved plan.']);
+        }
+        $data['organization_id'] = ($data['organization_id'] ?? null) ?: $plan->lead_organization_id;
+        $data['indicator_plan_id'] = $plan->id;
+        $data['plan_snapshot'] = $plan->snapshot();
+        $data['budget_allocated'] = (float) $plan->domestic_budget + (float) $plan->external_budget;
         return DB::transaction(function () use ($data, $rows, $expenses, $evidenceFiles, $user, $activities): IndicatorDataEntry {
             $entry = IndicatorDataEntry::create($data + [
                 'entered_by' => $user->id,
@@ -44,7 +55,12 @@ class IndicatorDataEntryService
      */
     public function update(IndicatorDataEntry $entry, array $data, ?array $rows, ?array $expenses, array $evidenceFiles, User $user, ?array $activities = null): IndicatorDataEntry
     {
-        $this->authorizeAssignedIndicator($user, (int) ($data['indicator_id'] ?? $entry->indicator_id));
+        $this->authorizeAssignedIndicator($user, (int) $entry->indicator_id);
+        if ($entry->entered_by !== $user->id && ! $user->hasRole('Super Admin')) {
+            throw new AuthorizationException('Only the entry owner may edit it.');
+        }
+        // Planning identity and budget are server-controlled and cannot be changed by collection requests.
+        unset($data['indicator_id'], $data['financial_year_id'], $data['indicator_plan_id'], $data['plan_snapshot'], $data['budget_allocated'], $data['organization_id']);
 
         if (! in_array($entry->status, ['draft', 'rejected'], true)) {
             throw new AuthorizationException('Only draft or rejected entries can be edited.');
@@ -69,6 +85,16 @@ class IndicatorDataEntryService
         });
 
         return $entry->fresh();
+    }
+
+    private function approvedPlan(int $indicatorId, int $financialYearId): IndicatorPlan
+    {
+        $plan = IndicatorPlan::query()->where('indicator_id', $indicatorId)
+            ->where('financial_year_id', $financialYearId)->where('status','approved')->first();
+        if (! $plan) {
+            throw ValidationException::withMessages(['indicator_id' => 'An institution-confirmed and thematic-approved annual plan is required before data collection.']);
+        }
+        return $plan;
     }
 
     private function authorizeAssignedIndicator(User $user, int $indicatorId): void

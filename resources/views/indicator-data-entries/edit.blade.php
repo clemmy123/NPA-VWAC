@@ -17,6 +17,18 @@
 </div>
 @endunless
 
+@if($entry->plan_snapshot)
+<div class="chart-card mb-3 p-3" aria-label="Approved implementation plan">
+    <div class="d-flex justify-content-between align-items-center mb-2"><h5 class="mb-0">{{ __('Approved plan — read only') }}</h5><span class="badge bg-success">{{ __('Locked') }}</span></div>
+    <dl class="row mb-0 small">
+      <dt class="col-md-3">{{ __('Planned activity') }}</dt><dd class="col-md-9">{{ $entry->plan_snapshot['planned_activity'] ?? '—' }}</dd>
+      <dt class="col-md-3">{{ __('Baseline year / value') }}</dt><dd class="col-md-9">{{ $entry->plan_snapshot['baseline_year'] ?? '—' }} / {{ $entry->plan_snapshot['baseline_value'] ?? '—' }}</dd>
+      <dt class="col-md-3">{{ __('Annual target') }}</dt><dd class="col-md-9">{{ $entry->plan_snapshot['annual_target'] ?? '—' }}</dd>
+      <dt class="col-md-3">{{ __('Domestic / External plan (TZS)') }}</dt><dd class="col-md-9">{{ number_format((float)($entry->plan_snapshot['domestic_budget'] ?? 0),2) }} / {{ number_format((float)($entry->plan_snapshot['external_budget'] ?? 0),2) }}</dd>
+      <dt class="col-md-3">{{ __('Lead institution') }}</dt><dd class="col-md-9">{{ \App\Models\Organization::find($entry->plan_snapshot['lead_organization_id'] ?? null)?->name ?? '—' }}</dd>
+    </dl>
+</div>
+@endif
 <div class="chart-card">
     <form action="{{ route('indicator-data-entries.update', ['indicator_data_entry' => $entry, 'embedded' => request()->boolean('embedded') ? 1 : null]) }}" method="POST" enctype="multipart/form-data">
         @csrf

@@ -21,9 +21,13 @@ class ProjectUserController extends Controller
         $project->users()->syncWithoutDetaching([
             $data['user_id'] => ['is_active' => true],
         ]);
+        $coordination = $project->thematicAreas()->where('official_code', '8')->first();
+        if ($coordination && User::findOrFail($data['user_id'])->hasRole('Project Manager')) {
+            $coordination->users()->syncWithoutDetaching([$data['user_id'] => ['is_active' => true]]);
+        }
 
         return $this->redirectBackOrTo($request, 'projects.show', ['project' => $project])
-            ->with('success', __('Project Manager assigned.'));
+            ->with('success', __('NPA VAWC Coordinator assigned.'));
     }
 
     public function destroy(Request $request, Project $project, User $user): RedirectResponse
@@ -31,9 +35,14 @@ class ProjectUserController extends Controller
         $this->authorizeManagerChange($request, $project);
 
         $project->users()->detach($user->id);
+        $coordination = $project->thematicAreas()->where('official_code','8')->first();
+        // Remove the automatic responsibility only if no independent assignment is present.
+        if ($coordination && $user->hasRole('Project Manager')) {
+            $coordination->users()->detach($user->id);
+        }
 
         return $this->redirectBackOrTo($request, 'projects.show', ['project' => $project])
-            ->with('success', __('Project Manager removed.'));
+            ->with('success', __('NPA VAWC Coordinator removed.'));
     }
 
     /**

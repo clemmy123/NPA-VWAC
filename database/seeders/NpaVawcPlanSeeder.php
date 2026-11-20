@@ -56,10 +56,13 @@ class NpaVawcPlanSeeder extends Seeder
         ));
 
         $rows->groupBy('thematic_area')->each(function (Collection $indicatorRows, string $thematicAreaName) use ($project): void {
-            $thematicArea = ThematicArea::query()->updateOrCreate(
-                ['project_id' => $project->id, 'name' => $thematicAreaName],
-                ['status' => 'active'],
-            );
+            $prefix = self::SHEET_CODES[$indicatorRows->first()['sheet']];
+            $thematicArea = ThematicArea::query()->where('project_id', $project->id)
+                ->whereHas('indicators', fn ($query) => $query->where('code', 'like', $prefix.'-%'))->first()
+                ?? ThematicArea::query()->firstOrCreate(
+                    ['project_id' => $project->id, 'name' => $thematicAreaName],
+                    ['status' => 'active'],
+                );
 
             foreach ($indicatorRows as $row) {
                 $this->seedIndicator($thematicArea, $row);

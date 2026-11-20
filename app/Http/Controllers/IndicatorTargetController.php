@@ -8,6 +8,7 @@ use App\Http\Resources\IndicatorTargetResource;
 use App\Models\DimensionOption;
 use App\Models\FinancialYear;
 use App\Models\Indicator;
+use App\Models\IndicatorPlan;
 use App\Models\IndicatorTarget;
 use App\Models\ReportingPeriod;
 use Illuminate\Http\JsonResponse;
@@ -39,6 +40,7 @@ class IndicatorTargetController extends Controller
 
     public function store(StoreIndicatorTargetRequest $request): JsonResponse|RedirectResponse
     {
+        $this->assertPlanUnlocked((int)$request->input('indicator_id'), (int)$request->input('financial_year_id'));
         $target = IndicatorTarget::create($request->validated() + ['created_by' => $request->user()->id]);
 
         if ($request->wantsJson()) {
@@ -60,6 +62,7 @@ class IndicatorTargetController extends Controller
 
     public function update(UpdateIndicatorTargetRequest $request, IndicatorTarget $indicatorTarget): JsonResponse|RedirectResponse|IndicatorTargetResource
     {
+        $this->assertPlanUnlocked((int)$indicatorTarget->indicator_id,(int)$indicatorTarget->financial_year_id);
         $indicatorTarget->update($request->validated());
 
         if ($request->wantsJson()) {
@@ -71,6 +74,7 @@ class IndicatorTargetController extends Controller
 
     public function destroy(Request $request, IndicatorTarget $indicatorTarget): JsonResponse|RedirectResponse
     {
+        $this->assertPlanUnlocked((int)$indicatorTarget->indicator_id,(int)$indicatorTarget->financial_year_id);
         $indicatorTarget->delete();
 
         if ($request->wantsJson()) {
@@ -96,4 +100,10 @@ class IndicatorTargetController extends Controller
             'dimensionOptions' => DimensionOption::query()->orderBy('name')->get(),
         ];
     }
+    private function assertPlanUnlocked(int $indicatorId, int $yearId): void
+    {
+        abort_if(IndicatorPlan::query()->where('indicator_id',$indicatorId)->where('financial_year_id',$yearId)
+            ->where('status','approved')->exists(), 403, 'An approved annual plan cannot be altered through the legacy baseline/target screen.');
+    }
+
 }

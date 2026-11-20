@@ -15,7 +15,7 @@ class ThematicArea extends Model
 
         'project_id',
 
-        'name',
+        'name', 'name_en', 'name_sw', 'official_code',
 
         'description',
 
@@ -24,6 +24,13 @@ class ThematicArea extends Model
         'created_by',
 
     ];
+
+    /** Official bilingual presentation; keep name as a stable legacy column. */
+    public function getLocalizedNameAttribute(): string
+    {
+        return (string) ((app()->getLocale() === 'sw' ? $this->name_sw : $this->name_en)
+            ?: $this->name);
+    }
 
     public function project()
     {

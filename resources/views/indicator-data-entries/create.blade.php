@@ -39,7 +39,7 @@
             <select name="thematic_area_id" id="thematic_area_id" class="form-control @error('thematic_area_id') is-invalid @enderror" data-no-select2 required>
                 <option value="">{{ __('Select a project first…') }}</option>
                 @foreach ($thematicAreas as $thematicArea)
-                <option value="{{ $thematicArea->id }}" data-project-id="{{ $thematicArea->project_id }}" @selected((int) old('thematic_area_id') === $thematicArea->id)>{{ $thematicArea->name }}</option>
+                <option value="{{ $thematicArea->id }}" data-project-id="{{ $thematicArea->project_id }}" @selected((int) old('thematic_area_id') === $thematicArea->id)>{{ $thematicArea->localized_name }}</option>
                 @endforeach
             </select>
             @error('thematic_area_id')<div class="invalid-feedback">{{ $message }}</div>@enderror

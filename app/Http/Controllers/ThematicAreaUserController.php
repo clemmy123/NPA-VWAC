@@ -23,7 +23,7 @@ class ThematicAreaUserController extends Controller
         ]);
 
         return $this->redirectBackOrTo($request, 'thematic-areas.show', ['thematic_area' => $thematicArea])
-            ->with('success', __('Thematic Manager assigned.'));
+            ->with('success', __('Thematic Area Coordinator assigned.'));
     }
 
     public function destroy(Request $request, ThematicArea $thematicArea, User $user): RedirectResponse
@@ -33,7 +33,7 @@ class ThematicAreaUserController extends Controller
         $thematicArea->users()->detach($user->id);
 
         return $this->redirectBackOrTo($request, 'thematic-areas.show', ['thematic_area' => $thematicArea])
-            ->with('success', __('Thematic Manager removed.'));
+            ->with('success', __('Thematic Area Coordinator removed.'));
     }
 
     /**

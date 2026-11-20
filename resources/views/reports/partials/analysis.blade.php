@@ -4,7 +4,7 @@
         {{ __(':frequency analysis', ['frequency' => __(ucfirst($frequency))]) }}
         @if ($periodLabel) · {{ $periodLabel }} @endif
         @if ($selectedProject) · {{ $selectedProject->name }} @endif
-        @if ($selectedThematicArea) · {{ $selectedThematicArea->name }} @endif
+        @if ($selectedThematicArea) · {{ $selectedThematicArea->localized_name }} @endif
         @if ($selectedIndicator ?? null) · {{ $selectedIndicator->code ? $selectedIndicator->code.' · ' : '' }}{{ $selectedIndicator->name }} @endif
         @if ($selectedOrganization ?? null) · {{ $selectedOrganization->name }}
         @elseif ($workstationScopeLabel ?? null) · {{ $workstationScopeLabel }}

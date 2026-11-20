@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateIndicatorDataEntryRequest;
 use App\Http\Resources\IndicatorDataEntryResource;
 use App\Models\FinancialYear;
 use App\Models\Indicator;
+use App\Models\IndicatorPlan;
 use App\Models\IndicatorDataAssignment;
 use App\Models\IndicatorDataEntry;
 use App\Models\Organization;
@@ -52,6 +53,10 @@ class IndicatorDataEntryController extends Controller
                     ->orWhereNotIn('status', ['draft', 'rejected']);
             }));
 
+        if (! $user->hasRole('Super Admin') && $user->can('indicator.view-all')) {
+            $areaIds = $user->visibleThematicAreaIds();
+            $entryQuery->whereHas('indicator', fn ($query) => $query->whereIn('thematic_area_id', $areaIds));
+        }
         $workspaceEntries = (clone $entryQuery)->get();
         $listedEntries = (clone $entryQuery)
             ->where('status', '!=', 'draft')
@@ -114,8 +119,7 @@ class IndicatorDataEntryController extends Controller
         ]);
         $indicator = Indicator::query()->where('status', 'active')->findOrFail($data['indicator_id']);
         abort_unless(
-            $request->user()->can('indicator.view-all')
-                || in_array($indicator->id, $request->user()->assignedIndicatorIds(), true),
+            ($request->user()->hasRole('Super Admin') || in_array($indicator->id, $request->user()->assignedIndicatorIds(), true)),
             403,
             'This indicator is not assigned to you.'
         );
@@ -132,7 +136,7 @@ class IndicatorDataEntryController extends Controller
             'financial_year_id' => $financialYear->id,
             'reporting_period_id' => $period?->id,
             'entry_date' => $today->toDateString(),
-            'organization_id' => $request->user()->organization_id,
+            'organization_id' => $request->user()->organization_id ?: IndicatorPlan::query()->where('indicator_id',$indicator->id)->where('financial_year_id',$financialYear->id)->where('status','approved')->value('lead_organization_id'),
         ], [], [], [], $request->user());
 
         if ($request->wantsJson()) {
@@ -231,6 +235,7 @@ class IndicatorDataEntryController extends Controller
     public function edit(Request $request, IndicatorDataEntry $indicatorDataEntry): View
     {
         $this->authorizeIndicatorAccess($request->user(), $indicatorDataEntry);
+        abort_unless($indicatorDataEntry->entered_by === $request->user()->id || $request->user()->hasRole('Super Admin'), 403);
 
         return view('indicator-data-entries.edit', [
             'entry' => $indicatorDataEntry->load(self::RELATIONS),
@@ -242,7 +247,12 @@ class IndicatorDataEntryController extends Controller
 
     private function authorizeIndicatorAccess(User $user, IndicatorDataEntry $indicatorDataEntry): void
     {
-        abort_if(! $user->can('indicator.view-all') && (int) $indicatorDataEntry->entered_by !== (int) $user->id, 403);
+        if ((int) $indicatorDataEntry->entered_by === (int) $user->id || $user->hasRole('Super Admin')) return;
+        if ($user->can('institution.confirm') && $user->organization_id !== null
+            && (int) $indicatorDataEntry->organization_id === (int) $user->organization_id
+            && ! in_array($indicatorDataEntry->status, ['draft','rejected'], true)) return;
+        abort_unless($user->can('indicator.view-all') && ! in_array($indicatorDataEntry->status, ['draft','rejected'], true)
+            && in_array((int) $indicatorDataEntry->indicator->thematic_area_id, $user->visibleThematicAreaIds(), true), 403);
     }
 
     /**
@@ -251,6 +261,8 @@ class IndicatorDataEntryController extends Controller
     private function visibleEntriesQuery(User $user)
     {
         return IndicatorDataEntry::query()
+            ->when(! $user->hasRole('Super Admin') && $user->can('indicator.view-all'),
+                fn ($query) => $query->whereHas('indicator', fn ($indicator) => $indicator->whereIn('thematic_area_id', $user->visibleThematicAreaIds())))
             ->when(! $user->can('indicator.view-all'), fn ($query) => $query->where('entered_by', $user->id))
             ->when($user->can('indicator.view-all'), fn ($query) => $query->where(function ($visible) use ($user): void {
                 $visible->where('entered_by', $user->id)
@@ -363,8 +375,23 @@ class IndicatorDataEntryController extends Controller
         return redirect()->route('indicator-data-entries.index')->with('success', __('Data collection returned to the submitter.'));
     }
 
-    public function downloadEvidence(IndicatorDataEntry $indicatorDataEntry, Media $media): BinaryFileResponse
+    public function returnFromInstitution(Request $request, IndicatorDataEntry $indicatorDataEntry): RedirectResponse
     {
+        $data = $request->validate(['comment' => ['required','string','min:5','max:2000']]);
+        $this->reviewService->returnFromInstitution($indicatorDataEntry, $request->user(), $data['comment']);
+        return redirect()->route('institution-inbox.index')->with('success', __('Submission returned to the collector.'));
+    }
+
+    public function confirmInstitution(Request $request, IndicatorDataEntry $indicatorDataEntry): RedirectResponse
+    {
+        $this->reviewService->confirmInstitution($indicatorDataEntry, $request->user());
+        return redirect()->route('indicator-data-entries.show', $indicatorDataEntry)
+            ->with('success', __('Institutional ownership confirmed.'));
+    }
+
+    public function downloadEvidence(Request $request, IndicatorDataEntry $indicatorDataEntry, Media $media): BinaryFileResponse
+    {
+        $this->authorizeIndicatorAccess($request->user(), $indicatorDataEntry);
         abort_unless($media->model_type === IndicatorDataEntry::class && $media->model_id === $indicatorDataEntry->id, 404);
 
         return response()->download($media->getPath(), $media->file_name);
@@ -372,6 +399,7 @@ class IndicatorDataEntryController extends Controller
 
     public function destroyEvidence(Request $request, IndicatorDataEntry $indicatorDataEntry, Media $media): RedirectResponse
     {
+        abort_unless($indicatorDataEntry->entered_by === $request->user()->id || $request->user()->hasRole('Super Admin'), 403);
         $this->entryService->removeEvidence($indicatorDataEntry, $media);
 
         return $this->redirectBackOrTo($request, 'indicator-data-entries.edit', [$indicatorDataEntry])->with('success', __('Evidence file removed.'));
@@ -384,7 +412,8 @@ class IndicatorDataEntryController extends Controller
         $indicators = Indicator::query()
             ->with(['dimensions.options', 'measurementType', 'unitOfMeasure', 'thematicArea.project'])
             ->where('status', 'active')
-            ->when(! $user->can('indicator.view-all'), fn ($query) => $query->whereIn('id', $user->assignedIndicatorIds()))
+            ->whereHas('plans', fn ($plans) => $plans->where('status', 'approved'))
+            ->when(! $user->hasRole('Super Admin'), fn ($query) => $query->whereIn('id', $user->assignedIndicatorIds()))
             ->orderBy('name')
             ->get();
 

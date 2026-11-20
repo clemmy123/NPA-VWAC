@@ -111,7 +111,7 @@
             <option value="" @selected(! $selectedThematicArea)>{{ __('All Thematic Areas') }}</option>
             @foreach ($thematicAreas as $thematicArea)
             <option value="{{ $thematicArea->id }}" data-project-id="{{ $thematicArea->project_id }}" @selected($selectedThematicArea?->id === $thematicArea->id)>
-                {{ $thematicArea->name }}
+                {{ $thematicArea->localized_name }}
             </option>
             @endforeach
         </select>

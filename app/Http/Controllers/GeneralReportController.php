@@ -13,7 +13,6 @@ use App\Models\ReportingPeriod;
 use App\Services\IndicatorPerformanceService;
 use App\Services\ReportVisualizationService;
 use App\Support\AdminLocationLevel;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -24,9 +23,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\Response;
 use Maatwebsite\Excel\Facades\Excel;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class GeneralReportController extends Controller
 {
@@ -43,6 +40,64 @@ class GeneralReportController extends Controller
     ) {}
 
     public function index(Request $request): View
+    {
+        return view('reports.general', $this->reportData($request));
+    }
+
+    /** PDF/Excel export uses the exact same filtered report data as the HTML page. */
+    public function exportPreview(Request $request, string $format): View|RedirectResponse|Response|BinaryFileResponse
+    {
+        abort_unless(in_array($format, ['pdf','excel'], true), 404);
+        $data = $this->reportData($request);
+        if (! $data['applied']) {
+            return redirect()->route('reports.general')->with('warning', __('Apply report filters before exporting.'));
+        }
+        $title = ucfirst($data['frequency']).' MTAKUWWA Indicator Report';
+        $context = ['Financial year: '.($data['selectedFinancialYear']?->name ?? '—'), 'Period: '.($data['periodLabel'] ?? '—')];
+        $tableRows = collect($data['rows'])->map(fn (array $row) => [
+            $row['indicator']->name, $row['indicator']->code, $row['indicator']->thematicArea?->name,
+            $row['indicator']->unitOfMeasure?->name, $row['performance']['target_value'] ?? null,
+            $row['performance']['actual_value'] ?? null,
+            $row['performance']['achievement_percent'] ?? null,
+        ])->all();
+        $summary = ['Report includes '.count($tableRows).' indicator records for the selected scope.'];
+        $section = ['Values are based on submitted reports approved through the existing review workflow.'];
+        $filename = 'mtakuuwa-report-'.now()->format('Ymd-His');
+        if ($request->boolean('download')) {
+            if ($format === 'excel') {
+                return Excel::download(new SimpleReportExport([['Indicator','Code','Thematic Area','Unit','Target','Actual','Achievement %'], ...$tableRows]), $filename.'.xlsx');
+            }
+            return Pdf::loadView('reports.exports.simple-pdf', [
+                'title' => $title, 'context' => $context, 'executiveSummary' => $summary,
+                'sectionIntro' => $section, 'tableRows' => $tableRows,
+            ])->setPaper('a4', 'landscape')->stream($filename.'.pdf');
+        }
+        return view('reports.export-preview', [
+            'title' => $title, 'format' => $format,
+            'downloadRoute' => route('reports.general.export', [$format] + $request->query() + ['download' => 1]),
+            'context' => $context, 'executiveSummary' => $summary, 'sectionIntro' => $section,
+            'tableRows' => $tableRows,
+        ]);
+    }
+
+    public function exportPdf(Request $request): Response
+    {
+        $data = $this->reportData($request);
+        abort_unless($data['applied'], 422);
+        $rows = collect($data['rows'])->map(fn (array $row) => [
+            $row['indicator']->name, $row['indicator']->code, $row['indicator']->thematicArea?->name,
+            $row['indicator']->unitOfMeasure?->name, $row['performance']['target_value'] ?? null,
+            $row['performance']['actual_value'] ?? null, $row['performance']['achievement_percent'] ?? null,
+        ])->all();
+        return Pdf::loadView('reports.exports.simple-pdf', [
+            'title' => 'MTAKUWWA General Report', 'context' => [$data['periodLabel'] ?? '—'],
+            'executiveSummary' => ['Indicators reported: '.count($rows)],
+            'sectionIntro' => ['Approved indicator performance for the selected period.'], 'tableRows' => $rows,
+        ])->setPaper('a4', 'landscape')->stream('mtakuuwa-general-report.pdf');
+    }
+
+    /** @return array<string, mixed> */
+    private function reportData(Request $request): array
     {
         $data = $request->validate([
             'frequency' => ['nullable', 'in:'.implode(',', self::FREQUENCIES)],
@@ -161,6 +216,9 @@ class GeneralReportController extends Controller
         };
 
         return [
+            'visualization' => $visualization,
+            'visualizationTypes' => ReportVisualizationService::TYPES,
+            'visualizationType' => $visualizationType,
             'frequency' => $frequency,
             'month' => $month,
             'applied' => $applied,
@@ -178,7 +236,7 @@ class GeneralReportController extends Controller
             'rows' => $rows,
             'analysis' => $analysis,
             'rowPaginator' => $this->paginateRows($request, $rows),
-        ]);
+        ];
     }
 
     /** @return array{locations: list<array{label: string, value: float}>, organizations: list<array{label: string, value: float}>, activities: list<array{label: string, value: float}>} */

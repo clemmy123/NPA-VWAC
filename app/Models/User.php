@@ -202,6 +202,18 @@ class User extends Authenticatable
      */
     public function assignedIndicatorIds(): array
     {
+        // Coordinators collect directly within areas they manage; existing collector
+        // assignments remain authoritative for ordinary Data Entry Users.
+        if ($this->hasRole('Super Admin')) {
+            return Indicator::query()->where('status', 'active')->pluck('id')->map(fn ($id) => (int) $id)->all();
+        }
+        if ($this->hasAnyRole(['Project Manager', 'Thematic Manager'])) {
+            $areaIds = $this->visibleThematicAreaIds();
+            return Indicator::query()->where('status','active')
+                ->whereIn('thematic_area_id', $areaIds)->pluck('id')
+                ->map(fn ($id) => (int) $id)->all();
+        }
+
         return IndicatorDataAssignment::query()
             ->where('is_active', true)
             ->whereHas('indicator', fn ($query) => $query->where('status', 'active'))

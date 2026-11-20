@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateIndicatorBaselineRequest;
 use App\Http\Resources\IndicatorBaselineResource;
 use App\Models\FinancialYear;
 use App\Models\Indicator;
+use App\Models\IndicatorPlan;
 use App\Models\IndicatorBaseline;
 use App\Models\Organization;
 use Illuminate\Http\JsonResponse;
@@ -38,6 +39,7 @@ class IndicatorBaselineController extends Controller
 
     public function store(StoreIndicatorBaselineRequest $request): JsonResponse|RedirectResponse
     {
+        $this->assertPlanUnlocked((int)$request->input('indicator_id'), (int)$request->input('financial_year_id'));
         $baseline = IndicatorBaseline::create($request->validated() + ['created_by' => $request->user()->id]);
 
         if ($request->wantsJson()) {
@@ -59,6 +61,7 @@ class IndicatorBaselineController extends Controller
 
     public function update(UpdateIndicatorBaselineRequest $request, IndicatorBaseline $indicatorBaseline): JsonResponse|RedirectResponse|IndicatorBaselineResource
     {
+        $this->assertPlanUnlocked((int)$indicatorBaseline->indicator_id,(int)$indicatorBaseline->financial_year_id);
         $indicatorBaseline->update($request->validated());
 
         if ($request->wantsJson()) {
@@ -70,6 +73,7 @@ class IndicatorBaselineController extends Controller
 
     public function destroy(Request $request, IndicatorBaseline $indicatorBaseline): JsonResponse|RedirectResponse
     {
+        $this->assertPlanUnlocked((int)$indicatorBaseline->indicator_id,(int)$indicatorBaseline->financial_year_id);
         $indicatorBaseline->delete();
 
         if ($request->wantsJson()) {
@@ -92,4 +96,10 @@ class IndicatorBaselineController extends Controller
             'organizations' => Organization::query()->orderBy('name')->get(),
         ];
     }
+    private function assertPlanUnlocked(int $indicatorId, int $yearId): void
+    {
+        abort_if(IndicatorPlan::query()->where('indicator_id',$indicatorId)->where('financial_year_id',$yearId)
+            ->where('status','approved')->exists(), 403, 'An approved annual plan cannot be altered through the legacy baseline/target screen.');
+    }
+
 }

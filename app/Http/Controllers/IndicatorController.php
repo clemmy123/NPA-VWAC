@@ -179,7 +179,7 @@ class IndicatorController extends Controller
         return [
             'statusOptions' => self::STATUS_OPTIONS,
             'thematicAreas' => ThematicArea::query()->with('project')
-                ->when(! $user->hasRole('Super Admin') && $visibleAreaIds !== [], fn ($query) => $query->whereIn('id', $visibleAreaIds))
+                ->when(! $user->hasRole('Super Admin'), fn ($query) => $query->whereIn('id', $visibleAreaIds))
                 ->orderBy('name')->get(),
             'projects' => Project::query()
                 ->when(! $user->hasRole('Super Admin'), fn ($query) => $query->whereIn('id', $user->visibleProjectIds()))
@@ -200,7 +200,7 @@ class IndicatorController extends Controller
             $thematicAreaIds = $user->visibleThematicAreaIds();
 
             return Indicator::query()
-                ->when($thematicAreaIds !== [], fn ($query) => $query->whereIn('thematic_area_id', $thematicAreaIds))
+                ->whereIn('thematic_area_id', $thematicAreaIds)
                 ->pluck('id')->all();
         }
 
@@ -215,6 +215,6 @@ class IndicatorController extends Controller
     private function authorizeThematicArea(User $user, int $thematicAreaId): void
     {
         $visibleIds = $user->visibleThematicAreaIds();
-        abort_unless($user->hasRole('Super Admin') || $visibleIds === [] || in_array($thematicAreaId, $visibleIds, true), 403);
+        abort_unless($user->hasRole('Super Admin') || in_array($thematicAreaId, $visibleIds, true), 403);
     }
 }

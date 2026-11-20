@@ -45,7 +45,7 @@
             @forelse ($thematicAreas as $thematicArea)
             <tr>
                 <td>{{ ($thematicAreas->firstItem() ?? 1) + $loop->index }}</td>
-                <td><a href="{{ route('thematic-areas.show', $thematicArea) }}">{{ $thematicArea->name }}</a></td>
+                <td><a href="{{ route('thematic-areas.show', $thematicArea) }}">{{ $thematicArea->localized_name }}</a></td>
                 <td>{{ $thematicArea->project?->name ?? '—' }}</td>
                 <td>
                     <span class="s-badge {{ match ($thematicArea->status) {
@@ -97,7 +97,7 @@
     @forelse ($thematicAreas as $thematicArea)
     <div class="mob-card">
         <div class="mob-card-top">
-            <a href="{{ route('thematic-areas.show', $thematicArea) }}" class="fw-600">{{ $thematicArea->name }}</a>
+            <a href="{{ route('thematic-areas.show', $thematicArea) }}" class="fw-600">{{ $thematicArea->localized_name }}</a>
             <span class="s-badge {{ match ($thematicArea->status) {
                 'active' => 's-active',
                 'completed' => 's-received',

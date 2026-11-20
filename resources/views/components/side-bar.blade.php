@@ -105,6 +105,12 @@
                 </li>
                 @endcan
 
+                @can('institution.confirm')
+                <li class="{{ request()->routeIs('institution-inbox.*') ? 'active' : '' }}">
+                    <a href="{{ route('institution-inbox.index') }}"><i class="bi bi-building-check"></i><span>{{ __('Institution Ownership Inbox') }}</span></a>
+                </li>
+                @endcan
+
                 {{-- Data collections --}}
                 @can('indicator-data.view')
                 <li class="{{ request()->routeIs('indicator-data-entries.*') ? 'active' : '' }}">

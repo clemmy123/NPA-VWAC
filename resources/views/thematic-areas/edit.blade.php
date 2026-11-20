@@ -9,7 +9,7 @@
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
                 <li class="breadcrumb-item"><a href="{{ route('thematic-areas.index') }}">{{ __('Thematic Areas') }}</a></li>
-                <li class="breadcrumb-item active">{{ $thematicArea->name }}</li>
+                <li class="breadcrumb-item active">{{ $thematicArea->localized_name }}</li>
             </ol>
         </nav>
     </div>

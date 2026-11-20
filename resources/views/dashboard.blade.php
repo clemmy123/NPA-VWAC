@@ -36,7 +36,7 @@
         <select name="thematic_area_id" id="thematic_area_id" class="form-control">
             @foreach ($thematicAreas as $thematicArea)
             <option value="{{ $thematicArea->id }}" data-project-id="{{ $thematicArea->project_id }}" @selected($selectedThematicArea?->id === $thematicArea->id)>
-                {{ $thematicArea->name }}
+                {{ $thematicArea->localized_name }}
             </option>
             @endforeach
         </select>

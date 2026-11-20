@@ -27,7 +27,7 @@
         <select name="thematic_area_id" id="thematic_area_id" class="form-control select2 @error('thematic_area_id') is-invalid @enderror" required>
             <option value="">{{ __('Select a thematic area…') }}</option>
             @foreach ($thematicAreas as $thematicArea)
-            <option value="{{ $thematicArea->id }}" data-project-id="{{ $thematicArea->project_id }}" @selected((int) old('thematic_area_id', $indicator?->thematic_area_id) === $thematicArea->id)>{{ $thematicArea->name }}</option>
+            <option value="{{ $thematicArea->id }}" data-project-id="{{ $thematicArea->project_id }}" @selected((int) old('thematic_area_id', $indicator?->thematic_area_id) === $thematicArea->id)>{{ $thematicArea->localized_name }}</option>
             @endforeach
         </select>
         @error('thematic_area_id')<div class="invalid-feedback">{{ $message }}</div>@enderror

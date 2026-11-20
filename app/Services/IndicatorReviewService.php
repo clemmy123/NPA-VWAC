@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Support\AdminLocationLevel;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
+use App\Services\IndicatorPlanService;
 use Illuminate\Validation\ValidationException;
 
 class IndicatorReviewService
@@ -24,6 +25,12 @@ class IndicatorReviewService
 
         $this->assertNumericActualValuePresent($entry);
         $this->assertReconciliation($entry);
+        if ($entry->domestic_spent !== null || $entry->external_spent !== null) {
+            $reported = (float) ($entry->domestic_spent ?? 0) + (float) ($entry->external_spent ?? 0);
+            if ($entry->budget_used !== null && abs($reported - (float) $entry->budget_used) > 0.01) {
+                throw ValidationException::withMessages(['budget_used' => 'Domestic and external expenditure must total the reported budget used.']);
+            }
+        }
 
         if ($entry->indicator->requires_hierarchical_approval && $entry->location_level && $entry->location_id) {
             $chain = AdminLocationLevel::ancestorChain($entry->location_level, (int) $entry->location_id);
@@ -42,7 +49,8 @@ class IndicatorReviewService
         }
 
         $entry->update([
-            'status' => $entry->approvalSteps()->exists() ? 'pending_approval' : 'submitted',
+            'institution_confirmed_by' => null, 'institution_confirmed_at' => null,
+            'status' => 'pending_approval',
             'submitted_at' => now(),
         ]);
 
@@ -55,6 +63,9 @@ class IndicatorReviewService
             throw ValidationException::withMessages(['status' => 'Only submitted or pending entries can be approved.']);
         }
         $this->assertReviewerScope($entry, $actor);
+        if (! $entry->institution_confirmed_at) {
+            throw ValidationException::withMessages(['status' => 'The reporting institution must confirm this submission first.']);
+        }
 
         $currentStep = $entry->approvalSteps()->where('status', 'pending')->orderBy('sequence')->first();
         if ($currentStep) {
@@ -64,13 +75,17 @@ class IndicatorReviewService
                 throw new AuthorizationException('This approval step is assigned to another geographic approver.');
             }
             $currentStep->update(['status' => 'approved', 'approved_by' => $actor->id, 'decided_at' => now(), 'comment' => $comment]);
-            if ($entry->approvalSteps()->where('status', 'pending')->exists()) {
-                $entry->update(['status' => 'pending_approval']);
-
-                return $entry->fresh();
-            }
+            // Finishing the geographic chain does not bypass thematic sign-off.
+            $entry->update(['status' => 'pending_approval']);
+            return $entry->fresh();
         }
 
+        if (! $actor->hasRole('Super Admin') && ! $actor->hasRole('Thematic Manager')) {
+            throw new AuthorizationException('Final approval is reserved for the thematic area coordinator.');
+        }
+        if ($entry->entered_by === $actor->id && ! $actor->hasRole('Super Admin')) {
+            throw new AuthorizationException('You cannot give final approval to your own submission.');
+        }
         DB::transaction(function () use ($entry, $actor, $comment): void {
             $entry->update([
                 'status' => 'approved',
@@ -106,6 +121,43 @@ class IndicatorReviewService
         });
 
         return $entry->fresh();
+    }
+
+    public function confirmInstitution(IndicatorDataEntry $entry, User $actor): IndicatorDataEntry
+    {
+        if (! in_array($entry->status, ['submitted','pending_approval'], true)) {
+            throw ValidationException::withMessages(['status' => 'Only submitted entries may be confirmed.']);
+        }
+        $organizationId = $entry->organization_id ?: $entry->plan?->lead_organization_id;
+        if (! $organizationId) {
+            throw ValidationException::withMessages(['organization_id' => 'A reporting institution is required.']);
+        }
+        app(IndicatorPlanService::class)->authorizeInstitution($actor, (int) $organizationId, (int) $entry->entered_by);
+        if ($entry->institution_confirmed_at) {
+            throw ValidationException::withMessages(['status' => 'This entry has already been confirmed.']);
+        }
+        $entry->update(['institution_confirmed_by' => $actor->id, 'institution_confirmed_at' => now()]);
+        $entry->reviews()->create(['reviewed_by' => $actor->id, 'action' => 'confirmed', 'comment' => 'Institutional ownership confirmed']);
+        return $entry->fresh();
+    }
+
+    /** Institutional officers may return unconfirmed reports to the original collector. */
+    public function returnFromInstitution(IndicatorDataEntry $entry, User $actor, string $reason): IndicatorDataEntry
+    {
+        if (! in_array($entry->status, ['submitted','pending_approval'], true) || $entry->institution_confirmed_at) {
+            throw ValidationException::withMessages(['status' => 'Only unconfirmed submissions may be returned by institutions.']);
+        }
+        if (blank($reason)) {
+            throw ValidationException::withMessages(['comment' => 'State the reason for returning this submission.']);
+        }
+        $organizationId = $entry->organization_id ?: $entry->plan?->lead_organization_id;
+        app(IndicatorPlanService::class)->authorizeInstitution($actor, (int) $organizationId, (int) $entry->entered_by);
+        return DB::transaction(function () use ($entry, $actor, $reason): IndicatorDataEntry {
+            $entry->approvalSteps()->delete();
+            $entry->update(['status' => 'rejected', 'institution_confirmed_by' => null, 'institution_confirmed_at' => null]);
+            $entry->reviews()->create(['reviewed_by' => $actor->id, 'action' => 'rejected', 'comment' => $reason]);
+            return $entry->fresh();
+        });
     }
 
     private function assertNumericActualValuePresent(IndicatorDataEntry $entry): void
@@ -148,8 +200,8 @@ class IndicatorReviewService
         }
 
         $thematicAreaId = (int) $entry->indicator()->value('thematic_area_id');
-        $assignedAreaIds = $actor->assignedThematicAreaIds();
-        if ($assignedAreaIds !== [] && ! in_array($thematicAreaId, $assignedAreaIds, true)) {
+        $assignedAreaIds = $actor->visibleThematicAreaIds();
+        if (! in_array($thematicAreaId, $assignedAreaIds, true)) {
             throw new AuthorizationException('You may only review entries in your assigned thematic areas.');
         }
     }

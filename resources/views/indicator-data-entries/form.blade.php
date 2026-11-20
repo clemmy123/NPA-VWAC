@@ -156,9 +156,9 @@
 
     <div class="col-md-4 mb-3 js-budget-field">
         <label for="budget_allocated" class="form-label">{{ __('Budget Allocated') }} <span class="text-muted small">{{ __('(optional)') }}</span></label>
-        <input type="number" step="0.01" name="budget_allocated" id="budget_allocated" class="form-control @error('budget_allocated') is-invalid @enderror"
+        <input type="number" step="0.01" id="budget_allocated" readonly aria-readonly="true" class="form-control @error('budget_allocated') is-invalid @enderror"
                value="{{ old('budget_allocated', \App\Support\DisplayNumber::input($entry?->budget_allocated, 2)) }}">
-        @error('budget_allocated')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        <div class="form-text">{{ __('Derived from the approved annual plan; collectors cannot change it.') }}</div>
     </div>
 
     <div class="col-md-4 mb-3 js-budget-field">
@@ -175,6 +175,16 @@
         @error('currency')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
+    <div class="col-12 mb-3">
+        <label for="implementation_status" class="form-label">{{ __('Implementation status / Hali ya utekelezaji') }}</label>
+        <textarea id="implementation_status" name="implementation_status" class="form-control" rows="2">{{ old('implementation_status', $entry?->implementation_status) }}</textarea>
+    </div>
+    @foreach(['domestic_released'=>__('Domestic funds released (TZS)'), 'external_released'=>__('External funds released (TZS)'), 'domestic_spent'=>__('Domestic funds spent (TZS)'), 'external_spent'=>__('External funds spent (TZS)')] as $field=>$label)
+    <div class="col-md-3 mb-3 js-budget-field"><label for="{{ $field }}" class="form-label">{{ $label }}</label>
+      <input type="number" id="{{ $field }}" name="{{ $field }}" min="0" step="0.01" class="form-control @error($field) is-invalid @enderror" value="{{ old($field, $entry?->{$field}) }}">
+      @error($field)<div class="invalid-feedback">{{ $message }}</div>@enderror
+    </div>
+    @endforeach
     <div class="col-12 mb-3">
         <label for="remarks" class="form-label">{{ __('Remarks') }}</label>
         <textarea name="remarks" id="remarks" rows="2"

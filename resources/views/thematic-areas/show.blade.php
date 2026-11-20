@@ -1,10 +1,10 @@
 @extends('components.main-layout')
-@section('title', $thematicArea->name)
+@section('title', $thematicArea->localized_name)
 
 @section('content')
 <div class="page-header">
     <div>
-        <h4 class="page-title">{{ $thematicArea->name }}</h4>
+        <h4 class="page-title">{{ $thematicArea->localized_name }}</h4>
         <nav aria-label="{{ __('breadcrumb') }}">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
@@ -12,7 +12,7 @@
                 @if ($thematicArea->project)
                 <li class="breadcrumb-item"><a href="{{ route('projects.show', $thematicArea->project) }}">{{ $thematicArea->project->name }}</a></li>
                 @endif
-                <li class="breadcrumb-item active">{{ $thematicArea->name }}</li>
+                <li class="breadcrumb-item active">{{ $thematicArea->localized_name }}</li>
             </ol>
         </nav>
     </div>
@@ -35,11 +35,11 @@
     </div>
 </div>
 
-{{-- Thematic Managers --}}
+{{-- Thematic Area Coordinators --}}
 @can('thematic-area.assign-manager')
 <div class="d-flex justify-content-between align-items-center mb-2">
-    <h5 class="mb-0">{{ __('Thematic Managers') }}</h5>
-    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-ta-manager" data-quick-add-title="{{ __('Assign Thematic Manager to ":name"', ['name' => $thematicArea->name]) }}">
+    <h5 class="mb-0">{{ __('Thematic Area Coordinators') }}</h5>
+    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-ta-manager" data-quick-add-title="{{ __('Assign Thematic Area Coordinator to ":name"', ['name' => $thematicArea->localized_name]) }}">
         <i class="mdi mdi-plus"></i> {{ __('Assign Manager') }}
     </button>
 </div>
@@ -76,12 +76,12 @@
         <div class="mb-3">
             <label for="user_id" class="form-label">{{ __('User') }}</label>
             <select name="user_id" id="user_id" class="form-control select2" required>
-                <option value="">{{ __('Select a Thematic Manager…') }}</option>
+                <option value="">{{ __('Select a Thematic Area Coordinator…') }}</option>
                 @foreach ($assignableManagers as $user)
                 <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
                 @endforeach
             </select>
-            <div class="form-text">{{ __('Only users with the "Thematic Manager" role are listed. Assign the role first under Users if it\'s missing.') }}</div>
+            <div class="form-text">{{ __('Only users with the "Thematic Area Coordinator" role are listed. Assign the role first under Users if it\'s missing.') }}</div>
         </div>
         <div class="d-flex form-actions">
             <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> {{ __('Assign') }}</button>
@@ -95,7 +95,7 @@
 <div class="d-flex justify-content-between align-items-center mb-2">
     <h5 class="mb-0">{{ __('Indicators') }}</h5>
     @can('indicator.create')
-    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-indicator" data-quick-add-title="{{ __('Add Indicator to ":name"', ['name' => $thematicArea->name]) }}">
+    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-indicator" data-quick-add-title="{{ __('Add Indicator to ":name"', ['name' => $thematicArea->localized_name]) }}">
         <i class="mdi mdi-plus"></i> {{ __('Add Indicator') }}
     </button>
     @endcan
@@ -169,7 +169,7 @@
 <div class="d-flex justify-content-between align-items-center mb-2">
     <h5 class="mb-0">{{ __('Interventions') }}</h5>
     @can('intervention.create')
-    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-intervention" data-quick-add-title="{{ __('Add Intervention to ":name"', ['name' => $thematicArea->name]) }}">
+    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-intervention" data-quick-add-title="{{ __('Add Intervention to ":name"', ['name' => $thematicArea->localized_name]) }}">
         <i class="mdi mdi-plus"></i> {{ __('Add Intervention') }}
     </button>
     @endcan

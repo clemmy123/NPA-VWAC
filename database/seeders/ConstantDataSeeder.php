@@ -36,6 +36,7 @@ class ConstantDataSeeder extends Seeder
             ['code' => 'usd', 'name' => 'US Dollars', 'symbol' => 'USD', 'is_active' => true, 'created_at' => $now, 'updated_at' => $now],
         ], ['code'], ['name', 'symbol', 'is_active', 'updated_at']);
         DB::table('organization_types')->upsert([
+            ['code' => 'ministry', 'name' => 'Government Ministry', 'is_active' => true, 'created_at' => $now, 'updated_at' => $now],
             ['code' => 'bank', 'name' => 'Bank / Financial Institution', 'is_active' => true, 'created_at' => $now, 'updated_at' => $now],
             ['code' => 'government', 'name' => 'Government Institution', 'is_active' => true, 'created_at' => $now, 'updated_at' => $now],
             ['code' => 'council', 'name' => 'Local Government Authority / Council', 'is_active' => true, 'created_at' => $now, 'updated_at' => $now],

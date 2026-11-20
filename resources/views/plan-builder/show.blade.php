@@ -1,18 +1,19 @@
 @extends('components.main-layout')
-@section('title', $thematicArea->name)
+@section('title', $thematicArea->localized_name)
 
 @section('content')
 <div class="page-header">
     <div>
-        <h4 class="page-title" id="pbTitle">{{ $thematicArea->name }}</h4>
+        <h4 class="page-title" id="pbTitle">{{ $thematicArea->localized_name }}</h4>
         <nav aria-label="{{ __('breadcrumb') }}">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
                 <li class="breadcrumb-item"><a href="{{ route('plan-builder.index') }}">{{ __('Plan Builder') }}</a></li>
-                <li class="breadcrumb-item active" id="pbCrumb">{{ $thematicArea->name }}</li>
+                <li class="breadcrumb-item active" id="pbCrumb">{{ $thematicArea->localized_name }}</li>
             </ol>
         </nav>
     </div>
+    <a class="btn btn-dark btn-sm me-2" href="{{ route('indicator-plans.index', $thematicArea) }}">{{ __('Annual planning, budgets & approval') }}</a>
     <div class="autosave-flag" id="pbAutosave"><span class="autosave-dot"></span>{{ __('All changes saved') }}</div>
 </div>
 
@@ -24,7 +25,7 @@
 @endif
 
 <div class="chart-card mb-3">
-    <input type="text" id="pbNameInput" class="pb-name-input" value="{{ $thematicArea->name }}" maxlength="255"
+    <input type="text" id="pbNameInput" class="pb-name-input" value="{{ $thematicArea->localized_name }}" maxlength="255"
            {{ $canUpdateThematicArea ? '' : 'readonly' }}>
     <textarea id="pbDescInput" class="pb-desc-input" rows="1" placeholder="{{ __('Add a description…') }}"
               {{ $canUpdateThematicArea ? '' : 'readonly' }}>{{ $thematicArea->description }}</textarea>
