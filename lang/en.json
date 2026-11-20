@@ -1,0 +1,22 @@
+{
+    "Thematic Manager": "Thematic Area Coordinator",
+    "Project Manager": "NPA VAWC Coordinator",
+    "Thematic Manager assigned.": "Thematic Area Coordinator assigned.",
+    "Thematic Manager removed.": "Thematic Area Coordinator removed.",
+    "Project Manager assigned.": "NPA VAWC Coordinator assigned.",
+    "Project Manager removed.": "NPA VAWC Coordinator removed.",
+    "Managers": "Coordinators",
+    "Assign Manager": "Assign Coordinator",
+    "Project Managers": "NPA VAWC Coordinators",
+    "Assign Project Manager to \":name\"": "Assign NPA VAWC Coordinator to \":name\"",
+    "Select a Project Manager…": "Select an NPA VAWC Coordinator…",
+    "Only users with the \"Project Manager\" role are listed. Assign the role first under Users if it's missing.": "Only users with the \"NPA VAWC Coordinator\" role are listed. Assign the role first under Users if it's missing.",
+    "Remove \":name\" as a manager of this project?": "Remove \":name\" as an NPA VAWC Coordinator of this project?",
+    "No project managers assigned yet.": "No NPA VAWC Coordinators assigned yet.",
+    "Thematic Managers": "Thematic Area Coordinators",
+    "Assign Thematic Manager to \":name\"": "Assign Thematic Area Coordinator to \":name\"",
+    "Select a Thematic Manager…": "Select a Thematic Area Coordinator…",
+    "Only users with the \"Thematic Manager\" role are listed. Assign the role first under Users if it's missing.": "Only users with the \"Thematic Area Coordinator\" role are listed. Assign the role first under Users if it's missing.",
+    "Remove \":name\" as a manager of this thematic area?": "Remove \":name\" as a coordinator of this thematic area?",
+    "No thematic managers assigned yet.": "No Thematic Area Coordinators assigned yet."
+}
