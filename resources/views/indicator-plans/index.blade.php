@@ -24,7 +24,7 @@
   <fieldset @disabled(!$editable)>
   <div class="row g-3">
     <div class="col-md-12"><label class="form-label">{{ __('Planned activity / Kazi zitakazotekelezwa') }}</label>
-      <textarea name="planned_activity" class="form-control" rows="2" required>{{ old('planned_activity', $plan?->planned_activity) }}</textarea></div>
+      <textarea name="planned_activity" class="form-control" rows="2">{{ old('planned_activity', $plan?->planned_activity) }}</textarea></div>
     <div class="col-md-3"><label class="form-label">{{ __('Baseline year') }}</label><input type="number" name="baseline_year" class="form-control" min="2000" max="2100" value="{{ old('baseline_year',$plan?->baseline_year) }}"></div>
     <div class="col-md-3"><label class="form-label">{{ __('Baseline value') }}</label><input type="number" name="baseline_value" min="0" step="any" class="form-control" value="{{ old('baseline_value',$plan?->baseline_value) }}"></div>
     <div class="col-md-3"><label class="form-label">{{ __('Annual target / Shabaha') }}</label><input type="number" name="annual_target" min="0" step="any" class="form-control" value="{{ old('annual_target',$plan?->annual_target) }}" required></div>

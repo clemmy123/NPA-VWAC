@@ -23,7 +23,7 @@ class IndicatorPlan extends Model implements HasMedia
     }
 
     protected $fillable = [
-        'indicator_id', 'financial_year_id', 'planned_activity', 'baseline_year',
+        'indicator_id', 'financial_year_id', 'planned_activity', 'baseline_year', 'baseline_financial_year_id',
         'baseline_value', 'annual_target', 'domestic_budget', 'external_budget',
         'lead_organization_id', 'participating_organization_ids', 'status',
         'version', 'created_by', 'submitted_by', 'submitted_at',
@@ -40,19 +40,47 @@ class IndicatorPlan extends Model implements HasMedia
         ];
     }
 
-    public function indicator(): BelongsTo { return $this->belongsTo(Indicator::class); }
-    public function financialYear(): BelongsTo { return $this->belongsTo(FinancialYear::class); }
-    public function leadOrganization(): BelongsTo { return $this->belongsTo(Organization::class, 'lead_organization_id'); }
-    public function creator(): BelongsTo { return $this->belongsTo(User::class, 'created_by'); }
-    public function confirmer(): BelongsTo { return $this->belongsTo(User::class, 'confirmed_by'); }
-    public function approver(): BelongsTo { return $this->belongsTo(User::class, 'approved_by'); }
+    public function indicator(): BelongsTo
+    {
+        return $this->belongsTo(Indicator::class);
+    }
+
+    public function financialYear(): BelongsTo
+    {
+        return $this->belongsTo(FinancialYear::class);
+    }
+
+    public function baselineFinancialYear(): BelongsTo
+    {
+        return $this->belongsTo(FinancialYear::class, 'baseline_financial_year_id');
+    }
+
+    public function leadOrganization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class, 'lead_organization_id');
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function confirmer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'confirmed_by');
+    }
+
+    public function approver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
 
     /** Immutable values captured at the moment collection starts. */
     public function snapshot(): array
     {
         return $this->only([
             'id', 'version', 'indicator_id', 'financial_year_id', 'planned_activity',
-            'baseline_year', 'baseline_value', 'annual_target', 'domestic_budget',
+            'baseline_year', 'baseline_financial_year_id', 'baseline_value', 'annual_target', 'domestic_budget',
             'external_budget', 'lead_organization_id', 'participating_organization_ids',
         ]);
     }

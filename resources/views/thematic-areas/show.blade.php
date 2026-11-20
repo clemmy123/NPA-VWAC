@@ -248,6 +248,7 @@
         @include('indicators.form', [
             'indicator' => new \App\Models\Indicator(['thematic_area_id' => $thematicArea->id]),
             'statusOptions' => $indicatorStatusOptions,
+            'projects' => collect([$thematicArea->project])->filter(),
             'thematicAreas' => collect([$thematicArea]),
             'measurementTypes' => $measurementTypes,
             'unitsOfMeasure' => $unitsOfMeasure,

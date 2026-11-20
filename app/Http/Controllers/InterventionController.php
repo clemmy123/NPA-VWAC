@@ -44,7 +44,7 @@ class InterventionController extends Controller
     public function store(StoreInterventionRequest $request): JsonResponse|RedirectResponse
     {
         $data = $request->validated();
-        $indicatorIds = $data['indicator_ids'] ?? [];
+        $indicatorIds = array_filter($data['indicator_ids'] ?? []);
         unset($data['indicator_ids']);
 
         $intervention = Intervention::create($data + ['created_by' => $request->user()->id]);
@@ -77,7 +77,7 @@ class InterventionController extends Controller
         $data = $request->validated();
 
         if (array_key_exists('indicator_ids', $data)) {
-            $intervention->indicators()->sync($data['indicator_ids'] ?? []);
+            $intervention->indicators()->sync(array_filter($data['indicator_ids'] ?? []));
             unset($data['indicator_ids']);
         }
 

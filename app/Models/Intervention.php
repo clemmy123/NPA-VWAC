@@ -11,6 +11,13 @@ class Intervention extends Model
     use HasFactory;
     use SoftDeletes;
 
+    /**
+     * Business rule: an intervention serves a single indicator. The
+     * indicator_interventions pivot is kept so this can be raised later
+     * (many-to-many) by changing this one number, with no migration.
+     */
+    public const int MAX_INDICATORS = 1;
+
     protected $fillable = [
         'thematic_area_id',
         'name',

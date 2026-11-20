@@ -11,18 +11,13 @@ class MeasurementType extends Model
 
     protected $fillable = [
 
-
         'code',
-
 
         'name',
 
-
         'description',
 
-
         'is_active',
-
 
     ];
 
@@ -35,5 +30,19 @@ class MeasurementType extends Model
         ];
     }
 
-
+    /**
+     * How many decimals a value of this measurement type may carry, and its ceiling.
+     *
+     * @return array{decimals: int|null, max: int|null}
+     */
+    public function valueLimits(): array
+    {
+        return match ($this->code) {
+            'count' => ['decimals' => 0, 'max' => null],
+            'percentage' => ['decimals' => 2, 'max' => 100],
+            'yes_no' => ['decimals' => 0, 'max' => 1],
+            'currency' => ['decimals' => 2, 'max' => null],
+            default => ['decimals' => null, 'max' => null],
+        };
+    }
 }

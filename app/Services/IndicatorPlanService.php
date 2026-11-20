@@ -2,7 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\FinancialYear;
+use App\Models\Indicator;
+use App\Models\IndicatorBaseline;
 use App\Models\IndicatorPlan;
+use App\Models\IndicatorTarget;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +17,7 @@ class IndicatorPlanService
 {
     public function save(array $attributes, User $actor): IndicatorPlan
     {
-        $indicator = \App\Models\Indicator::query()->with('thematicArea')->findOrFail($attributes['indicator_id']);
+        $indicator = Indicator::query()->with('thematicArea')->findOrFail($attributes['indicator_id']);
         $this->authorizeThematic($actor, (int) $indicator->thematic_area_id);
 
         return DB::transaction(function () use ($attributes, $actor): IndicatorPlan {
@@ -21,14 +25,24 @@ class IndicatorPlanService
                 'indicator_id' => $attributes['indicator_id'],
                 'financial_year_id' => $attributes['financial_year_id'],
             ]);
-            if ($plan->exists && ! in_array($plan->status, ['draft','returned'], true)) {
+            if ($plan->exists && ! in_array($plan->status, ['draft', 'returned'], true)) {
                 throw ValidationException::withMessages(['plan' => 'A submitted or approved plan cannot be edited.']);
             }
             $plan->fill($attributes);
-            $plan->version = $plan->exists ? $plan->version + 1 : 1;
+            if (array_key_exists('baseline_financial_year_id', $attributes)) {
+                $plan->baseline_year = $attributes['baseline_financial_year_id']
+                    ? FinancialYear::query()->whereKey($attributes['baseline_financial_year_id'])->first()?->start_date?->year
+                    : null;
+            }
+            // Autosaved edits to a draft stay on the same version; only a
+            // resubmission after a return starts a new one.
+            $plan->version = ! $plan->exists ? 1 : ($plan->status === 'returned' ? $plan->version + 1 : $plan->version);
             $plan->status = 'draft';
-            if (! $plan->exists) $plan->created_by = $actor->id;
+            if (! $plan->exists) {
+                $plan->created_by = $actor->id;
+            }
             $plan->save();
+
             return $plan;
         });
     }
@@ -41,7 +55,10 @@ class IndicatorPlanService
             switch ($action) {
                 case 'submit':
                     $this->authorizeThematic($actor, (int) $plan->indicator->thematic_area_id);
-                    $this->expectStatus($plan, ['draft','returned']);
+                    $this->expectStatus($plan, ['draft', 'returned']);
+                    if ($missing = $this->missingFields($plan)) {
+                        throw ValidationException::withMessages(['plan' => __('Incomplete plan: :fields.', ['fields' => implode(', ', $missing)])]);
+                    }
                     $changes += ['status' => 'pending_institution', 'submitted_by' => $actor->id, 'submitted_at' => now(), 'confirmed_by' => null, 'confirmed_at' => null];
                     break;
                 case 'confirm':
@@ -58,7 +75,7 @@ class IndicatorPlanService
                     $changes += ['status' => 'approved', 'approved_by' => $actor->id, 'approved_at' => now()];
                     // Keep existing dashboard/reporting targets and baselines consistent
                     // with the newly approved annual implementation plan.
-                    \App\Models\IndicatorTarget::query()->updateOrCreate([
+                    IndicatorTarget::query()->updateOrCreate([
                         'indicator_id' => $plan->indicator_id,
                         'financial_year_id' => $plan->financial_year_id,
                         'reporting_period_id' => null,
@@ -68,9 +85,9 @@ class IndicatorPlanService
                         'created_by' => $actor->id,
                     ]);
                     if ($plan->baseline_value !== null) {
-                        \App\Models\IndicatorBaseline::query()->updateOrCreate([
+                        IndicatorBaseline::query()->updateOrCreate([
                             'indicator_id' => $plan->indicator_id,
-                            'financial_year_id' => $plan->financial_year_id,
+                            'financial_year_id' => $plan->baseline_financial_year_id ?? $plan->financial_year_id,
                         ], [
                             'baseline_value' => $plan->baseline_value,
                             'baseline_date' => $plan->baseline_year ? $plan->baseline_year.'-07-01' : null,
@@ -85,21 +102,56 @@ class IndicatorPlanService
                     } else {
                         $this->authorizeThematic($actor, (int) $plan->indicator->thematic_area_id);
                     }
-                    $this->expectStatus($plan, ['pending_institution','pending_thematic']);
-                    if (blank($comment)) throw ValidationException::withMessages(['comment' => 'A return reason is required.']);
+                    $this->expectStatus($plan, ['pending_institution', 'pending_thematic']);
+                    if (blank($comment)) {
+                        throw ValidationException::withMessages(['comment' => 'A return reason is required.']);
+                    }
                     $changes += ['status' => 'returned', 'confirmed_by' => null, 'confirmed_at' => null];
                     break;
                 default:
                     throw ValidationException::withMessages(['action' => 'Unknown plan action.']);
             }
             $plan->update($changes);
+
             return $plan->fresh();
         });
     }
 
+    /**
+     * Everything an indicator's plan row must carry before it can be
+     * submitted. Draft autosave is deliberately lenient; this is the gate.
+     *
+     * @return list<string> human labels of what is still missing
+     */
+    public function missingFields(IndicatorPlan $plan): array
+    {
+        $indicator = $plan->indicator()->withCount('interventions')->first();
+        $missing = [];
+
+        if ($indicator->requires_activity && $indicator->interventions_count === 0) {
+            $missing[] = __('at least one intervention');
+        }
+        if ($plan->baseline_value === null || ($plan->baseline_year === null && $plan->baseline_financial_year_id === null)) {
+            $missing[] = __('baseline year and value');
+        }
+        if ($plan->annual_target === null) {
+            $missing[] = __('target');
+        }
+        if ($indicator->has_budget_implication && ($plan->domestic_budget === null || $plan->external_budget === null)) {
+            $missing[] = __('domestic and external budget');
+        }
+        if ($plan->lead_organization_id === null) {
+            $missing[] = __('lead institution');
+        }
+
+        return $missing;
+    }
+
     public function authorizeThematic(User $actor, int $areaId): void
     {
-        if ($actor->hasRole('Super Admin')) return;
+        if ($actor->hasRole('Super Admin')) {
+            return;
+        }
         if (! $actor->can('indicator.set-target') && ! $actor->hasRole('Project Manager')) {
             throw new AuthorizationException('You cannot manage plans.');
         }
@@ -108,7 +160,9 @@ class IndicatorPlanService
 
     public function authorizeInstitution(User $actor, int $organizationId, int $submitterId): void
     {
-        if ($actor->hasRole('Super Admin')) return;
+        if ($actor->hasRole('Super Admin')) {
+            return;
+        }
         abort_unless($actor->can('institution.confirm') && (int) $actor->organization_id === $organizationId, 403);
         if ($actor->id === $submitterId) {
             throw new AuthorizationException('Institution confirmation must be performed by another authorized officer.');

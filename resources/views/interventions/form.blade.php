@@ -1,6 +1,6 @@
 @php
     $intervention = $intervention ?? null;
-    $selectedIndicatorIds = old('indicator_ids', $intervention?->indicators->pluck('id')->all() ?? []);
+    $selectedIndicatorId = (int) (old('indicator_ids.0') ?? $intervention?->indicators->first()?->id);
 @endphp
 
 <div class="row">
@@ -40,20 +40,13 @@
     </div>
 
     <div class="col-12 mb-3">
-        <label for="indicator_ids" class="form-label">{{ __('Linked Indicators') }}</label>
-        <select name="indicator_ids[]" id="indicator_ids" class="form-control select2-multi @error('indicator_ids') is-invalid @enderror" multiple>
+        <label for="indicator_ids" class="form-label">{{ __('Indicator') }}</label>
+        <select name="indicator_ids[]" id="indicator_ids" class="form-control select2 @error('indicator_ids') is-invalid @enderror">
+            <option value="">{{ __('Select an indicator…') }}</option>
             @foreach ($indicators as $indicator)
-            <option value="{{ $indicator->id }}" @selected(in_array($indicator->id, $selectedIndicatorIds))>{{ $indicator->name }}</option>
+            <option value="{{ $indicator->id }}" @selected($selectedIndicatorId === $indicator->id)>{{ $indicator->name }}</option>
             @endforeach
         </select>
         @error('indicator_ids')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 </div>
-
-@push('scripts')
-<script>
-    $(document).ready(function () {
-        $('#indicator_ids').select2({ placeholder: @json(__('Select indicators…')), width: '100%' });
-    });
-</script>
-@endpush

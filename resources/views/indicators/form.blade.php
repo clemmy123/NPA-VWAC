@@ -59,7 +59,7 @@
         <select name="measurement_type_id" id="measurement_type_id" class="form-control @error('measurement_type_id') is-invalid @enderror">
             <option value="">—</option>
             @foreach ($measurementTypes as $measurementType)
-            <option value="{{ $measurementType->id }}" @selected((int) old('measurement_type_id', $indicator?->measurement_type_id) === $measurementType->id)>{{ $measurementType->name }}</option>
+            <option value="{{ $measurementType->id }}" @selected((int) old('measurement_type_id', $indicator?->measurement_type_id) === $measurementType->id)>{{ __($measurementType->name) }}</option>
             @endforeach
         </select>
         @error('measurement_type_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -70,7 +70,7 @@
         <select name="unit_of_measure_id" id="unit_of_measure_id" class="form-control @error('unit_of_measure_id') is-invalid @enderror">
             <option value="">—</option>
             @foreach ($unitsOfMeasure as $unit)
-            <option value="{{ $unit->id }}" @selected((int) old('unit_of_measure_id', $indicator?->unit_of_measure_id) === $unit->id)>{{ $unit->name }}</option>
+            <option value="{{ $unit->id }}" @selected((int) old('unit_of_measure_id', $indicator?->unit_of_measure_id) === $unit->id)>{{ __($unit->name) }}</option>
             @endforeach
         </select>
         @error('unit_of_measure_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -143,25 +143,25 @@
             <div class="form-check">
                 <input type="hidden" name="requires_activity" value="0">
                 <input type="checkbox" name="requires_activity" id="requires_activity" value="1" class="form-check-input"
-                       @checked(old('requires_activity', $indicator?->requires_activity))>
+                       @checked(old('requires_activity', $indicator?->requires_activity ?? true))>
                 <label for="requires_activity" class="form-check-label">{{ __('Requires Activity') }}</label>
             </div>
             <div class="form-check">
                 <input type="hidden" name="has_budget_implication" value="0">
                 <input type="checkbox" name="has_budget_implication" id="has_budget_implication" value="1" class="form-check-input"
-                       @checked(old('has_budget_implication', $indicator?->has_budget_implication))>
+                       @checked(old('has_budget_implication', $indicator?->has_budget_implication ?? true))>
                 <label for="has_budget_implication" class="form-check-label">{{ __('Has Budget Implication') }}</label>
             </div>
             <div class="form-check">
                 <input type="hidden" name="requires_evidence" value="0">
                 <input type="checkbox" name="requires_evidence" id="requires_evidence" value="1" class="form-check-input"
-                       @checked(old('requires_evidence', $indicator?->requires_evidence))>
+                       @checked(old('requires_evidence', $indicator?->requires_evidence ?? true))>
                 <label for="requires_evidence" class="form-check-label">{{ __('Requires Evidence') }}</label>
             </div>
             <div class="form-check">
                 <input type="hidden" name="requires_hierarchical_approval" value="0">
                 <input type="checkbox" name="requires_hierarchical_approval" id="requires_hierarchical_approval" value="1" class="form-check-input"
-                       @checked(old('requires_hierarchical_approval', $indicator?->requires_hierarchical_approval))>
+                       @checked(old('requires_hierarchical_approval', $indicator?->requires_hierarchical_approval ?? true))>
                 <label for="requires_hierarchical_approval" class="form-check-label">{{ __('Requires Hierarchical Approval') }}</label>
             </div>
         </div>

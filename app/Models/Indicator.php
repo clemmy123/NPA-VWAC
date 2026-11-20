@@ -142,4 +142,23 @@ class Indicator extends Model
         return $this->belongsToMany(FundSource::class, 'indicator_fund_sources')->withPivot('is_primary')->withTimestamps();
 
     }
+
+    /**
+     * The strictest decimals/ceiling implied by the measurement type and the
+     * unit together — "Count" of "People" is whole numbers, a "Decimal" in
+     * "Percent" is capped at 100. A null decimals means no restriction.
+     *
+     * @return array{decimals: int|null, max: int|null}
+     */
+    public function valueLimits(): array
+    {
+        $limits = array_filter([$this->measurementType?->valueLimits(), $this->unitOfMeasure?->valueLimits()]);
+        $decimals = array_filter(array_column($limits, 'decimals'), fn ($value) => $value !== null);
+        $maxima = array_filter(array_column($limits, 'max'), fn ($value) => $value !== null);
+
+        return [
+            'decimals' => $decimals === [] ? null : min($decimals),
+            'max' => $maxima === [] ? null : min($maxima),
+        ];
+    }
 }

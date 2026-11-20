@@ -33,6 +33,7 @@ class IndicatorFactory extends Factory
             'requires_activity' => false,
             'has_budget_implication' => false,
             'requires_evidence' => false,
+            'requires_hierarchical_approval' => false,
             'status' => 'draft',
         ];
     }

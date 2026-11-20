@@ -1,0 +1,371 @@
+/* ==========================================================================
+   Plan Builder — Excel-style indicator planning grid (plan-builder/show).
+   One flat table per thematic area; every cell edits in place. Tokens only.
+   ========================================================================== */
+
+.pb-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pb-header-actions .btn,
+.pb-toolbar-end .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  white-space: nowrap;
+}
+
+.pb-name-input {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--heading-dark);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 4px 6px;
+  margin-left: -6px;
+  width: 100%;
+  background: transparent;
+}
+.pb-name-input:hover:not([readonly]) { background: var(--hover-bg); }
+.pb-name-input:focus { outline: none; border-color: var(--accent); background: var(--surface); }
+
+.pb-desc-input {
+  margin-top: 4px;
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 4px 6px;
+  margin-left: -6px;
+  font-size: 0.82rem;
+  color: var(--muted-mid);
+  resize: none;
+  background: transparent;
+  font-family: inherit;
+}
+.pb-desc-input:hover:not([readonly]) { background: var(--hover-bg); }
+.pb-desc-input:focus { outline: none; border-color: var(--accent); background: var(--surface); color: var(--input-text); }
+
+/* ---- financial-year bar ---- */
+.pb-year-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.pb-year-bar label { font-size: 0.78rem; font-weight: 700; color: var(--muted-mid); margin: 0; }
+.pb-year-bar select {
+  height: 32px;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  padding: 0 28px 0 10px;
+  font-size: 0.82rem;
+  background: var(--surface);
+  color: var(--input-text);
+}
+.pb-year-hint { font-size: 0.74rem; color: var(--muted-soft); }
+.pb-toolbar-end { display: flex; align-items: center; gap: 14px; margin-left: auto; }
+
+/* ---- the sheet ---- */
+.pb-sheet {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: auto;
+  max-height: calc(100vh - var(--topbar-h) - 230px);
+  min-height: 220px;
+}
+
+.pb-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  min-width: 2000px;
+  font-size: 0.82rem;
+}
+
+.pb-table th,
+.pb-table td {
+  border-right: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
+  padding: 0;
+  vertical-align: top;
+  background: var(--surface);
+}
+.pb-table th:last-child,
+.pb-table td:last-child { border-right: none; }
+
+.pb-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--surface-muted);
+  color: var(--heading-dark);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  text-align: left;
+  padding: 8px 10px;
+  vertical-align: bottom;
+  white-space: normal;
+}
+.pb-table thead tr:nth-child(2) th { top: calc(var(--pb-head-h, 34px) - 1px); }
+.pb-table thead th[colspan] { text-align: center; }
+.pb-table thead th small {
+  display: block;
+  margin-top: 1px;
+  font-size: 0.64rem;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--muted-soft);
+}
+
+/* widths */
+.pb-col-indicator { min-width: var(--pb-indicator-w, 340px); width: var(--pb-indicator-w, 340px); max-width: var(--pb-indicator-w, 340px); position: sticky; left: 0; z-index: 2; box-shadow: 1px 0 0 var(--border-soft); }
+.pb-table thead th.pb-col-indicator { z-index: 4; }
+.pb-col-acts { min-width: 280px; width: 280px; }
+.pb-col-status { min-width: 130px; width: 130px; padding: 8px 10px !important; white-space: nowrap; }
+.pb-col-actions { min-width: 52px; width: 52px; text-align: center; padding: 6px !important; }
+
+/* ---- cells ---- */
+.pb-cell {
+  display: block;
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 0;
+  height: 36px;
+  padding: 0 10px;
+  font-size: 0.82rem;
+  color: var(--input-text);
+  background: transparent;
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+}
+.pb-cell:hover:not([readonly]):not([disabled]) { background: var(--hover-bg); }
+.pb-cell:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  background: var(--surface);
+  position: relative;
+  z-index: 1;
+}
+.pb-cell[readonly],
+.pb-cell[disabled] { color: var(--muted-mid); cursor: default; }
+.pb-cell[disabled] { background: var(--surface-faint); }
+
+select.pb-cell { cursor: pointer; padding-right: 22px; text-overflow: ellipsis; }
+.pb-name { font-weight: 600; color: var(--heading-dark); }
+.pb-num { text-align: right; }
+
+/* ---- interventions (Kazi) ---- */
+.pb-acts { list-style: none; margin: 0; padding: 0; }
+.pb-act-item { display: flex; align-items: center; border-bottom: 1px solid var(--divider-faint); }
+.pb-act-item:last-child { border-bottom: none; }
+.pb-act-remove {
+  all: unset;
+  cursor: pointer;
+  padding: 0 8px;
+  color: var(--muted-icon);
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+}
+.pb-act-remove:hover { color: var(--danger-text); }
+.pb-act-add {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--accent-text);
+  cursor: pointer;
+  padding: 6px 10px;
+}
+.pb-act-add:hover { text-decoration: underline; }
+
+/* ---- per-indicator settings (frequency + config flags) ---- */
+.pb-more-toggle {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.68rem;
+  color: var(--accent-text);
+  cursor: pointer;
+  padding: 2px 10px 6px;
+}
+.pb-more-toggle:hover { text-decoration: underline; }
+.pb-more-fields { display: none; padding: 4px 10px 10px; }
+.pb-more-fields.open { display: block; }
+.pb-more-fields > div > label {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted-icon);
+  margin-bottom: 3px;
+}
+.pb-more-fields select.pb-cell { border: 1px solid var(--border-soft); border-radius: 6px; height: 30px; margin-bottom: 8px; }
+.pb-flag { display: flex; align-items: center; gap: 6px; font-size: 0.74rem; color: var(--muted-mid); margin: 0 0 4px; cursor: pointer; }
+
+/* ---- partners multiselect ---- */
+.pb-table td .select2-container { min-width: 200px; }
+.pb-table td .select2-container--default .select2-selection--multiple {
+  border: 1px solid transparent;
+  border-radius: 0;
+  min-height: 36px;
+  background: transparent;
+}
+.pb-table td .select2-container--default.select2-container--focus .select2-selection--multiple,
+.pb-table td .select2-container--default .select2-selection--multiple:hover { border-color: var(--accent); background: var(--surface); }
+.pb-table td .select2-container--default .select2-selection--multiple .select2-selection__choice { font-size: 0.72rem; margin-top: 6px; }
+
+/* ---- status ---- */
+.pb-missing { color: var(--warning-text); margin-left: 4px; cursor: help; vertical-align: middle; }
+
+/* ---- add-row bar ---- */
+.pb-add-row {
+  position: sticky;
+  left: 0;
+  padding: 12px 16px;
+  border-top: 1px solid var(--divider-faint);
+  background: var(--surface-faint);
+}
+.pb-add-ghost-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted-mid);
+  cursor: pointer;
+  padding: 9px 10px;
+  border-radius: 6px;
+  border: 1.5px dashed var(--border-strong);
+  width: 100%;
+  font-family: inherit;
+  background: transparent;
+}
+.pb-add-ghost-btn:hover { border-color: var(--accent); color: var(--accent-text); background: var(--accent-bg); }
+
+/* ---- wide view (body.pb-focus): sidebar collapsed, chrome trimmed ---- */
+body.pb-focus .content-page .container-fluid,
+body.pb-focus .content-page .content { padding-left: 12px; padding-right: 12px; }
+body.pb-focus .pb-hide-focus,
+body.pb-focus .page-header .breadcrumb,
+body.pb-focus .pb-year-hint { display: none; }
+body.pb-focus .page-header { margin-bottom: 8px; }
+body.pb-focus .pb-year-bar { margin-bottom: 8px; }
+body.pb-focus .pb-sheet { max-height: calc(100vh - var(--topbar-h) - 120px); }
+body.pb-focus footer,
+body.pb-focus .footer { display: none; }
+
+/* ---- column widths (td drives the auto table layout) ---- */
+.pb-table td:nth-child(1) { min-width: var(--pb-indicator-w, 340px); }
+.pb-table td:nth-child(3) { min-width: 130px; }
+.pb-table td:nth-child(4) { min-width: 170px; }
+.pb-table td:nth-child(5) { min-width: 120px; }
+.pb-table td:nth-child(6),
+.pb-table td:nth-child(7) { min-width: 130px; }
+.pb-table td:nth-child(8),
+.pb-table td:nth-child(9) { min-width: 150px; }
+.pb-table td:nth-child(10) { min-width: 200px; }
+.pb-table td:nth-child(11) { min-width: 260px; }
+
+/* ---- text cells: wrap, grow with content, Enter inserts a new line ---- */
+textarea.pb-cell.pb-text {
+  height: auto;
+  min-height: 36px;
+  padding: 8px 10px;
+  line-height: 1.35;
+  resize: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.pb-cell::placeholder { color: var(--muted-faint); opacity: 1; }
+.pb-num { font-variant-numeric: tabular-nums; letter-spacing: 0.01em; }
+
+/* ---- searchable single selects styled as grid cells ----
+   forms.css forces every .select2-container to width:100% and a bordered,
+   filled selection box with !important, so the grid has to override with
+   !important too. */
+body > .select2-container { width: auto !important; }
+.pb-table td .select2-container--default .select2-selection--single {
+  height: 36px;
+  border: 1px solid transparent !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+}
+.pb-table td .select2-container--default .select2-selection--single .select2-selection__rendered {
+  line-height: 34px;
+  padding-left: 10px;
+  padding-right: 24px;
+  font-size: 0.82rem;
+  color: var(--input-text);
+}
+.pb-table td .select2-container--default .select2-selection--single .select2-selection__arrow { height: 34px; right: 4px; }
+.pb-table td .select2-container--default:hover .select2-selection--single { background-color: var(--hover-bg) !important; }
+.pb-table td .select2-container--default.select2-container--focus .select2-selection--single,
+.pb-table td .select2-container--default.select2-container--open .select2-selection--single {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  background-color: var(--surface) !important;
+}
+.pb-table td .select2-container--default.select2-container--disabled .select2-selection--single { background-color: var(--surface-faint) !important; }
+.pb-table td .select2-container--default.select2-container--disabled .select2-selection__rendered { color: var(--muted-mid); }
+.pb-more-fields .select2-container--default .select2-selection--single {
+  border: 1px solid var(--border-soft) !important;
+  border-radius: 6px !important;
+  height: 30px;
+  margin-bottom: 8px;
+}
+.pb-more-fields .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 28px; }
+
+.pb-select2-dropdown { font-size: 0.82rem; min-width: 220px; }
+.pb-select2-dropdown .select2-search--dropdown .select2-search__field { border-radius: 6px; padding: 6px 8px; }
+
+/* ---- resizable indicator column: drag the right edge of its header ---- */
+.pb-col-resizer {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  bottom: 0;
+  width: 8px;
+  cursor: col-resize;
+  z-index: 5;
+  touch-action: none;
+}
+.pb-col-resizer::after {
+  content: "";
+  position: absolute;
+  top: 25%;
+  bottom: 25%;
+  left: 3px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--border-strong);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.pb-table thead th:hover > .pb-col-resizer::after,
+.pb-col-resizer:hover::after,
+body.pb-resizing .pb-col-resizer::after { opacity: 1; background: var(--accent); }
+body.pb-resizing { cursor: col-resize; user-select: none; }
+.pb-col-indicator { overflow-wrap: anywhere; }
+
+/* ---- toolbar selects (financial year / reporting period): searchable Select2, bordered like the form selects ---- */
+.pb-year-bar .select2-container { width: 170px !important; }
+.pb-year-bar #csPeriod + .select2-container { width: 330px !important; }
+.pb-year-bar .select2-container .select2-selection--single { height: 34px; }
+.pb-year-bar .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 32px; font-size: 0.82rem; }
+.pb-year-bar .select2-container--default .select2-selection--single .select2-selection__arrow { height: 32px; }

@@ -4,8 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\FinancialYear;
 use App\Models\Indicator;
-use App\Models\IndicatorBaseline;
-use App\Models\IndicatorTarget;
+use App\Models\IndicatorPlan;
 use App\Models\Project;
 use App\Models\ThematicArea;
 use App\Models\User;
@@ -110,15 +109,21 @@ class PlanBuilderControllerTest extends TestCase
         $response->assertDontSee('In Project B');
     }
 
-    public function test_the_builder_page_shows_indicators_with_their_current_financial_year_baseline_and_target(): void
+    public function test_the_builder_grid_shows_each_indicators_plan_baseline_and_target_for_the_selected_year(): void
     {
         $tm = $this->userWithRole('Thematic Manager');
         $thematicArea = ThematicArea::factory()->create();
         $thematicArea->users()->attach($tm->id, ['is_active' => true]);
         $financialYear = FinancialYear::factory()->create(['is_current' => true]);
         $indicator = Indicator::factory()->create(['thematic_area_id' => $thematicArea->id, 'name' => 'Boreholes rehabilitated']);
-        IndicatorBaseline::factory()->create(['indicator_id' => $indicator->id, 'financial_year_id' => $financialYear->id, 'baseline_value' => 4]);
-        IndicatorTarget::factory()->create(['indicator_id' => $indicator->id, 'financial_year_id' => $financialYear->id, 'reporting_period_id' => null, 'target_value' => 18]);
+        IndicatorPlan::query()->create([
+            'indicator_id' => $indicator->id,
+            'financial_year_id' => $financialYear->id,
+            'baseline_financial_year_id' => $financialYear->id,
+            'baseline_value' => 4,
+            'annual_target' => 18,
+            'created_by' => $tm->id,
+        ]);
 
         $response = $this->actingAs($tm)->get(route('plan-builder.show', $thematicArea));
 
@@ -140,7 +145,7 @@ class PlanBuilderControllerTest extends TestCase
         $response = $this->actingAs($tm)->get(route('plan-builder.show', $thematicArea));
 
         $response->assertOk();
-        $response->assertSee('pb-target-fy', false);
+        $response->assertSee('pbPlanYear', false);
         $response->assertSee('2026/27');
         $response->assertSee('2027/28');
 

@@ -178,33 +178,66 @@ class PlanHierarchyControllersTest extends TestCase
 
     // --- Intervention ---
 
-    public function test_intervention_indicator_relationship_works_both_directions(): void
+    public function test_intervention_is_linked_to_a_single_indicator_and_an_indicator_can_have_many_interventions(): void
+    {
+        $user = $this->userWithRole('Thematic Manager');
+        $thematicArea = ThematicArea::factory()->create();
+        $indicator = Indicator::factory()->create(['thematic_area_id' => $thematicArea->id]);
+
+        $response = $this->actingAs($user)->postJson('/interventions', [
+            'thematic_area_id' => $thematicArea->id,
+            'name' => 'Community dialogues',
+            'indicator_ids' => [$indicator->id],
+        ]);
+
+        $response->assertCreated();
+        $interventionId = $response->json('data.id');
+
+        $this->assertCount(1, Intervention::find($interventionId)->indicators);
+        $this->assertTrue($indicator->fresh()->interventions->contains('id', $interventionId));
+
+        $secondIntervention = Intervention::factory()->create(['thematic_area_id' => $thematicArea->id]);
+        $secondIntervention->indicators()->attach($indicator->id);
+
+        $this->assertCount(2, $indicator->fresh()->interventions);
+    }
+
+    public function test_intervention_cannot_be_linked_to_more_than_one_indicator(): void
     {
         $user = $this->userWithRole('Thematic Manager');
         $thematicArea = ThematicArea::factory()->create();
         $indicatorA = Indicator::factory()->create(['thematic_area_id' => $thematicArea->id]);
         $indicatorB = Indicator::factory()->create(['thematic_area_id' => $thematicArea->id]);
 
-        $response = $this->actingAs($user)->postJson('/interventions', [
+        $this->actingAs($user)->postJson('/interventions', [
             'thematic_area_id' => $thematicArea->id,
             'name' => 'Community dialogues',
             'indicator_ids' => [$indicatorA->id, $indicatorB->id],
-        ]);
+        ])->assertUnprocessable()->assertJsonValidationErrors('indicator_ids');
 
-        $response->assertCreated();
-        $interventionId = $response->json('data.id');
+        $this->assertDatabaseMissing('interventions', ['name' => 'Community dialogues']);
 
-        $intervention = Intervention::find($interventionId);
-        $this->assertCount(2, $intervention->indicators);
+        $intervention = Intervention::factory()->create(['thematic_area_id' => $thematicArea->id]);
 
-        $this->assertTrue($indicatorA->fresh()->interventions->contains('id', $interventionId));
-        $this->assertTrue($indicatorB->fresh()->interventions->contains('id', $interventionId));
+        $this->actingAs($user)->putJson("/interventions/{$intervention->id}", [
+            'indicator_ids' => [$indicatorA->id, $indicatorB->id],
+        ])->assertUnprocessable()->assertJsonValidationErrors('indicator_ids');
+    }
 
-        // one indicator linked to multiple interventions
-        $secondIntervention = Intervention::factory()->create(['thematic_area_id' => $thematicArea->id]);
-        $secondIntervention->indicators()->attach($indicatorA->id);
+    public function test_updating_an_intervention_replaces_its_indicator(): void
+    {
+        $user = $this->userWithRole('Thematic Manager');
+        $thematicArea = ThematicArea::factory()->create();
+        $indicatorA = Indicator::factory()->create(['thematic_area_id' => $thematicArea->id]);
+        $indicatorB = Indicator::factory()->create(['thematic_area_id' => $thematicArea->id]);
+        $intervention = Intervention::factory()->create(['thematic_area_id' => $thematicArea->id]);
+        $intervention->indicators()->attach($indicatorA->id);
 
-        $this->assertCount(2, $indicatorA->fresh()->interventions);
+        $this->actingAs($user)->putJson("/interventions/{$intervention->id}", [
+            'indicator_ids' => [$indicatorB->id],
+        ])->assertOk();
+
+        $this->assertSame([$indicatorB->id], $intervention->fresh()->indicators->pluck('id')->all());
     }
 
     public function test_unauthorized_user_cannot_create_an_intervention(): void
