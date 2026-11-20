@@ -233,16 +233,43 @@
 }
 
 #sidebar-menu .nav-second-level li {
-  position: static;
+  position: relative;
+}
+
+/* tree guide: a vertical rail under the parent icon with an elbow into each child */
+#sidebar-menu .nav-second-level li::before {
+  content: "";
+  position: absolute;
+  left: 35px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border-strong);
+}
+
+#sidebar-menu .nav-second-level li:last-child::before {
+  bottom: 50%;
 }
 
 #sidebar-menu .nav-second-level li::after {
-  display: none !important;
+  content: "" !important;
+  display: block !important;
+  position: absolute;
+  left: 35px;
+  top: 50%;
+  width: 12px;
+  height: 1px;
+  background: var(--border-strong);
+}
+
+#sidebar-menu .nav-second-level li.active::before,
+#sidebar-menu .nav-second-level li.active::after {
+  background: var(--brand-blue);
 }
 
 #sidebar-menu .nav-second-level li > a {
   position: relative;
-  padding: 10px 20px 10px 48px !important;
+  padding: 10px 20px 10px 58px !important;
   margin: 0 !important;
   border-radius: 0 !important;
   color: var(--muted-mid) !important;
@@ -270,6 +297,35 @@
 #sidebar-menu .nav-second-level li > a:hover {
   background: var(--hover-bg) !important;
   color: var(--nav-hover) !important;
+}
+
+/* COLOURED ICON CHIPS — each top-level item has its own tone */
+#side-menu > li { --tone-bg: var(--accent-bg); --tone-fg: var(--accent-text); }
+#side-menu > li.nav-tone-blue { --tone-bg: var(--accent-bg); --tone-fg: var(--accent-text); }
+#side-menu > li.nav-tone-purple { --tone-bg: var(--purple-bg); --tone-fg: var(--purple-text); }
+#side-menu > li.nav-tone-teal { --tone-bg: var(--tone-teal-bg); --tone-fg: var(--tone-teal-text); }
+#side-menu > li.nav-tone-amber { --tone-bg: var(--tone-amber-bg); --tone-fg: var(--tone-amber-text); }
+#side-menu > li.nav-tone-pink { --tone-bg: var(--tone-pink-bg); --tone-fg: var(--tone-pink-text); }
+#side-menu > li.nav-tone-green { --tone-bg: var(--success-bg); --tone-fg: var(--success-text); }
+#side-menu > li.nav-tone-sky { --tone-bg: var(--tone-sky-bg); --tone-fg: var(--tone-sky-text); }
+#side-menu > li.nav-tone-slate { --tone-bg: var(--tone-slate-bg); --tone-fg: var(--tone-slate-text); }
+
+#sidebar-menu #side-menu > li > a > i {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 30px !important;
+  height: 30px;
+  border-radius: 8px;
+  font-size: 1.05rem !important;
+  background: var(--tone-bg) !important;
+  color: var(--tone-fg) !important;
+}
+
+#sidebar-menu #side-menu > li.active > a > i,
+#sidebar-menu #side-menu > li > a:hover > i {
+  background: var(--tone-fg) !important;
+  color: var(--surface) !important;
 }
 
 /* DESKTOP COLLAPSED */

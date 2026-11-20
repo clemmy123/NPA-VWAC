@@ -18,7 +18,7 @@
             <ul class="metismenu" id="side-menu">
 
                 {{-- Dashboard --}}
-                <li class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                <li class="nav-tone-blue {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     <a href="{{ route('dashboard') }}">
                         <i class="bi bi-grid"></i>
                         <span>{{ __('Dashboard') }}</span>
@@ -27,7 +27,7 @@
 
                 {{-- Plan Builder: live, one-thematic-area-at-a-time plan construction --}}
                 @can('thematic-area.view')
-                <li class="{{ request()->routeIs('plan-builder.*') ? 'active' : '' }}">
+                <li class="nav-tone-purple {{ request()->routeIs('plan-builder.*') ? 'active' : '' }}">
                     <a href="{{ route('plan-builder.index') }}">
                         <i class="bi bi-pencil-square"></i>
                         <span>{{ __('Plan Builder') }}</span>
@@ -35,6 +35,9 @@
                 </li>
                 @endcan
 
+                {{-- Super Admin reaches Projects / Thematic Areas / Indicators / Baselines / Targets
+                     from the Settings hub; everyone else (who cannot open Settings) keeps the group here. --}}
+                @cannot('settings.manage')
                 {{-- Plan hierarchy: Projects / Thematic Areas / Indicators / Interventions.
                      Deliberately gated on 'indicator.view-all' rather than plain
                      'indicator.view'/'intervention.view' — a Data Entry User has
@@ -45,9 +48,9 @@
                     $planActive = request()->routeIs('projects.*')
                         || request()->routeIs('thematic-areas.*')
                         || request()->routeIs('indicators.*')
-                        || request()->routeIs('interventions.*');
+                        ;
                 @endphp
-                <li class="{{ $planActive ? 'active' : '' }}">
+                <li class="nav-tone-teal {{ $planActive ? 'active' : '' }}">
                     <a href="javascript: void(0);">
                         <i class="bi bi-diagram-3"></i>
                         <span>{{ __('Plan Hierarchy') }}</span>
@@ -72,12 +75,6 @@
                             <a href="{{ route('indicators.index') }}">{{ __('Indicators') }}</a>
                         </li>
                         @endcan
-
-                        @can('intervention.view')
-                        <li class="{{ request()->routeIs('interventions.*') ? 'active' : '' }}">
-                            <a href="{{ route('interventions.index') }}">{{ __('Interventions') }}</a>
-                        </li>
-                        @endcan
                     </ul>
                 </li>
                 @endcanany
@@ -87,7 +84,7 @@
                 @php
                     $targetsActive = request()->routeIs('indicator-baselines.*') || request()->routeIs('indicator-targets.*');
                 @endphp
-                <li class="{{ $targetsActive ? 'active' : '' }}">
+                <li class="nav-tone-amber {{ $targetsActive ? 'active' : '' }}">
                     <a href="javascript: void(0);">
                         <i class="bi bi-bullseye"></i>
                         <span>{{ __('Baselines & Targets') }}</span>
@@ -105,16 +102,18 @@
                 </li>
                 @endcan
 
+                @endcannot
+
                 @can('institution.confirm')
-                <li class="{{ request()->routeIs('institution-inbox.*') ? 'active' : '' }}">
+                <li class="nav-tone-pink {{ request()->routeIs('institution-inbox.*') ? 'active' : '' }}">
                     <a href="{{ route('institution-inbox.index') }}"><i class="bi bi-building-check"></i><span>{{ __('Institution Ownership Inbox') }}</span></a>
                 </li>
                 @endcan
 
                 {{-- Data collections --}}
                 @can('indicator-data.view')
-                <li class="{{ request()->routeIs('indicator-data-entries.*') ? 'active' : '' }}">
-                    <a href="{{ route('indicator-data-entries.index') }}">
+                <li class="nav-tone-green {{ request()->routeIs('collection-sheet.*', 'indicator-data-entries.*') ? 'active' : '' }}">
+                    <a href="{{ route('collection-sheet.index') }}">
                         <i class="bi bi-clipboard-data"></i>
                         <span>{{ __('Data Collections') }}</span>
                     </a>
@@ -124,7 +123,7 @@
                 {{-- Reports --}}
                 @can('report.view')
                 @php($reportsActive = request()->routeIs('reports.*'))
-                <li class="{{ $reportsActive ? 'active' : '' }}">
+                <li class="nav-tone-sky {{ $reportsActive ? 'active' : '' }}">
                     <a href="javascript: void(0);">
                         <i class="bi bi-file-earmark-bar-graph"></i>
                         <span>{{ __('Reports') }}</span>
@@ -144,19 +143,9 @@
                 </li>
                 @endcan
 
-                {{-- Users --}}
-                @can('user.view')
-                <li class="{{ request()->routeIs('users.*') ? 'active' : '' }}">
-                    <a href="{{ route('users.index') }}">
-                        <i class="bi bi-people"></i>
-                        <span>{{ __('Users') }}</span>
-                    </a>
-                </li>
-                @endcan
-
-                {{-- Settings --}}
+                {{-- Settings (also the home of Projects / Thematic Areas / Indicators) --}}
                 @can('settings.manage')
-                <li class="{{ request()->routeIs('settings.*', 'organizations.*', 'organization-types.*', 'financial-years.*', 'reporting-periods.*', 'measurement-types.*', 'units-of-measure.*', 'dimensions.*') ? 'active' : '' }}">
+                <li class="nav-tone-slate {{ request()->routeIs('settings.*', 'organizations.*', 'organization-types.*', 'financial-years.*', 'reporting-periods.*', 'measurement-types.*', 'units-of-measure.*', 'dimensions.*', 'projects.*', 'thematic-areas.*', 'indicators.*', 'indicator-baselines.*', 'indicator-targets.*', 'users.*') ? 'active' : '' }}">
                     <a href="{{ route('settings.index') }}">
                         <i class="bi bi-gear"></i>
                         <span>{{ __('Settings') }}</span>

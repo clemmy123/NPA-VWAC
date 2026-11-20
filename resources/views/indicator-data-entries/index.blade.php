@@ -27,6 +27,10 @@
     @endif
 </div>
 
+@if ($projects->isEmpty() && ! $historyIndicator)
+<div class="alert alert-info mb-3">{{ __('A project appears here only once at least one of its indicators has an approved annual plan. Plans are approved in the Plan Builder: submit the plan, the institution confirms it, then the thematic area coordinator approves it.') }}</div>
+@endif
+
 <div class="filter-card report-filters mb-3{{ $historyIndicator ? ' d-none' : '' }}" id="collection-workspace-filters">
     <div class="rf-field">
         <label for="workspace_project_id">{{ __('Project') }}</label>

@@ -1,0 +1,112 @@
+/* ==========================================================================
+   Data collection sheet (collection-sheet/show) — reuses the Plan Builder
+   grid (plan-grid.css). Plan columns are tinted + read-only; the columns the
+   collector fills in are plain white inputs. Tokens only.
+   ========================================================================== */
+
+.pb-table.cs-table { min-width: 3000px; }
+
+.cs-legend {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  font-size: 0.74rem;
+  color: var(--muted-mid);
+}
+.cs-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.cs-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--border-soft); }
+.cs-swatch-plan { background: var(--surface-muted); }
+.cs-swatch-fill { background: var(--accent-bg); border-color: var(--accent-border-hover); }
+
+/* header groups */
+.pb-table thead th.cs-th-plan { background: var(--surface-muted); }
+.pb-table thead th.cs-th-fill { background: var(--accent-bg); color: var(--accent-text); }
+
+/* read-only plan cells */
+.cs-table td.cs-locked,
+.cs-table td.cs-num {
+  padding: 8px 10px;
+  vertical-align: top;
+  background: var(--surface-faint);
+  color: var(--text-body);
+}
+.cs-table td.cs-num { text-align: right; font-variant-numeric: tabular-nums; }
+.cs-table td.cs-total { font-weight: 600; background: var(--surface-muted); }
+.cs-table td.cs-progress { font-weight: 600; color: var(--accent-text); background: var(--surface); }
+.cs-table td.cs-fill { background: var(--surface); }
+.cs-table td.pb-col-indicator {
+  background-color: var(--surface);
+  background-image: linear-gradient(var(--surface-faint), var(--surface-faint));
+}
+
+.cs-indicator-name { font-weight: 600; color: var(--heading-dark); line-height: 1.35; }
+.cs-indicator-meta { margin-top: 3px; font-size: 0.72rem; color: var(--muted-soft); }
+.cs-chip { margin-left: 6px; color: var(--muted-mid); }
+.cs-intervention { padding: 2px 0 2px 10px; position: relative; line-height: 1.35; }
+.cs-intervention::before { content: ""; position: absolute; left: 0; top: 0.65em; width: 4px; height: 4px; border-radius: 50%; background: var(--muted-soft); }
+
+.cs-row-off td,
+.cs-row-off .cs-indicator-name { color: var(--muted-soft); }
+.cs-row-off .cs-fill { background: var(--surface-faint); }
+.cs-row-off .cs-input::placeholder { color: transparent; }
+
+/* column widths */
+.pb-table.cs-table td:nth-child(1) { min-width: var(--pb-indicator-w, 340px); }
+.pb-table.cs-table td:nth-child(2) { min-width: 240px; }
+.pb-table.cs-table td:nth-child(3) { min-width: 110px; }
+.pb-table.cs-table td:nth-child(4) { min-width: 100px; }
+.pb-table.cs-table td:nth-child(5),
+.pb-table.cs-table td:nth-child(6),
+.pb-table.cs-table td:nth-child(7) { min-width: 120px; }
+.pb-table.cs-table td:nth-child(8) { min-width: 120px; }
+.pb-table.cs-table td:nth-child(9) { min-width: 80px; }
+.pb-table.cs-table td:nth-child(10) { min-width: 260px; }
+.pb-table.cs-table td:nth-child(11),
+.pb-table.cs-table td:nth-child(12),
+.pb-table.cs-table td:nth-child(13),
+.pb-table.cs-table td:nth-child(14),
+.pb-table.cs-table td:nth-child(15),
+.pb-table.cs-table td:nth-child(16) { min-width: 130px; }
+.pb-table.cs-table td:nth-child(17) { min-width: 170px; }
+.pb-table.cs-table td:nth-child(18) { min-width: 220px; }
+.pb-table.cs-table td:nth-child(19) { min-width: 220px; }
+.pb-table.cs-table td:nth-child(20) { min-width: 130px; }
+.pb-table.cs-table td:nth-child(21) { min-width: 230px; }
+
+/* location picker inside the indicator cell */
+.cs-table td.pb-col-indicator .cs-location { margin-top: 8px; width: 100%; }
+.cs-table td.pb-col-indicator .select2-container { margin-top: 8px; }
+
+/* evidence cell */
+.cs-evidence { padding: 6px 10px !important; vertical-align: top; }
+.cs-files { list-style: none; margin: 0 0 4px; padding: 0; }
+.cs-files li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 2px 0;
+  font-size: 0.78rem;
+}
+.cs-files li a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--accent-text); }
+.cs-file-remove { border: 0; background: transparent; color: var(--muted-soft); padding: 0 2px; line-height: 1; cursor: pointer; }
+.cs-file-remove:hover { color: var(--danger-text); }
+.cs-evidence-actions { display: flex; align-items: center; gap: 10px; }
+.cs-attach {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--accent-text);
+  cursor: pointer;
+}
+.cs-attach:hover { text-decoration: underline; }
+.cs-attach input { display: none; }
+
+/* read-only text wraps (the grid default is a single line) */
+.cs-table td.cs-locked,
+.cs-table td.pb-col-indicator,
+.cs-table td.cs-evidence { white-space: normal; overflow-wrap: anywhere; }

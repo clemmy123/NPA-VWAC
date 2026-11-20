@@ -35,9 +35,9 @@ class DashboardShellTest extends TestCase
         $response->assertSee('bi-grid', false);
         $response->assertDontSee('bi-speedometer2', false);
         $response->assertSee('navbar-custom', false);
-        $response->assertSee(route('projects.index'), false);
+        $response->assertSee(route('settings.index'), false);
         $response->assertSee('Data Collections');
-        $response->assertSee(route('indicator-data-entries.index'), false);
+        $response->assertSee(route('collection-sheet.index'), false);
         $response->assertSee('General Report');
         $response->assertSee('Workstation Reports');
         $response->assertSee(route('reports.general'), false);
@@ -57,7 +57,7 @@ class DashboardShellTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Data Collections');
-        $response->assertSee(route('indicator-data-entries.index'), false);
+        $response->assertSee(route('collection-sheet.index'), false);
         $response->assertDontSee('General Report');
         $response->assertDontSee('Workstation Reports');
         $response->assertDontSee(route('projects.index'), false);

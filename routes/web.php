@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminLocationController;
+use App\Http\Controllers\CollectionSheetController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DimensionController;
 use App\Http\Controllers\DimensionOptionController;
@@ -8,11 +9,11 @@ use App\Http\Controllers\FinancialYearController;
 use App\Http\Controllers\GeneralReportController;
 use App\Http\Controllers\IndicatorBaselineController;
 use App\Http\Controllers\IndicatorController;
-use App\Http\Controllers\IndicatorPlanController;
-use App\Http\Controllers\InstitutionInboxController;
 use App\Http\Controllers\IndicatorDataAssignmentController;
 use App\Http\Controllers\IndicatorDataEntryController;
+use App\Http\Controllers\IndicatorPlanController;
 use App\Http\Controllers\IndicatorTargetController;
+use App\Http\Controllers\InstitutionInboxController;
 use App\Http\Controllers\InterventionController;
 use App\Http\Controllers\JumuishiSsoController;
 use App\Http\Controllers\LateDataEntryController;
@@ -153,6 +154,10 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
     Route::post('annual-plans/review/{indicatorPlan}', [IndicatorPlanController::class, 'action'])
         ->middleware('auth')->name('indicator-plans.action');
 
+    Route::post('plan-builder/{thematic_area}/indicators/{indicator}/plan', [PlanBuilderController::class, 'savePlan'])
+        ->middleware('can:thematic-area.view')->name('plan-builder.plans.save');
+    Route::post('plan-builder/{thematic_area}/submit', [PlanBuilderController::class, 'submitPlans'])
+        ->middleware('can:thematic-area.view')->name('plan-builder.plans.submit');
     Route::get('plan-builder/{thematic_area}', [PlanBuilderController::class, 'show'])
         ->middleware('can:thematic-area.view')->name('plan-builder.show');
 
@@ -228,6 +233,16 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
     Route::resource('indicator-data-assignments', IndicatorDataAssignmentController::class)
         ->except(['show'])
         ->middleware('can:indicator.assign-user');
+
+    Route::middleware('can:indicator-data.view')->group(function () {
+        Route::get('collection-sheet', [CollectionSheetController::class, 'index'])->name('collection-sheet.index');
+        Route::get('collection-sheet/{thematic_area}', [CollectionSheetController::class, 'show'])->name('collection-sheet.show');
+        Route::post('collection-sheet/{thematic_area}/indicators/{indicator}', [CollectionSheetController::class, 'save'])->name('collection-sheet.save');
+        Route::get('collection-sheet/{thematic_area}/indicators/{indicator}/locations', [CollectionSheetController::class, 'locations'])->name('collection-sheet.locations');
+        Route::post('collection-sheet/{thematic_area}/indicators/{indicator}/evidence', [CollectionSheetController::class, 'uploadEvidence'])->name('collection-sheet.evidence.store');
+        Route::delete('collection-sheet/{thematic_area}/entries/{indicator_data_entry}/evidence/{media}', [CollectionSheetController::class, 'destroyEvidence'])->name('collection-sheet.evidence.destroy');
+        Route::post('collection-sheet/{thematic_area}/submit', [CollectionSheetController::class, 'submit'])->name('collection-sheet.submit');
+    });
 
     Route::get('indicator-data-entries/create', [IndicatorDataEntryController::class, 'create'])
         ->middleware('can:indicator-data.create')->name('indicator-data-entries.create');

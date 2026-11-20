@@ -65,6 +65,18 @@
   --warning-text: #d97706;
   --purple-bg: #f5f3ff;
   --purple-text: #7c3aed;
+
+  /* Sidebar icon tones — a tinted chip + a stronger glyph colour per nav item */
+  --tone-teal-bg: #f0fdfa;
+  --tone-teal-text: #0d9488;
+  --tone-amber-bg: #fffbeb;
+  --tone-amber-text: #d97706;
+  --tone-pink-bg: #fdf2f8;
+  --tone-pink-text: #db2777;
+  --tone-sky-bg: #f0f9ff;
+  --tone-sky-text: #0284c7;
+  --tone-slate-bg: #f1f5f9;
+  --tone-slate-text: #475569;
   --accent-bg: #eff6ff;
   --accent-text: #3b82f6;
   --accent-border-hover: #bfdbfe;

@@ -179,6 +179,33 @@ class AdminLocationLevel
         return $chain;
     }
 
+    /**
+     * Name search at one level, labelled with the ancestors that tell identically
+     * named places apart ("Kivukoni — Ilala, Dar es Salaam"). Backs the single-box
+     * location picker on the data collection sheet.
+     *
+     * @return list<array{id: int, text: string}>
+     */
+    public static function search(string $level, string $term, int $limit = 30): array
+    {
+        abort_unless(self::isValidLevel($level), 404);
+
+        $definition = self::LEVELS[$level];
+
+        return $definition['model']::query()
+            ->when($term !== '', fn ($query) => $query->where('name', 'like', '%'.$term.'%'))
+            ->orderBy('name')
+            ->limit($limit)
+            ->get()
+            ->map(function ($record) use ($definition, $level): array {
+                $id = (int) $record->{$definition['key']};
+                $parents = collect(self::ancestorChain($level, $id))->except($level)->pluck('name')->implode(', ');
+
+                return ['id' => $id, 'text' => $record->name.($parents !== '' ? ' — '.$parents : '')];
+            })
+            ->all();
+    }
+
     public static function name(string $level, int $id): ?string
     {
         if (! self::isValidLevel($level)) {
