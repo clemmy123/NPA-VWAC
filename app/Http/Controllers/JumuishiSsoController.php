@@ -102,10 +102,20 @@ class JumuishiSsoController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        // Land on the SSO sign-in (the local dev picker when running locally).
-        return app()->environment('local')
-            ? redirect()->route('dev-login')
-            : redirect()->away(JumuishiUrl::login());
+        // Sign out of Jumuishi too, so the hub's own session ends and its sign-in page is shown.
+        // Only when no hub is reachable (the "hub" is this very app, as on a developer machine)
+        // fall back to the local dev picker.
+        if (app()->environment('local') && $this->hubIsThisApp($request)) {
+            return redirect()->route('dev-login');
+        }
+
+        return redirect()->away(JumuishiUrl::central(config('jumuishi.central_logout_path')));
+    }
+
+    private function hubIsThisApp(Request $request): bool
+    {
+        return parse_url((string) config('jumuishi.url'), PHP_URL_HOST) === $request->getHost()
+            && (int) (parse_url((string) config('jumuishi.url'), PHP_URL_PORT) ?: 80) === $request->getPort();
     }
 
     private function issue(string $message, int $status): Response

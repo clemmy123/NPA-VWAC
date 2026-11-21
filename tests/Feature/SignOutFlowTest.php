@@ -16,12 +16,21 @@ class SignOutFlowTest extends TestCase
         $this->post('/local-login')->assertNotFound();
     }
 
-    public function test_signing_out_returns_to_the_sso_entry_point(): void
+    public function test_signing_out_ends_the_central_jumuishi_session(): void
     {
+        config(['jumuishi.url' => 'https://jumuishi.example']);
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->post(route('logout'))->assertRedirect('https://jumuishi.example/central-logout');
+        $this->assertGuest();
+    }
+
+    public function test_signing_out_on_a_developer_machine_without_a_hub_shows_the_dev_picker(): void
+    {
+        config(['jumuishi.url' => 'http://localhost']);
         $user = User::factory()->create();
 
         $this->actingAs($user)->post(route('logout'))->assertRedirect(route('dev-login'));
-        $this->assertGuest();
     }
 
     public function test_signed_in_users_are_bounced_away_from_the_login_page(): void
