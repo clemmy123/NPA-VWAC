@@ -1,0 +1,175 @@
+/* ==========================================================================
+   Plan Builder + Collection sheet on phones: each indicator row becomes a card.
+   Labels come from the cells' data-label attribute; the desktop spreadsheet
+   (sticky header/column, horizontal scroll) is switched off below 768px.
+   ========================================================================== */
+
+@media (max-width: 767px) {
+  .pb-sheet {
+    max-height: none;
+    min-height: 0;
+    overflow: visible;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .pb-table,
+  .pb-table.cs-table,
+  .pb-table tbody { display: block; width: 100%; min-width: 0; }
+
+  /* year / period pickers: label + full-width select per row */
+  .pb-year-bar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 8px 12px;
+  }
+  .pb-year-bar .select2-container,
+  .pb-year-bar #csPeriod + .select2-container { width: 100% !important; }
+  .pb-year-hint,
+  .pb-toolbar-end { grid-column: 1 / -1; }
+  .pb-table thead { display: none; }
+
+  .pb-table tr.pb-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+    padding: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+  }
+
+  .pb-table tr.pb-row > td,
+  .pb-table tr.pb-row > td:nth-child(n) {
+    display: block;
+    position: static;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: transparent !important;
+  }
+
+  .pb-table tr.pb-row > td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted-icon);
+  }
+
+  /* title + wide fields span both columns */
+  .pb-table tr.pb-row > .pb-col-indicator,
+  .pb-table tr.pb-row > .pb-col-acts { grid-column: 1 / -1; }
+
+  /* fields become real inputs (the desktop cells are borderless) */
+  .pb-table .pb-cell {
+    height: 40px;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  .pb-table .pb-cell[disabled],
+  .pb-table .pb-cell[readonly] { background: var(--surface-faint); }
+
+  .pb-table td .select2-container { width: 100% !important; min-width: 0; }
+  .pb-table td .select2-container--default .select2-selection--single {
+    height: 40px;
+    border: 1px solid var(--border-soft) !important;
+    border-radius: var(--radius) !important;
+    background-color: var(--surface) !important;
+  }
+  .pb-table td .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 38px; }
+  .pb-table td .select2-container--default .select2-selection--single .select2-selection__arrow { height: 38px; }
+  .pb-table td .select2-container--default .select2-selection--multiple {
+    min-height: 40px;
+    border: 1px solid var(--border-soft) !important;
+    border-radius: var(--radius) !important;
+    background: var(--surface) !important;
+  }
+
+  /* the indicator name reads as the card title, not as an input */
+  .pb-table .pb-col-indicator .pb-cell {
+    height: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--heading-dark);
+  }
+  #pbFocusToggle { display: none; }
+  .pb-toolbar-end { margin-left: 0; width: 100%; }
+
+  .pb-act-item { border: 0; padding: 2px 0; }
+  .pb-act-item .pb-cell { flex: 1; }
+}
+
+/* ---- Plan Builder card specifics (13 cells) ---- */
+@media (max-width: 767px) {
+  .pb-table tr.pb-row:not(.cs-row) > td:nth-child(7),  /* target */
+  .pb-table tr.pb-row:not(.cs-row) > td:nth-child(10), /* lead */
+  .pb-table tr.pb-row:not(.cs-row) > td:nth-child(11) { grid-column: 1 / -1; } /* partners */
+
+  .pb-table tr.pb-row:not(.cs-row) > .pb-col-status {
+    grid-column: 1 / -1;
+    padding-top: 10px;
+    border-top: 1px solid var(--divider-faint);
+  }
+
+  .pb-table tr.pb-row:not(.cs-row) > .pb-col-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: auto;
+    padding: 0;
+  }
+
+  .pb-table tr.pb-row:not(.cs-row) > .pb-col-indicator { padding-right: 36px; }
+}
+
+/* ---- Collection sheet card specifics (21 cells) ----
+   Six-column grid so budget triplets sit three across and pairs two across. */
+@media (max-width: 767px) {
+  .pb-table tr.pb-row.cs-row { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+
+  .pb-table tr.cs-row > td { grid-column: span 3; }
+  .pb-table tr.cs-row > td:nth-child(1),
+  .pb-table tr.cs-row > td:nth-child(2),
+  .pb-table tr.cs-row > td:nth-child(10), /* status of implementation */
+  .pb-table tr.cs-row > td:nth-child(17), /* lead */
+  .pb-table tr.cs-row > td:nth-child(18), /* partners */
+  .pb-table tr.cs-row > td:nth-child(19), /* remarks */
+  .pb-table tr.cs-row > td:nth-child(20), /* status */
+  .pb-table tr.cs-row > td:nth-child(21) { grid-column: 1 / -1; } /* evidence */
+
+  .pb-table tr.cs-row > td:nth-child(n+5):nth-child(-n+7),   /* planned budget */
+  .pb-table tr.cs-row > td:nth-child(n+11):nth-child(-n+16) { grid-column: span 2; } /* released, spent */
+
+  .pb-table tr.cs-row > .pb-col-status {
+    padding-top: 10px;
+    border-top: 1px solid var(--divider-faint);
+  }
+
+  .pb-table tr.cs-row > .cs-locked,
+  .pb-table tr.cs-row > .cs-num { font-size: 0.86rem; color: var(--heading-dark); }
+  .pb-table tr.cs-row > td.cs-num { text-align: left; }
+  .pb-table tr.cs-row > .cs-locked { opacity: 0.9; }
+  .pb-table tr.cs-row > td[data-label]::before { min-height: 1.6em; } /* keep a pair's inputs level when one label wraps */
+
+  .pb-table tr.cs-row > .pb-col-status,
+  .pb-table tr.cs-row > .cs-evidence { padding-left: 0 !important; padding-right: 0 !important; }
+
+  /* indicators without an approved plan stay as a single muted line */
+  .pb-table tr.cs-row-off > td:not(.pb-col-indicator) { display: none; }
+  .pb-table tr.cs-row-off { padding: 12px 14px; }
+}

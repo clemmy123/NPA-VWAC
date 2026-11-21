@@ -48,7 +48,7 @@
         @endif
     </td>
 
-    <td class="pb-col-acts cs-locked">
+    <td data-label="{{ __('Planned interventions') }}" class="pb-col-acts cs-locked">
         @forelse ($indicator->interventions as $intervention)
         <div class="cs-intervention">{{ $intervention->name }}</div>
         @empty
@@ -56,42 +56,42 @@
         @endforelse
     </td>
 
-    <td class="cs-locked cs-num">
+    <td data-label="{{ __('Baseline') }}" class="cs-locked cs-num">
         @if ($plan)
         {{ $num($plan->baseline_value) ?: '—' }}
         <small class="d-block text-muted">{{ $plan->baseline_financial_year_id ? $financialYears->get($plan->baseline_financial_year_id)?->name : $plan->baseline_year }}</small>
         @else — @endif
     </td>
-    <td class="cs-locked cs-num">{{ $plan ? ($num($plan->annual_target) ?: '—') : '—' }}</td>
+    <td data-label="{{ __('Target') }}" class="cs-locked cs-num">{{ $plan ? ($num($plan->annual_target) ?: '—') : '—' }}</td>
 
-    <td class="cs-locked cs-num">{{ $plan && $budgetOn ? $num($plan->domestic_budget, 2) : '—' }}</td>
-    <td class="cs-locked cs-num">{{ $plan && $budgetOn ? $num($plan->external_budget, 2) : '—' }}</td>
-    <td class="cs-locked cs-num cs-total">{{ $plan && $budgetOn ? $num((float) $plan->domestic_budget + (float) $plan->external_budget, 2) : '—' }}</td>
+    <td data-label="{{ __('Planned') }} · {{ __('Internal') }}" class="cs-locked cs-num">{{ $plan && $budgetOn ? $num($plan->domestic_budget, 2) : '—' }}</td>
+    <td data-label="{{ __('Planned') }} · {{ __('External') }}" class="cs-locked cs-num">{{ $plan && $budgetOn ? $num($plan->external_budget, 2) : '—' }}</td>
+    <td data-label="{{ __('Planned') }} · {{ __('Total') }}" class="cs-locked cs-num cs-total">{{ $plan && $budgetOn ? $num((float) $plan->domestic_budget + (float) $plan->external_budget, 2) : '—' }}</td>
 
-    <td class="cs-fill">
+    <td data-label="{{ __('Achieved') }}" class="cs-fill">
         @if ($isText)
         <textarea class="pb-cell pb-text cs-input cs-actual-text" rows="1" placeholder="{{ __('Response…') }}" maxlength="5000" {{ $locked() }}>{{ $entry?->actual_text }}</textarea>
         @else
         <input type="text" inputmode="decimal" class="pb-cell pb-num cs-input cs-actual" placeholder="0" value="{{ $num($entry?->actual_value) }}" {{ $locked() }}>
         @endif
     </td>
-    <td class="cs-num cs-progress">—</td>
-    <td class="cs-fill">
+    <td data-label="{{ __('Progress') }}" class="cs-num cs-progress">—</td>
+    <td data-label="{{ __('Status of implementation') }}" class="cs-fill">
         <textarea class="pb-cell pb-text cs-input cs-implementation" rows="1" placeholder="{{ __('What was implemented…') }}" maxlength="5000" {{ $locked() }}>{{ $entry?->implementation_status }}</textarea>
     </td>
 
-    <td class="cs-fill"><input type="text" inputmode="decimal" class="pb-cell pb-num pb-money cs-input cs-released cs-domestic-released" placeholder="0" value="{{ $num($entry?->domestic_released, 2) }}" {{ $locked($budgetOn) }}></td>
-    <td class="cs-fill"><input type="text" inputmode="decimal" class="pb-cell pb-num pb-money cs-input cs-released cs-external-released" placeholder="0" value="{{ $num($entry?->external_released, 2) }}" {{ $locked($budgetOn) }}></td>
-    <td class="cs-num cs-total cs-released-total">—</td>
+    <td data-label="{{ __('Released') }} · {{ __('Internal') }}" class="cs-fill"><input type="text" inputmode="decimal" class="pb-cell pb-num pb-money cs-input cs-released cs-domestic-released" placeholder="0" value="{{ $num($entry?->domestic_released, 2) }}" {{ $locked($budgetOn) }}></td>
+    <td data-label="{{ __('Released') }} · {{ __('External') }}" class="cs-fill"><input type="text" inputmode="decimal" class="pb-cell pb-num pb-money cs-input cs-released cs-external-released" placeholder="0" value="{{ $num($entry?->external_released, 2) }}" {{ $locked($budgetOn) }}></td>
+    <td data-label="{{ __('Released') }} · {{ __('Total') }}" class="cs-num cs-total cs-released-total">—</td>
 
-    <td class="cs-fill"><input type="text" inputmode="decimal" class="pb-cell pb-num pb-money cs-input cs-spent cs-domestic-spent" placeholder="0" value="{{ $num($entry?->domestic_spent, 2) }}" {{ $locked($budgetOn) }}></td>
-    <td class="cs-fill"><input type="text" inputmode="decimal" class="pb-cell pb-num pb-money cs-input cs-spent cs-external-spent" placeholder="0" value="{{ $num($entry?->external_spent, 2) }}" {{ $locked($budgetOn) }}></td>
-    <td class="cs-num cs-total cs-spent-total">—</td>
+    <td data-label="{{ __('Spent') }} · {{ __('Internal') }}" class="cs-fill"><input type="text" inputmode="decimal" class="pb-cell pb-num pb-money cs-input cs-spent cs-domestic-spent" placeholder="0" value="{{ $num($entry?->domestic_spent, 2) }}" {{ $locked($budgetOn) }}></td>
+    <td data-label="{{ __('Spent') }} · {{ __('External') }}" class="cs-fill"><input type="text" inputmode="decimal" class="pb-cell pb-num pb-money cs-input cs-spent cs-external-spent" placeholder="0" value="{{ $num($entry?->external_spent, 2) }}" {{ $locked($budgetOn) }}></td>
+    <td data-label="{{ __('Spent') }} · {{ __('Total') }}" class="cs-num cs-total cs-spent-total">—</td>
 
-    <td class="cs-locked">{{ $lead ?? '—' }}</td>
-    <td class="cs-locked">{{ $partnerNames ?: '—' }}</td>
+    <td data-label="{{ __('Lead institution') }}" class="cs-locked">{{ $lead ?? '—' }}</td>
+    <td data-label="{{ __('Partners') }}" class="cs-locked">{{ $partnerNames ?: '—' }}</td>
 
-    <td class="cs-fill">
+    <td data-label="{{ __('Remarks') }}" class="cs-fill">
         <textarea class="pb-cell pb-text cs-input cs-remarks" rows="1" placeholder="{{ __('Remarks…') }}" maxlength="5000" {{ $locked() }}>{{ $entry?->remarks }}</textarea>
     </td>
 
@@ -99,7 +99,7 @@
         <span class="s-badge {{ $statusClass }} cs-status">{{ $statusLabel }}</span>
         <span class="pb-missing {{ $missing && $entry && $open ? '' : 'd-none' }}" title="{{ __('Still missing:') }} {{ implode(', ', $missing) }}"><i class="mdi mdi-alert-circle-outline"></i></span>
     </td>
-    <td class="cs-fill cs-evidence">
+    <td data-label="{{ __('Evidence') }}" class="cs-fill cs-evidence">
         <ul class="cs-files">
             @foreach ($files as $file)
             <li data-delete="{{ $file['delete_url'] }}">

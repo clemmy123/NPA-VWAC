@@ -57,7 +57,7 @@
         </div>
     </td>
 
-    <td class="pb-col-acts">
+    <td data-label="{{ __('Planned interventions') }}" class="pb-col-acts">
         <ul class="pb-acts">
             @foreach ($indicator?->interventions ?? [] as $intervention)
             <li class="pb-act-item" data-intervention-id="{{ $intervention->id }}">
@@ -73,7 +73,7 @@
         @endif
     </td>
 
-    <td>
+    <td data-label="{{ __('Type') }}">
         <select class="pb-cell pb-measurement-type" data-no-select2 {{ $editIndicator || ! $indicator ? '' : 'disabled' }}>
             <option value="">—</option>
             @foreach ($measurementTypes as $type)
@@ -81,7 +81,7 @@
             @endforeach
         </select>
     </td>
-    <td>
+    <td data-label="{{ __('Unit') }}">
         <select class="pb-cell pb-unit" data-no-select2 {{ $editIndicator || ! $indicator ? '' : 'disabled' }}>
             <option value="">—</option>
             @foreach ($unitsOfMeasure as $unit)
@@ -90,7 +90,7 @@
         </select>
     </td>
 
-    <td>
+    <td data-label="{{ __('Baseline year') }}">
         <select class="pb-cell pb-baseline-year" data-no-select2 {{ $editPlan ? '' : 'disabled' }}>
             <option value="">—</option>
             @foreach ($financialYears as $fy)
@@ -98,12 +98,12 @@
             @endforeach
         </select>
     </td>
-    <td><input type="text" inputmode="decimal" class="pb-cell pb-num pb-baseline" placeholder="0" value="{{ $num($plan?->baseline_value) }}" {{ $editPlan ? '' : 'disabled' }}></td>
-    <td><input type="text" inputmode="decimal" class="pb-cell pb-num pb-target" placeholder="0" value="{{ $num($plan?->annual_target) }}" {{ $editPlan ? '' : 'disabled' }}></td>
-    <td><input type="text" inputmode="decimal" class="pb-cell pb-num pb-money pb-domestic" placeholder="0" value="{{ $num($plan?->domestic_budget, 2) }}" {{ $editPlan && $budgetOn ? '' : 'disabled' }}></td>
-    <td><input type="text" inputmode="decimal" class="pb-cell pb-num pb-money pb-external" placeholder="0" value="{{ $num($plan?->external_budget, 2) }}" {{ $editPlan && $budgetOn ? '' : 'disabled' }}></td>
+    <td data-label="{{ __('Baseline') }}"><input type="text" inputmode="decimal" class="pb-cell pb-num pb-baseline" placeholder="0" value="{{ $num($plan?->baseline_value) }}" {{ $editPlan ? '' : 'disabled' }}></td>
+    <td data-label="{{ __('Target') }}"><input type="text" inputmode="decimal" class="pb-cell pb-num pb-target" placeholder="0" value="{{ $num($plan?->annual_target) }}" {{ $editPlan ? '' : 'disabled' }}></td>
+    <td data-label="{{ __('Internal budget (TZS)') }}"><input type="text" inputmode="decimal" class="pb-cell pb-num pb-money pb-domestic" placeholder="0" value="{{ $num($plan?->domestic_budget, 2) }}" {{ $editPlan && $budgetOn ? '' : 'disabled' }}></td>
+    <td data-label="{{ __('External budget (TZS)') }}"><input type="text" inputmode="decimal" class="pb-cell pb-num pb-money pb-external" placeholder="0" value="{{ $num($plan?->external_budget, 2) }}" {{ $editPlan && $budgetOn ? '' : 'disabled' }}></td>
 
-    <td>
+    <td data-label="{{ __('Lead institution') }}">
         <select class="pb-cell pb-lead" data-no-select2 {{ $editPlan ? '' : 'disabled' }}>
             <option value="">—</option>
             @foreach ($organizations as $organization)
@@ -111,7 +111,7 @@
             @endforeach
         </select>
     </td>
-    <td>
+    <td data-label="{{ __('Partners') }}">
         <select class="pb-participants" multiple data-no-select2 {{ $editPlan ? '' : 'disabled' }}>
             @foreach ($organizations as $organization)
             <option value="{{ $organization->id }}" @selected(in_array($organization->id, $participants))>{{ $organization->name }}</option>

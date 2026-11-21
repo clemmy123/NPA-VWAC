@@ -25,4 +25,6 @@
 @import './app/users.css';
 @import './app/row-actions.css';
 @import './app/buttons.css';
+@import './app/mobile.css';
+@import './app/grid-mobile.css';
 @import './app/chat-fab.css';

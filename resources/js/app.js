@@ -1,3 +1,4 @@
+import "./mobile-filters";
 import "./row-actions";
 
 //

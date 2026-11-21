@@ -40,7 +40,7 @@
     @stack('styles')
 </head>
 
-<body>
+<body data-filters-label="{{ __('Filters') }}">
     <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
     {{-- Shared "quick add / quick edit" modal shell. A page defines one or more

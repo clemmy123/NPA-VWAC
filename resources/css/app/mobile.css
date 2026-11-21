@@ -1,0 +1,81 @@
+/* ==========================================================================
+   Phone layout (< 768px): tighter gutters, an aligned footer, list cards with
+   the ⋮ menu in the corner, and filter panels folded behind a "Filters" button
+   (markup injected by resources/js/mobile-filters.js).
+   ========================================================================== */
+
+.app-footer {
+  background: var(--surface);
+  border-top: 1px solid var(--border-soft);
+  padding: 12px 24px;
+}
+
+.app-footer span { font-size: 0.76rem; color: var(--muted-soft); }
+
+.mf-toggle { display: none; }
+
+@media (max-width: 767px) {
+  .content-page { padding-left: 0 !important; padding-right: 0 !important; }
+  .content { padding: 16px; margin: 0; }
+  .app-footer { padding: 12px 16px; }
+
+  .page-header { margin-bottom: 16px; }
+  .chart-card { padding: 16px; margin-bottom: 14px; }
+  [class*="col-"] > .chart-card { margin-bottom: 0; } /* the column's own mb-3 spaces tiles */
+  .pr-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .pr-stat { padding: 10px 12px; }
+  .page-header .btn { white-space: nowrap; }
+
+  /* list cards: ⋮ pinned to the top-right corner instead of its own footer row */
+  .mob-card { position: relative; padding: 14px 16px; }
+  .mob-card-top { padding-right: 44px; margin-bottom: 6px; }
+  .mob-card-footer {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    gap: 0;
+  }
+  .mob-card-meta { gap: 6px 14px; font-size: 0.78rem; }
+
+  /* filters */
+  .mf-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 9px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--btn-radius);
+    color: var(--heading-dark);
+    font-size: 0.86rem;
+    font-weight: 600;
+  }
+  .mf-toggle .mf-count {
+    min-width: 20px;
+    padding: 0 6px;
+    border-radius: var(--radius-pill);
+    background: var(--brand-blue);
+    color: var(--surface);
+    font-size: 0.72rem;
+    line-height: 20px;
+    text-align: center;
+  }
+  .mf-toggle .mf-chevron { margin-left: auto; transition: transform 0.15s; }
+  .mf-toggle[aria-expanded="true"] .mf-chevron { transform: rotate(180deg); }
+  .report-filters.mf-folded { display: none; }
+  .report-filters .rf-field { flex: 1 1 100%; min-width: 0; }
+
+  /* off-canvas drawer: compact brand so the menu isn't pushed below the fold */
+  .left-side-menu .sidebar-brand { padding: 12px 20px 8px !important; }
+  .left-side-menu .sidebar-brand::before { display: none; }
+  .left-side-menu .sidebar-brand-link { gap: 6px !important; }
+  .left-side-menu .brand-logo-wrap { padding: 0; border: 0; box-shadow: none; background: transparent; }
+  .left-side-menu .sidebar-brand .brand-logo-sm { width: 64px; }
+  .left-side-menu .sidebar-brand .brand-text { font-size: 1rem; }
+  .left-side-menu .sidebar-home { display: none !important; }
+}

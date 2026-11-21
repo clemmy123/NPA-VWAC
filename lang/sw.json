@@ -826,5 +826,12 @@
     "Clear": "Futa",
     "Pick one or more roles.": "Chagua jukumu moja au zaidi.",
     "Select roles…": "Chagua majukumu…",
-    "Download": "Pakua"
+    "Download": "Pakua",
+    "Filters": "Vichujio",
+    "Internal budget (TZS)": "Bajeti ya ndani (TZS)",
+    "External budget (TZS)": "Bajeti ya nje (TZS)",
+    "Baseline year": "Mwaka wa msingi",
+    "Planned": "Iliyopangwa",
+    "Released": "Iliyotolewa",
+    "Spent": "Iliyotumika"
 }
