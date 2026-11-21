@@ -838,5 +838,10 @@
     "Name (Swahili)": "Jina (Kiswahili)",
     "Shown instead of the English name when the interface is in Swahili.": "Huonyeshwa badala ya jina la Kiingereza pale mfumo unapokuwa kwa Kiswahili.",
     "Work as": "Fanya kazi kama",
-    "You are now working as :role.": "Sasa unafanya kazi kama :role."
+    "You are now working as :role.": "Sasa unafanya kazi kama :role.",
+    "Assign me": "Nijumuishe",
+    "Collects data": "Hukusanya data",
+    "Stop collecting data": "Acha kukusanya data",
+    "Allow collecting data": "Ruhusu kukusanya data",
+    "Can collect data for this thematic area": "Anaweza kukusanya data kwa Thematic Area hii"
 }

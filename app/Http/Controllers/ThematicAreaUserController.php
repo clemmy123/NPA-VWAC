@@ -16,10 +16,11 @@ class ThematicAreaUserController extends Controller
 
         $data = $request->validate([
             'user_id' => ['required', 'integer', Rule::exists('users', 'id')],
+            'can_collect' => ['nullable', 'boolean'],
         ]);
 
         $thematicArea->users()->syncWithoutDetaching([
-            $data['user_id'] => ['is_active' => true],
+            $data['user_id'] => ['is_active' => true, 'can_collect' => $request->boolean('can_collect')],
         ]);
 
         return $this->redirectBackOrTo($request, 'thematic-areas.show', ['thematic_area' => $thematicArea])

@@ -126,7 +126,7 @@ class User extends Authenticatable
     public function thematicAreas()
     {
         return $this->belongsToMany(ThematicArea::class, 'thematic_area_users')
-            ->withPivot(['is_active'])
+            ->withPivot(['is_active', 'can_collect'])
             ->withTimestamps();
     }
 
@@ -216,13 +216,23 @@ class User extends Authenticatable
             return Indicator::query()->where('status', 'active')->pluck('id')->map(fn ($id) => (int) $id)->all();
         }
         if ($this->hasAnyRole(['Project Manager', 'Thematic Manager'])) {
-            $areaIds = $this->visibleThematicAreaIds();
+            $collectingAreaIds = $this->thematicAreas()
+                ->wherePivot('is_active', true)->wherePivot('can_collect', true)
+                ->pluck('thematic_areas.id')->all();
 
-            return Indicator::query()->where('status', 'active')
-                ->whereIn('thematic_area_id', $areaIds)->pluck('id')
+            $viaAreas = Indicator::query()->where('status', 'active')
+                ->whereIn('thematic_area_id', $collectingAreaIds)->pluck('id')
                 ->map(fn ($id) => (int) $id)->all();
+
+            return array_values(array_unique([...$viaAreas, ...$this->directIndicatorAssignmentIds()]));
         }
 
+        return $this->directIndicatorAssignmentIds();
+    }
+
+    /** @return list<int> */
+    private function directIndicatorAssignmentIds(): array
+    {
         return IndicatorDataAssignment::query()
             ->where('is_active', true)
             ->whereHas('indicator', fn ($query) => $query->where('status', 'active'))

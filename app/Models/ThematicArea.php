@@ -66,7 +66,7 @@ class ThematicArea extends Model
     public function users()
     {
 
-        return $this->belongsToMany(User::class, 'thematic_area_users')->withPivot(['is_active'])->withTimestamps();
+        return $this->belongsToMany(User::class, 'thematic_area_users')->withPivot(['is_active', 'can_collect'])->withTimestamps();
 
     }
 }

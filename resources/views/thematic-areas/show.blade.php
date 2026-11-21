@@ -39,27 +39,40 @@
 @can('thematic-area.assign-manager')
 <div class="d-flex justify-content-between align-items-center mb-2">
     <h5 class="mb-0">{{ __('Thematic Area Coordinators') }}</h5>
+    <div class="d-flex gap-2">
+    @unless ($managers->contains('id', auth()->id()))
+    <form method="POST" action="{{ route('thematic-areas.managers.store', $thematicArea) }}">
+        @csrf
+        <input type="hidden" name="user_id" value="{{ auth()->id() }}">
+        <input type="hidden" name="can_collect" value="1">
+        <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
+        <button type="submit" class="btn btn-outline-secondary btn-sm"><i class="mdi mdi-account-plus-outline"></i> {{ __('Assign me') }}</button>
+    </form>
+    @endunless
     <button type="button" class="btn btn-primary btn-sm" data-quick-add="tpl-add-ta-manager" data-quick-add-title="{{ __('Assign Thematic Area Coordinator to ":name"', ['name' => $thematicArea->localized_name]) }}">
         <i class="mdi mdi-plus"></i> {{ __('Assign Manager') }}
     </button>
+    </div>
 </div>
 
 <div class="table-card mb-4">
     <table class="table mb-0">
-        <thead><tr><th>{{ __('Name') }}</th><th>{{ __('Email') }}</th><th>{{ __('Actions') }}</th></tr></thead>
+        <thead><tr><th>{{ __('Name') }}</th><th>{{ __('Email') }}</th><th>{{ __('Collects data') }}</th><th>{{ __('Actions') }}</th></tr></thead>
         <tbody>
             @forelse ($managers as $manager)
             <tr>
                 <td>{{ $manager->name }}</td>
                 <td>{{ $manager->email }}</td>
+                <td>{{ $manager->pivot->can_collect ? __('Yes') : __('No') }}</td>
                 <td>
 <x-row-actions>
+                    <x-row-action :action="route('thematic-areas.managers.store', $thematicArea)" method="POST" :label="$manager->pivot->can_collect ? __('Stop collecting data') : __('Allow collecting data')" :icon="$manager->pivot->can_collect ? 'mdi-database-off-outline' : 'mdi-database-plus-outline'" :fields="['user_id' => $manager->id, 'can_collect' => $manager->pivot->can_collect ? 0 : 1]" redirect />
                     <x-row-action action="{{ route('thematic-areas.managers.destroy', [$thematicArea, $manager]) }}" method="DELETE" label="{{ __('Remove') }}" icon="mdi-close" tone="danger" confirm="{{ __('Remove ":name" as a manager of this thematic area?', ['name' => $manager->name]) }}" redirect />
 </x-row-actions>
 </td>
             </tr>
             @empty
-            <tr><td colspan="3"><div class="tbl-empty"><i class="mdi mdi-account-outline"></i><p>{{ __('No thematic managers assigned yet.') }}</p></div></td></tr>
+            <tr><td colspan="4"><div class="tbl-empty"><i class="mdi mdi-account-outline"></i><p>{{ __('No thematic managers assigned yet.') }}</p></div></td></tr>
             @endforelse
         </tbody>
     </table>
@@ -77,6 +90,11 @@
                 <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
                 @endforeach
             </select>
+            <div class="form-check mt-2">
+                <input type="hidden" name="can_collect" value="0">
+                <input type="checkbox" class="form-check-input" name="can_collect" id="can_collect" value="1" checked>
+                <label class="form-check-label" for="can_collect">{{ __('Can collect data for this thematic area') }}</label>
+            </div>
             <div class="form-text">{{ __('Only users with the "Thematic Area Coordinator" role are listed. Assign the role first under Users if it\'s missing.') }}</div>
         </div>
         <div class="d-flex form-actions">
