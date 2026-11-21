@@ -833,5 +833,8 @@
     "Baseline year": "Mwaka wa msingi",
     "Planned": "Iliyopangwa",
     "Released": "Iliyotolewa",
-    "Spent": "Iliyotumika"
+    "Spent": "Iliyotumika",
+    "Name (English)": "Jina (Kiingereza)",
+    "Name (Swahili)": "Jina (Kiswahili)",
+    "Shown instead of the English name when the interface is in Swahili.": "Huonyeshwa badala ya jina la Kiingereza pale mfumo unapokuwa kwa Kiswahili."
 }

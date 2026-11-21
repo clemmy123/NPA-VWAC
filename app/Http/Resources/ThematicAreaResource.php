@@ -13,6 +13,8 @@ class ThematicAreaResource extends JsonResource
             'id' => $this->id,
             'project_id' => $this->project_id,
             'name' => $this->name,
+            'name_sw' => $this->name_sw,
+            'localized_name' => $this->localized_name,
             'description' => $this->description,
             'status' => $this->status,
             'created_by' => $this->created_by,

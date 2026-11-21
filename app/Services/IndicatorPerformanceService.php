@@ -374,7 +374,7 @@ class IndicatorPerformanceService
         foreach ($rows as $row) {
             $area = $row['indicator']->thematicArea;
             $id = $area?->id ?? 0;
-            $buckets[$id] ??= ['label' => $area?->name ?? 'Unassigned', 'percents' => []];
+            $buckets[$id] ??= ['label' => $area?->localized_name ?? 'Unassigned', 'percents' => []];
 
             if ($row['performance']['achievement_percent'] !== null) {
                 $buckets[$id]['percents'][] = (float) $row['performance']['achievement_percent'];

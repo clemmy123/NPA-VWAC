@@ -17,7 +17,7 @@
                     <div class="fw-semibold">{{ $row['indicator']->name }}</div>
                     <div class="text-muted small">{{ $row['indicator']->code }}</div>
                     @if (! ($selectedThematicArea ?? null) && $row['indicator']->thematicArea)
-                    <div class="text-muted small">{{ $row['indicator']->thematicArea->name }}</div>
+                    <div class="text-muted small">{{ $row['indicator']->thematicArea->localized_name }}</div>
                     @endif
                     @foreach (($row['breakdowns'] ?? []) as $breakdownType => $breakdownRows)
                         @if ($breakdownRows !== [])

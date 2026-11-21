@@ -32,7 +32,7 @@
         <select name="thematic_area_id" id="thematic_area_id" class="form-control select2" required>
             <option value="">{{ __('Select thematic area…') }}</option>
             @foreach ($thematicAreas as $area)
-            <option value="{{ $area->id }}" data-project-id="{{ $area->project_id }}" @selected($selectedThematicAreaId === $area->id)>{{ $area->name }}</option>
+            <option value="{{ $area->id }}" data-project-id="{{ $area->project_id }}" @selected($selectedThematicAreaId === $area->id)>{{ $area->localized_name }}</option>
             @endforeach
         </select>
     </div>
@@ -58,7 +58,7 @@
                 <td>{{ ($indicators->firstItem() ?? 1) + $loop->index }}</td>
                 <td><span class="ref-pill">{{ $indicator->code }}</span></td>
                 <td><a href="{{ route('indicators.show', $indicator) }}">{{ $indicator->name }}</a></td>
-                <td>{{ $indicator->thematicArea?->name ?? '—' }}</td>
+                <td>{{ $indicator->thematicArea?->localized_name ?? '—' }}</td>
                 <td>{{ $indicator->reporting_frequency ? __(ucfirst($indicator->reporting_frequency)) : '—' }}</td>
                 <td>
                     <span class="s-badge {{ match ($indicator->status) {
@@ -120,7 +120,7 @@
             <p class="mob-card-title"><span class="ref-pill">{{ $indicator->code }}</span></p>
         </div>
         <div class="mob-card-meta">
-            <span><i class="mdi mdi-sitemap-outline"></i> {{ $indicator->thematicArea?->name ?? '—' }}</span>
+            <span><i class="mdi mdi-sitemap-outline"></i> {{ $indicator->thematicArea?->localized_name ?? '—' }}</span>
             <span><i class="mdi mdi-calendar-refresh"></i> {{ $indicator->reporting_frequency ? __(ucfirst($indicator->reporting_frequency)) : '—' }}</span>
         </div>
         <div class="mob-card-footer">

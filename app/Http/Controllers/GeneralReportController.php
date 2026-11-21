@@ -13,15 +13,14 @@ use App\Models\ReportingPeriod;
 use App\Services\IndicatorPerformanceService;
 use App\Services\ReportVisualizationService;
 use App\Support\AdminLocationLevel;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -47,7 +46,7 @@ class GeneralReportController extends Controller
     /** PDF/Excel export uses the exact same filtered report data as the HTML page. */
     public function exportPreview(Request $request, string $format): View|RedirectResponse|Response|BinaryFileResponse
     {
-        abort_unless(in_array($format, ['pdf','excel'], true), 404);
+        abort_unless(in_array($format, ['pdf', 'excel'], true), 404);
         $data = $this->reportData($request);
         if (! $data['applied']) {
             return redirect()->route('reports.general')->with('warning', __('Apply report filters before exporting.'));
@@ -55,7 +54,7 @@ class GeneralReportController extends Controller
         $title = ucfirst($data['frequency']).' MTAKUWWA Indicator Report';
         $context = ['Financial year: '.($data['selectedFinancialYear']?->name ?? '—'), 'Period: '.($data['periodLabel'] ?? '—')];
         $tableRows = collect($data['rows'])->map(fn (array $row) => [
-            $row['indicator']->name, $row['indicator']->code, $row['indicator']->thematicArea?->name,
+            $row['indicator']->name, $row['indicator']->code, $row['indicator']->thematicArea?->localized_name,
             $row['indicator']->unitOfMeasure?->name, $row['performance']['target_value'] ?? null,
             $row['performance']['actual_value'] ?? null,
             $row['performance']['achievement_percent'] ?? null,
@@ -65,13 +64,15 @@ class GeneralReportController extends Controller
         $filename = 'mtakuuwa-report-'.now()->format('Ymd-His');
         if ($request->boolean('download')) {
             if ($format === 'excel') {
-                return Excel::download(new SimpleReportExport([['Indicator','Code','Thematic Area','Unit','Target','Actual','Achievement %'], ...$tableRows]), $filename.'.xlsx');
+                return Excel::download(new SimpleReportExport([['Indicator', 'Code', 'Thematic Area', 'Unit', 'Target', 'Actual', 'Achievement %'], ...$tableRows]), $filename.'.xlsx');
             }
+
             return Pdf::loadView('reports.exports.simple-pdf', [
                 'title' => $title, 'context' => $context, 'executiveSummary' => $summary,
                 'sectionIntro' => $section, 'tableRows' => $tableRows,
             ])->setPaper('a4', 'landscape')->stream($filename.'.pdf');
         }
+
         return view('reports.export-preview', [
             'title' => $title, 'format' => $format,
             'downloadRoute' => route('reports.general.export', [$format] + $request->query() + ['download' => 1]),
@@ -85,10 +86,11 @@ class GeneralReportController extends Controller
         $data = $this->reportData($request);
         abort_unless($data['applied'], 422);
         $rows = collect($data['rows'])->map(fn (array $row) => [
-            $row['indicator']->name, $row['indicator']->code, $row['indicator']->thematicArea?->name,
+            $row['indicator']->name, $row['indicator']->code, $row['indicator']->thematicArea?->localized_name,
             $row['indicator']->unitOfMeasure?->name, $row['performance']['target_value'] ?? null,
             $row['performance']['actual_value'] ?? null, $row['performance']['achievement_percent'] ?? null,
         ])->all();
+
         return Pdf::loadView('reports.exports.simple-pdf', [
             'title' => 'MTAKUWWA General Report', 'context' => [$data['periodLabel'] ?? '—'],
             'executiveSummary' => ['Indicators reported: '.count($rows)],

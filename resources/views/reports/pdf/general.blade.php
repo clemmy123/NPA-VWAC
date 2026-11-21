@@ -282,7 +282,7 @@
                 <td>{{ $loop->iteration }}</td>
                 <td>
                     {{ $row['indicator']->name }}
-                    @if ($row['indicator']->code)<span class="code">{{ $row['indicator']->code }}@if (! $selectedThematicArea && $row['indicator']->thematicArea) · {{ $row['indicator']->thematicArea->name }}@endif</span>@endif
+                    @if ($row['indicator']->code)<span class="code">{{ $row['indicator']->code }}@if (! $selectedThematicArea && $row['indicator']->thematicArea) · {{ $row['indicator']->thematicArea->localized_name }}@endif</span>@endif
                 </td>
                 <td>{{ $row['indicator']->unitOfMeasure?->name ?? '—' }}</td>
                 <td class="num">{{ DisplayNumber::format($perf['target_value']) }}</td>

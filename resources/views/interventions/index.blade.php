@@ -35,7 +35,7 @@
             <tr>
                 <td>{{ ($interventions->firstItem() ?? 1) + $loop->index }}</td>
                 <td>{{ $intervention->name }}</td>
-                <td>{{ $intervention->thematicArea?->name ?? '—' }}</td>
+                <td>{{ $intervention->thematicArea?->localized_name ?? '—' }}</td>
                 <td>{{ $intervention->indicators->count() }}</td>
                 <td>
                     <span class="s-badge {{ match ($intervention->status) {
@@ -89,7 +89,7 @@
             } }}">{{ __(ucfirst($intervention->status)) }}</span>
         </div>
         <div class="mob-card-meta">
-            <span><i class="mdi mdi-sitemap-outline"></i> {{ $intervention->thematicArea?->name ?? '—' }}</span>
+            <span><i class="mdi mdi-sitemap-outline"></i> {{ $intervention->thematicArea?->localized_name ?? '—' }}</span>
             <span><i class="mdi mdi-chart-box-outline"></i> {{ $intervention->indicators->count() }} {{ __('indicators') }}</span>
         </div>
         <div class="mob-card-footer">

@@ -25,6 +25,16 @@ class ThematicArea extends Model
 
     ];
 
+    protected static function booted(): void
+    {
+        // `name` is the English name; keep `name_en` mirroring it unless set explicitly.
+        static::saving(function (self $area): void {
+            if ($area->isDirty('name') && ! $area->isDirty('name_en')) {
+                $area->name_en = $area->name;
+            }
+        });
+    }
+
     /** Official bilingual presentation; keep name as a stable legacy column. */
     public function getLocalizedNameAttribute(): string
     {

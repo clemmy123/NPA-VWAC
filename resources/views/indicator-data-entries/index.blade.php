@@ -46,7 +46,7 @@
         <select id="workspace_thematic_id" class="form-control select2" disabled>
             <option value="">{{ __('Select project first…') }}</option>
             @foreach ($thematicAreas as $area)
-            <option value="{{ $area->id }}" data-project-id="{{ $area->project_id }}">{{ $area->name }}</option>
+            <option value="{{ $area->id }}" data-project-id="{{ $area->project_id }}">{{ $area->localized_name }}</option>
             @endforeach
         </select>
     </div>
@@ -69,7 +69,7 @@
                 <div>
                     <span class="ref-pill">{{ $indicator->code }}</span>
                     <h6 class="mt-2 mb-1">{{ $indicator->name }}</h6>
-                    <div class="text-muted small">{{ $indicator->thematicArea?->name }}</div>
+                    <div class="text-muted small">{{ $indicator->thematicArea?->localized_name }}</div>
                 </div>
                 <span class="s-badge {{ $latestEntry ? ($statusBadge[$latestEntry->status] ?? 's-default') : 's-default' }}">
                     {{ $latestEntry ? \App\Support\UiCopy::entryStatus($latestEntry->status) : __('Not collected') }}

@@ -275,7 +275,7 @@ class WorkstationReportController extends Controller
             return [
                 $row['indicator']->name,
                 $row['indicator']->code,
-                $row['indicator']->thematicArea?->name,
+                $row['indicator']->thematicArea?->localized_name,
                 $row['indicator']->unitOfMeasure?->name,
                 $perf['target_value'],
                 $perf['actual_value'],

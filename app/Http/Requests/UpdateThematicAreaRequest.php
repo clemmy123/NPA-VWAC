@@ -16,6 +16,7 @@ class UpdateThematicAreaRequest extends FormRequest
         return [
             'project_id' => ['sometimes', 'required', 'integer', 'exists:projects,id'],
             'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'name_sw' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'status' => ['nullable', 'string', 'max:30'],
         ];

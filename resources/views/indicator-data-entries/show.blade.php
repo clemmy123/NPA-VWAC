@@ -24,7 +24,7 @@
 </div>
 
 <div class="chart-card mb-4">
-    @if ($entry->indicator?->thematicArea?->name)
+    @if ($entry->indicator?->thematicArea?->localized_name)
     <h5 class="collection-summary-thematic mb-2"><span>{{ $entry->indicator->thematicArea->localized_name }}</span></h5>
     @endif
     <div class="collection-summary-indicator">

@@ -16,6 +16,7 @@ class StoreThematicAreaRequest extends FormRequest
         return [
             'project_id' => ['required', 'integer', 'exists:projects,id'],
             'name' => ['required', 'string', 'max:255'],
+            'name_sw' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'status' => ['nullable', 'string', 'max:30'],
         ];

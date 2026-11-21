@@ -24,11 +24,19 @@
         @error('status')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
-    <div class="col-12 mb-3">
-        <label for="name" class="form-label">{{ __('Name') }}</label>
+    <div class="col-md-6 mb-3">
+        <label for="name" class="form-label">{{ __('Name (English)') }}</label>
         <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror"
                value="{{ old('name', $thematicArea?->name) }}" required maxlength="255">
         @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label for="name_sw" class="form-label">{{ __('Name (Swahili)') }}</label>
+        <input type="text" name="name_sw" id="name_sw" class="form-control @error('name_sw') is-invalid @enderror"
+               value="{{ old('name_sw', $thematicArea?->name_sw) }}" maxlength="255">
+        <small class="text-muted">{{ __('Shown instead of the English name when the interface is in Swahili.') }}</small>
+        @error('name_sw')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
     <div class="col-12 mb-3">
