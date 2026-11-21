@@ -13,7 +13,7 @@
         </nav>
     </div>
     @can('project.create')
-    <a href="{{ route('projects.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Project') }}</a>
+    <a href="{{ route('projects.create') }}" class="btn btn-primary btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Project') }}</a>
     @endcan
 </div>
 

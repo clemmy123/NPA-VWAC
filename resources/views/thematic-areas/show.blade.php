@@ -39,7 +39,7 @@
 @can('thematic-area.assign-manager')
 <div class="d-flex justify-content-between align-items-center mb-2">
     <h5 class="mb-0">{{ __('Thematic Area Coordinators') }}</h5>
-    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-ta-manager" data-quick-add-title="{{ __('Assign Thematic Area Coordinator to ":name"', ['name' => $thematicArea->localized_name]) }}">
+    <button type="button" class="btn btn-primary btn-sm" data-quick-add="tpl-add-ta-manager" data-quick-add-title="{{ __('Assign Thematic Area Coordinator to ":name"', ['name' => $thematicArea->localized_name]) }}">
         <i class="mdi mdi-plus"></i> {{ __('Assign Manager') }}
     </button>
 </div>
@@ -80,7 +80,7 @@
             <div class="form-text">{{ __('Only users with the "Thematic Area Coordinator" role are listed. Assign the role first under Users if it\'s missing.') }}</div>
         </div>
         <div class="d-flex form-actions">
-            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> {{ __('Assign') }}</button>
+            <button type="submit" class="btn btn-primary"><i class="mdi mdi-content-save-outline"></i> {{ __('Assign') }}</button>
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
         </div>
     </form>
@@ -91,7 +91,7 @@
 <div class="d-flex justify-content-between align-items-center mb-2">
     <h5 class="mb-0">{{ __('Indicators') }}</h5>
     @can('indicator.create')
-    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-indicator" data-quick-add-title="{{ __('Add Indicator to ":name"', ['name' => $thematicArea->localized_name]) }}">
+    <button type="button" class="btn btn-primary btn-sm" data-quick-add="tpl-add-indicator" data-quick-add-title="{{ __('Add Indicator to ":name"', ['name' => $thematicArea->localized_name]) }}">
         <i class="mdi mdi-plus"></i> {{ __('Add Indicator') }}
     </button>
     @endcan
@@ -159,7 +159,7 @@
 <div class="d-flex justify-content-between align-items-center mb-2">
     <h5 class="mb-0">{{ __('Interventions') }}</h5>
     @can('intervention.create')
-    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-intervention" data-quick-add-title="{{ __('Add Intervention to ":name"', ['name' => $thematicArea->localized_name]) }}">
+    <button type="button" class="btn btn-primary btn-sm" data-quick-add="tpl-add-intervention" data-quick-add-title="{{ __('Add Intervention to ":name"', ['name' => $thematicArea->localized_name]) }}">
         <i class="mdi mdi-plus"></i> {{ __('Add Intervention') }}
     </button>
     @endcan
@@ -236,7 +236,7 @@
             'unitsOfMeasure' => $unitsOfMeasure,
         ])
         <div class="d-flex form-actions">
-            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> {{ __('Save') }}</button>
+            <button type="submit" class="btn btn-primary"><i class="mdi mdi-content-save-outline"></i> {{ __('Save') }}</button>
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
         </div>
     </form>
@@ -255,7 +255,7 @@
             'indicators' => $allIndicators,
         ])
         <div class="d-flex form-actions">
-            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> {{ __('Save') }}</button>
+            <button type="submit" class="btn btn-primary"><i class="mdi mdi-content-save-outline"></i> {{ __('Save') }}</button>
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
         </div>
     </form>

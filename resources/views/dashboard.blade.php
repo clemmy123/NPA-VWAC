@@ -12,7 +12,7 @@
         </nav>
     </div>
     @can('indicator-data.create')
-    <a href="{{ route('collection-sheet.index') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-clipboard-check-outline"></i> {{ __('Collect Data') }}</a>
+    <a href="{{ route('collection-sheet.index') }}" class="btn btn-primary btn-sm"><i class="mdi mdi-clipboard-check-outline"></i> {{ __('Collect Data') }}</a>
     @endcan
 </div>
 
@@ -21,7 +21,7 @@
     <i class="mdi mdi-view-dashboard-outline"></i>
     <p>{{ __('No plans are visible to you yet.') }}</p>
     <p class="small">{{ __('Once a thematic area is assigned to you and its plan is approved, progress shows up here.') }}</p>
-    @can('thematic-area.view')<a href="{{ route('plan-builder.index') }}" class="btn btn-dark btn-sm">{{ __('Open Plan Builder') }}</a>@endcan
+    @can('thematic-area.view')<a href="{{ route('plan-builder.index') }}" class="btn btn-primary btn-sm">{{ __('Open Plan Builder') }}</a>@endcan
 </div>
 @else
 <div class="dash-kpis">

@@ -13,7 +13,7 @@
             </ol>
         </nav>
     </div>
-    <a href="{{ route('measurement-types.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Type') }}</a>
+    <a href="{{ route('measurement-types.create') }}" class="btn btn-primary btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Type') }}</a>
 </div>
 
 <div class="table-card d-none d-md-block">

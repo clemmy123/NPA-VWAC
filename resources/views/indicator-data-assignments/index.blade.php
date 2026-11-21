@@ -12,7 +12,7 @@
             </ol>
         </nav>
     </div>
-    <a href="{{ route('indicator-data-assignments.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Assignment') }}</a>
+    <a href="{{ route('indicator-data-assignments.create') }}" class="btn btn-primary btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Assignment') }}</a>
 </div>
 
 <div class="table-card d-none d-md-block">

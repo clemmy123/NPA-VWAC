@@ -37,7 +37,7 @@
         </div>
 
         <div class="d-flex form-actions">
-            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> {{ __('Update Password') }}</button>
+            <button type="submit" class="btn btn-primary"><i class="mdi mdi-content-save-outline"></i> {{ __('Update Password') }}</button>
         </div>
     </form>
 </div>

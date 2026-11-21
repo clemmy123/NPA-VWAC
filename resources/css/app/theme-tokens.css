@@ -15,6 +15,8 @@
   --radius-lg: 10px;
   --radius-xl: 12px;
   --radius-pill: 999px;
+  --btn-radius: 10px;
+  --btn-radius-sm: 8px;
 
   /* Surfaces */
   --body-bg: #f0f4f8;
@@ -48,6 +50,10 @@
   --accent-rgb: 59, 130, 246;
   --brand-blue: #188ae2;
   --brand-blue-hover: #1278c8;
+  /* primary buttons use the darker blue: white text on #188ae2 is only ~3.6:1 */
+  --btn-primary-bg: #1278c8;
+  --btn-primary-hover: #0e65a8;
+  --btn-primary-text: #ffffff;
   --nav-active-bg: #eff6ff;
   --nav-active-accent: #3b82f6;
 

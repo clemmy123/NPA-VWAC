@@ -42,7 +42,7 @@
 <div class="d-flex justify-content-between align-items-center mb-2">
     <h5 class="mb-0">{{ __('Baselines') }}</h5>
     @can('indicator.set-baseline')
-    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-baseline" data-quick-add-title="{{ __('Add Baseline for ":name"', ['name' => $indicator->name]) }}">
+    <button type="button" class="btn btn-primary btn-sm" data-quick-add="tpl-add-baseline" data-quick-add-title="{{ __('Add Baseline for ":name"', ['name' => $indicator->name]) }}">
         <i class="mdi mdi-plus"></i> {{ __('Add Baseline') }}
     </button>
     @endcan
@@ -97,7 +97,7 @@
 <div class="d-flex justify-content-between align-items-center mb-2">
     <h5 class="mb-0">{{ __('Targets') }}</h5>
     @can('indicator.set-target')
-    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-target" data-quick-add-title="{{ __('Add Target for ":name"', ['name' => $indicator->name]) }}">
+    <button type="button" class="btn btn-primary btn-sm" data-quick-add="tpl-add-target" data-quick-add-title="{{ __('Add Target for ":name"', ['name' => $indicator->name]) }}">
         <i class="mdi mdi-plus"></i> {{ __('Add Target') }}
     </button>
     @endcan
@@ -152,7 +152,7 @@
 @can('indicator.assign-user')
 <div class="d-flex justify-content-between align-items-center mb-2">
     <h5 class="mb-0">{{ __('Data Assignments') }}</h5>
-    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-assignment" data-quick-add-title="{{ __('Assign a Reporter to ":name"', ['name' => $indicator->name]) }}">
+    <button type="button" class="btn btn-primary btn-sm" data-quick-add="tpl-add-assignment" data-quick-add-title="{{ __('Assign a Reporter to ":name"', ['name' => $indicator->name]) }}">
         <i class="mdi mdi-plus"></i> {{ __('Add Assignment') }}
     </button>
 </div>
@@ -230,7 +230,7 @@
             'organizations' => $organizations,
         ])
         <div class="d-flex form-actions">
-            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> {{ __('Save') }}</button>
+            <button type="submit" class="btn btn-primary"><i class="mdi mdi-content-save-outline"></i> {{ __('Save') }}</button>
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
         </div>
     </form>
@@ -250,7 +250,7 @@
             'dimensionOptions' => $dimensionOptions,
         ])
         <div class="d-flex form-actions">
-            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> {{ __('Save') }}</button>
+            <button type="submit" class="btn btn-primary"><i class="mdi mdi-content-save-outline"></i> {{ __('Save') }}</button>
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
         </div>
     </form>
@@ -270,7 +270,7 @@
             'locationLevels' => $locationLevels,
         ])
         <div class="d-flex form-actions">
-            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> {{ __('Save') }}</button>
+            <button type="submit" class="btn btn-primary"><i class="mdi mdi-content-save-outline"></i> {{ __('Save') }}</button>
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
         </div>
     </form>

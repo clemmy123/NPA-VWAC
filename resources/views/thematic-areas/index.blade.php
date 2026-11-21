@@ -13,7 +13,7 @@
         </nav>
     </div>
     @can('thematic-area.create')
-    <a href="{{ route('thematic-areas.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Thematic Area') }}</a>
+    <a href="{{ route('thematic-areas.create') }}" class="btn btn-primary btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Thematic Area') }}</a>
     @endcan
 </div>
 

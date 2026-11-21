@@ -13,7 +13,7 @@
         </nav>
     </div>
     @can('indicator.create')
-    <a href="{{ route('indicators.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Indicator') }}</a>
+    <a href="{{ route('indicators.create') }}" class="btn btn-primary btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Indicator') }}</a>
     @endcan
 </div>
 

@@ -22,7 +22,7 @@
     <div class="pb-header-actions">
         <a class="btn btn-outline-dark btn-sm" href="{{ route('indicator-data-entries.index') }}" title="{{ __('Everything already submitted, with its review status') }}">{{ __('All records') }}</a>
         @if ($canSubmit && $financialYear)
-        <button type="button" class="btn btn-dark btn-sm" id="csSubmit">{{ __('Submit for review') }}</button>
+        <button type="button" class="btn btn-primary btn-sm" id="csSubmit">{{ __('Submit for review') }}</button>
         @endif
     </div>
 </div>

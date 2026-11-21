@@ -13,7 +13,7 @@
         </nav>
     </div>
     @can('intervention.create')
-    <a href="{{ route('interventions.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Intervention') }}</a>
+    <a href="{{ route('interventions.create') }}" class="btn btn-primary btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Intervention') }}</a>
     @endcan
 </div>
 

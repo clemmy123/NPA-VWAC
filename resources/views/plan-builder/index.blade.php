@@ -70,7 +70,7 @@
             'statusOptions' => $statusOptions,
         ])
         <div class="d-flex form-actions">
-            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> {{ __('Create') }}</button>
+            <button type="submit" class="btn btn-primary"><i class="mdi mdi-content-save-outline"></i> {{ __('Create') }}</button>
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
         </div>
     </form>

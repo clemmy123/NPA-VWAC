@@ -37,7 +37,7 @@
 @can('project.assign-manager')
 <div class="d-flex justify-content-between align-items-center mb-2">
     <h5 class="mb-0">{{ __('NPA VAWC Coordinators') }}</h5>
-    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-manager" data-quick-add-title="{{ __('Assign NPA VAWC Coordinator to ":name"', ['name' => $project->name]) }}">
+    <button type="button" class="btn btn-primary btn-sm" data-quick-add="tpl-add-manager" data-quick-add-title="{{ __('Assign NPA VAWC Coordinator to ":name"', ['name' => $project->name]) }}">
         <i class="mdi mdi-plus"></i> {{ __('Assign Manager') }}
     </button>
 </div>
@@ -78,7 +78,7 @@
             <div class="form-text">{{ __('Only users with the "NPA VAWC Coordinator" role are listed. Assign the role first under Users if it\'s missing.') }}</div>
         </div>
         <div class="d-flex form-actions">
-            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> {{ __('Assign') }}</button>
+            <button type="submit" class="btn btn-primary"><i class="mdi mdi-content-save-outline"></i> {{ __('Assign') }}</button>
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
         </div>
     </form>
@@ -88,7 +88,7 @@
 <div class="d-flex justify-content-between align-items-center mb-2">
     <h5 class="mb-0">{{ __('Thematic Areas') }}</h5>
     @can('thematic-area.create')
-    <button type="button" class="btn btn-dark btn-sm" data-quick-add="tpl-add-thematic-area" data-quick-add-title="{{ __('Add Thematic Area to ":name"', ['name' => $project->name]) }}">
+    <button type="button" class="btn btn-primary btn-sm" data-quick-add="tpl-add-thematic-area" data-quick-add-title="{{ __('Add Thematic Area to ":name"', ['name' => $project->name]) }}">
         <i class="mdi mdi-plus"></i> {{ __('Add Thematic Area') }}
     </button>
     @endcan
@@ -162,7 +162,7 @@
             'projects' => $thematicAreaProjects,
         ])
         <div class="d-flex form-actions">
-            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> {{ __('Save') }}</button>
+            <button type="submit" class="btn btn-primary"><i class="mdi mdi-content-save-outline"></i> {{ __('Save') }}</button>
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
         </div>
     </form>

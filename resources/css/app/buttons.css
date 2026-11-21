@@ -1,0 +1,69 @@
+/* ==========================================================================
+   Buttons — rounded rectangles (not pills: they sit beside inputs and selects).
+   Primary = solid blue, the one main action of a screen/section.
+   Secondary = outlined grey (btn-outline-dark / btn-outline-secondary).
+   Success / danger keep their semantic colours.
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: var(--btn-radius);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.4;
+  transition: background-color 0.14s, border-color 0.14s, color 0.14s, box-shadow 0.14s;
+}
+
+.btn.btn-sm {
+  min-height: 34px; /* same height as the 34px selects/inputs they sit beside */
+  padding: 4px 14px;
+  font-size: 0.8125rem;
+  border-radius: var(--btn-radius-sm);
+}
+
+.btn.btn-primary {
+  background-color: var(--btn-primary-bg);
+  border-color: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+}
+
+.btn.btn-primary:hover,
+.btn.btn-primary:focus,
+.btn.btn-primary:active {
+  background-color: var(--btn-primary-hover);
+  border-color: var(--btn-primary-hover);
+  color: var(--btn-primary-text);
+}
+
+.btn.btn-primary:focus-visible,
+.btn.btn-outline-dark:focus-visible,
+.btn.btn-outline-secondary:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.3);
+}
+
+.btn.btn-primary:disabled,
+.btn.btn-primary.disabled {
+  background-color: var(--btn-primary-bg);
+  border-color: var(--btn-primary-bg);
+  opacity: 0.55;
+}
+
+.btn.btn-outline-dark,
+.btn.btn-outline-secondary {
+  background-color: var(--surface);
+  border-color: var(--border-strong);
+  color: var(--heading-dark);
+}
+
+.btn.btn-outline-dark:hover,
+.btn.btn-outline-secondary:hover,
+.btn.btn-outline-dark:focus,
+.btn.btn-outline-secondary:focus {
+  background-color: var(--surface-muted);
+  border-color: var(--muted-icon);
+  color: var(--heading-dark);
+}

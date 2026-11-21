@@ -24,7 +24,7 @@
         <a class="btn btn-outline-dark btn-sm" href="{{ route('indicator-plans.index', [$thematicArea, 'financial_year_id' => $planFinancialYear->id]) }}">{{ __('Review, documents & approval') }}</a>
         @endif
         @if ($canPlan && $planFinancialYear)
-        <button type="button" class="btn btn-dark btn-sm" id="pbSubmitPlan">{{ __('Submit plan for confirmation') }}</button>
+        <button type="button" class="btn btn-primary btn-sm" id="pbSubmitPlan">{{ __('Submit plan for confirmation') }}</button>
         @endif
     </div>
 </div>

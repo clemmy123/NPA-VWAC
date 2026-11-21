@@ -13,7 +13,7 @@
             </ol>
         </nav>
     </div>
-    <a href="{{ route('units-of-measure.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Unit') }}</a>
+    <a href="{{ route('units-of-measure.create') }}" class="btn btn-primary btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Unit') }}</a>
 </div>
 
 <div class="table-card d-none d-md-block">

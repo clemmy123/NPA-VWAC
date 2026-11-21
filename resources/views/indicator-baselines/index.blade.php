@@ -13,7 +13,7 @@
         </nav>
     </div>
     @can('indicator.set-baseline')
-    <a href="{{ route('indicator-baselines.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Baseline') }}</a>
+    <a href="{{ route('indicator-baselines.create') }}" class="btn btn-primary btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Baseline') }}</a>
     @endcan
 </div>
 

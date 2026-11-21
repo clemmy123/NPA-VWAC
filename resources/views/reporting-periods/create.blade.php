@@ -22,7 +22,7 @@
         @include('reporting-periods.form', ['financialYears' => $financialYears, 'periodTypes' => $periodTypes])
 
         <div class="d-flex form-actions">
-            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> {{ __('Save') }}</button>
+            <button type="submit" class="btn btn-primary"><i class="mdi mdi-content-save-outline"></i> {{ __('Save') }}</button>
             <a href="{{ route('reporting-periods.index') }}" class="btn btn-outline-secondary">{{ __('Cancel') }}</a>
         </div>
     </form>

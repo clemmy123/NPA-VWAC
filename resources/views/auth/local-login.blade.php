@@ -72,7 +72,7 @@
                     <input type="checkbox" name="remember" id="remember" class="form-check-input" value="1">
                     <label for="remember" class="form-check-label">{{ __('Remember me') }}</label>
                 </div>
-                <button type="submit" class="btn btn-dark w-100">{{ __('Sign In') }}</button>
+                <button type="submit" class="btn btn-primary w-100">{{ __('Sign In') }}</button>
             </form>
 
             <p class="text-center mt-3 mb-0" style="font-size:0.78rem;">

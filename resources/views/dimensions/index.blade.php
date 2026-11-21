@@ -13,7 +13,7 @@
             </ol>
         </nav>
     </div>
-    <a href="{{ route('dimensions.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Dimension') }}</a>
+    <a href="{{ route('dimensions.create') }}" class="btn btn-primary btn-sm"><i class="mdi mdi-plus"></i> {{ __('New Dimension') }}</a>
 </div>
 
 <div class="table-card d-none d-md-block">

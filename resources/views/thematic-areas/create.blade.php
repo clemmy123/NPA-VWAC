@@ -21,7 +21,7 @@
         @include('thematic-areas.form', ['statusOptions' => $statusOptions, 'projects' => $projects])
 
         <div class="d-flex form-actions">
-            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> {{ __('Save Thematic Area') }}</button>
+            <button type="submit" class="btn btn-primary"><i class="mdi mdi-content-save-outline"></i> {{ __('Save Thematic Area') }}</button>
             <a href="{{ route('thematic-areas.index') }}" class="btn btn-outline-secondary">{{ __('Cancel') }}</a>
         </div>
     </form>

@@ -13,7 +13,7 @@
             </ol>
         </nav>
     </div>
-    <a href="{{ $downloadRoute }}" class="btn btn-dark btn-sm">
+    <a href="{{ $downloadRoute }}" class="btn btn-primary btn-sm">
         <i class="mdi mdi-download-outline"></i>
         {{ __('Download :format', ['format' => strtoupper($format)]) }}
     </a>

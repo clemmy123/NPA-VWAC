@@ -59,7 +59,7 @@
         </div>
 
         <div class="d-flex form-actions">
-            <button type="submit" class="btn btn-dark"><i class="mdi mdi-arrow-right"></i> {{ __('Start Collection') }}</button>
+            <button type="submit" class="btn btn-primary"><i class="mdi mdi-arrow-right"></i> {{ __('Start Collection') }}</button>
             <a href="{{ route('indicator-data-entries.index') }}" class="btn btn-outline-secondary">{{ __('Cancel') }}</a>
         </div>
     </form>

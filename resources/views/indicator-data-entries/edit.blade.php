@@ -43,7 +43,7 @@
         ])
 
         <div class="d-flex form-actions">
-            <button type="submit" name="intent" value="save" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> {{ __('Save Changes') }}</button>
+            <button type="submit" name="intent" value="save" class="btn btn-primary"><i class="mdi mdi-content-save-outline"></i> {{ __('Save Changes') }}</button>
             @if (request()->boolean('embedded') && in_array($entry->status, ['draft', 'rejected'], true))
                 @can('indicator-data.submit')
                 <button type="submit" name="intent" value="submit" class="btn btn-success" data-confirm="{{ __('Submit this completed collection for review?') }}">

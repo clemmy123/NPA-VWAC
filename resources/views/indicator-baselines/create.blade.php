@@ -21,7 +21,7 @@
         @include('indicator-baselines.form', ['indicators' => $indicators, 'financialYears' => $financialYears, 'organizations' => $organizations])
 
         <div class="d-flex form-actions">
-            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> {{ __('Save Baseline') }}</button>
+            <button type="submit" class="btn btn-primary"><i class="mdi mdi-content-save-outline"></i> {{ __('Save Baseline') }}</button>
             <a href="{{ route('indicator-baselines.index') }}" class="btn btn-outline-secondary">{{ __('Cancel') }}</a>
         </div>
     </form>

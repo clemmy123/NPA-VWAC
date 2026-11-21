@@ -13,7 +13,7 @@
         </nav>
     </div>
     @can('user.create')
-    <a href="{{ route('users.create') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-plus"></i> {{ __('New User') }}</a>
+    <a href="{{ route('users.create') }}" class="btn btn-primary btn-sm"><i class="mdi mdi-plus"></i> {{ __('New User') }}</a>
     @endcan
 </div>
 
@@ -45,7 +45,7 @@
         </select>
     </div>
     <div class="rf-field rf-actions">
-        <button class="btn btn-dark btn-sm"><i class="mdi mdi-magnify"></i> {{ __('Filter') }}</button>
+        <button class="btn btn-primary btn-sm"><i class="mdi mdi-magnify"></i> {{ __('Filter') }}</button>
         @if (request()->hasAny(['search', 'role', 'organization_id', 'status']))
         <a href="{{ route('users.index') }}" class="btn btn-outline-dark btn-sm">{{ __('Clear') }}</a>
         @endif

@@ -123,7 +123,7 @@
     </div>
 
     <div class="rf-actions">
-        <button type="submit" class="btn btn-dark">{{ __('Filter') }}</button>
+        <button type="submit" class="btn btn-primary">{{ __('Filter') }}</button>
         <a href="{{ route('reports.workstation', ['frequency' => $frequency]) }}" class="btn btn-outline-secondary">{{ __('Reset') }}</a>
     </div>
 </form>

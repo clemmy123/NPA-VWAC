@@ -21,7 +21,7 @@
         @include('interventions.form', ['statusOptions' => $statusOptions, 'thematicAreas' => $thematicAreas, 'indicators' => $indicators])
 
         <div class="d-flex form-actions">
-            <button type="submit" class="btn btn-dark"><i class="mdi mdi-content-save-outline"></i> {{ __('Save Intervention') }}</button>
+            <button type="submit" class="btn btn-primary"><i class="mdi mdi-content-save-outline"></i> {{ __('Save Intervention') }}</button>
             <a href="{{ route('interventions.index') }}" class="btn btn-outline-secondary">{{ __('Cancel') }}</a>
         </div>
     </form>
