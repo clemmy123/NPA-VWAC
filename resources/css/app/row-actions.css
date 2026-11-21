@@ -1,0 +1,96 @@
+/* ==========================================================================
+   Row actions — one ⋮ trigger per table row / mobile card; the menu is a
+   fixed-position popup (so scrolling tables never clip it) of
+   "coloured icon + name" items. Markup: components/row-actions.blade.php.
+   ========================================================================== */
+
+.ra { position: relative; display: inline-block; }
+
+.ra-trigger {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-soft);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--muted-mid);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.14s, color 0.14s, border-color 0.14s;
+}
+
+.ra-trigger:hover,
+.ra-trigger[aria-expanded="true"] {
+  background: var(--accent-bg);
+  border-color: var(--accent-border-hover);
+  color: var(--accent-text);
+}
+
+.ra-trigger:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.ra-menu {
+  position: fixed;
+  z-index: 1080;
+  min-width: 190px;
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-dropdown);
+}
+
+.ra-menu[hidden] { display: none; }
+.ra-form { margin: 0; }
+
+.ra-item {
+  --ra-bg: var(--default-bg);
+  --ra-fg: var(--muted-mid);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--heading-dark);
+  font-size: 0.86rem;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ra-item i {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  background: var(--ra-bg);
+  color: var(--ra-fg);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.ra-item:hover,
+.ra-item:focus-visible { background: var(--surface-muted); color: var(--heading-dark); outline: none; }
+
+.ra-tone-blue { --ra-bg: var(--accent-bg); --ra-fg: var(--accent-text); }
+.ra-tone-sky { --ra-bg: var(--tone-sky-bg); --ra-fg: var(--tone-sky-text); }
+.ra-tone-amber { --ra-bg: var(--tone-amber-bg); --ra-fg: var(--tone-amber-text); }
+.ra-tone-green { --ra-bg: var(--success-bg); --ra-fg: var(--success-text); }
+.ra-tone-purple { --ra-bg: var(--purple-bg); --ra-fg: var(--purple-text); }
+.ra-tone-teal { --ra-bg: var(--tone-teal-bg); --ra-fg: var(--tone-teal-text); }
+.ra-tone-danger { --ra-bg: var(--danger-bg); --ra-fg: var(--danger-text); }
+.ra-tone-danger:hover { color: var(--danger-text); }
+
+/* the ⋮ sits centred in its Actions cell (and the header above it) */
+td:has(> .ra),
+table:has(td > .ra) thead th:last-child {
+  text-align: center;
+}

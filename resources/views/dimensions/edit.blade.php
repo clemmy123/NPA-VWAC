@@ -47,14 +47,11 @@
                 <td>{{ $option->sort_order }}</td>
                 <td><span class="s-badge {{ $option->is_active ? 's-active' : 's-inactive' }}">{{ $option->is_active ? __('Active') : __('Inactive') }}</span></td>
                 <td class="text-end">
-                    <a href="{{ route('dimensions.options.edit', [$dimension, $option]) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
-                    <form action="{{ route('dimensions.options.destroy', [$dimension, $option]) }}" method="POST" class="d-inline"
-                          data-confirm="{{ __('Delete this option?') }}">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-                    </form>
-                </td>
+<x-row-actions>
+                    <x-row-action href="{{ route('dimensions.options.edit', [$dimension, $option]) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
+                    <x-row-action action="{{ route('dimensions.options.destroy', [$dimension, $option]) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete this option?') }}" />
+</x-row-actions>
+</td>
             </tr>
             @empty
             <tr>

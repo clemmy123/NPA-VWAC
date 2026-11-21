@@ -44,7 +44,7 @@ class IndicatorDataEntriesPageTest extends TestCase
         $response->assertSee($entry->indicator->name);
         $response->assertSee('id="collectionEditorModal"', false);
         $response->assertSee('id="collection-records"', false);
-        $response->assertSee('row-view-btn', false);
+        $response->assertSee('data-row-actions', false);
         $response->assertDontSee('indicatorSummary', false);
         $response->assertDontSee(route('indicator-data-entries.create'), false);
     }
@@ -73,7 +73,7 @@ class IndicatorDataEntriesPageTest extends TestCase
         $response->assertOk();
         $response->assertDontSee('Private draft indicator');
         $response->assertSee('Submitted review indicator');
-        $response->assertSee('row-view-btn', false);
+        $response->assertSee('data-row-actions', false);
         $response->assertSee(route('indicator-data-entries.show', $submitted), false);
         $response->assertDontSee('mdi-dots-vertical', false);
         $response->assertDontSee('mdi-eye-outline', false);

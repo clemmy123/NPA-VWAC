@@ -31,14 +31,11 @@
                 <td>{{ $organization->locationName() ?? '—' }}</td>
                 <td><span class="s-badge {{ $organization->is_active ? 's-active' : 's-inactive' }}">{{ $organization->is_active ? __('Active') : __('Inactive') }}</span></td>
                 <td>
-                    <a href="{{ route('organizations.edit', $organization) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
-                    <form action="{{ route('organizations.destroy', $organization) }}" method="POST" class="d-inline"
-                          data-confirm="{{ __('Delete this organization?') }}">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-                    </form>
-                </td>
+<x-row-actions>
+                    <x-row-action href="{{ route('organizations.edit', $organization) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
+                    <x-row-action action="{{ route('organizations.destroy', $organization) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete this organization?') }}" />
+</x-row-actions>
+</td>
             </tr>
             @empty
             <tr>
@@ -69,14 +66,11 @@
             <span><i class="mdi mdi-map-marker-outline"></i> {{ $organization->locationName() ?? '—' }}</span>
         </div>
         <div class="mob-card-footer">
-            <a href="{{ route('organizations.edit', $organization) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
-            <form action="{{ route('organizations.destroy', $organization) }}" method="POST" class="d-inline"
-                  data-confirm="{{ __('Delete this organization?') }}">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-            </form>
-        </div>
+<x-row-actions>
+            <x-row-action href="{{ route('organizations.edit', $organization) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
+            <x-row-action action="{{ route('organizations.destroy', $organization) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete this organization?') }}" />
+</x-row-actions>
+</div>
     </div>
     @empty
     <div class="tbl-empty">

@@ -53,14 +53,10 @@
                 <td>{{ $manager->name }}</td>
                 <td>{{ $manager->email }}</td>
                 <td>
-                    <form action="{{ route('thematic-areas.managers.destroy', [$thematicArea, $manager]) }}" method="POST" class="d-inline"
-                          data-confirm="{{ __('Remove ":name" as a manager of this thematic area?', ['name' => $manager->name]) }}">
-                        @csrf
-                        @method('DELETE')
-                        <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                        <button type="submit" class="btn-icon danger" title="{{ __('Remove') }}"><i class="mdi mdi-close"></i></button>
-                    </form>
-                </td>
+<x-row-actions>
+                    <x-row-action action="{{ route('thematic-areas.managers.destroy', [$thematicArea, $manager]) }}" method="DELETE" label="{{ __('Remove') }}" icon="mdi-close" tone="danger" confirm="{{ __('Remove ":name" as a manager of this thematic area?', ['name' => $manager->name]) }}" redirect />
+</x-row-actions>
+</td>
             </tr>
             @empty
             <tr><td colspan="3"><div class="tbl-empty"><i class="mdi mdi-account-outline"></i><p>{{ __('No thematic managers assigned yet.') }}</p></div></td></tr>
@@ -116,18 +112,15 @@
                     } }}">{{ __(ucfirst($indicator->status)) }}</span>
                 </td>
                 <td>
+<x-row-actions>
                     @can('indicator.update')
-                    <a href="{{ route('indicators.edit', $indicator) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
+                    <x-row-action href="{{ route('indicators.edit', $indicator) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
                     @endcan
                     @if ($indicator->status === 'active')
-                    <form action="{{ route('indicators.disable', $indicator) }}" method="POST" class="d-inline" data-confirm="{{ __('Disable this indicator?') }}">
-                        @csrf
-                        @method('PATCH')
-                        <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                        <button type="submit" class="btn-icon danger" title="{{ __('Disable') }}"><i class="mdi mdi-cancel"></i></button>
-                    </form>
+                    <x-row-action action="{{ route('indicators.disable', $indicator) }}" method="PATCH" label="{{ __('Disable') }}" icon="mdi-cancel" tone="danger" confirm="{{ __('Disable this indicator?') }}" redirect />
                     @endif
-                </td>
+</x-row-actions>
+</td>
             </tr>
             @empty
             <tr><td colspan="5"><div class="tbl-empty"><i class="mdi mdi-chart-box-outline"></i><p>{{ __('No indicators yet.') }}</p></div></td></tr>
@@ -147,18 +140,15 @@
         </div>
         <div class="mob-card-body"><p class="mob-card-title"><span class="ref-pill">{{ $indicator->code }}</span></p></div>
         <div class="mob-card-footer">
+<x-row-actions>
             @can('indicator.update')
-            <a href="{{ route('indicators.edit', $indicator) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
+            <x-row-action href="{{ route('indicators.edit', $indicator) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
             @endcan
             @if ($indicator->status === 'active')
-            <form action="{{ route('indicators.disable', $indicator) }}" method="POST" class="d-inline" data-confirm="{{ __('Disable this indicator?') }}">
-                @csrf
-                @method('PATCH')
-                <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                <button type="submit" class="btn-icon danger" title="{{ __('Disable') }}"><i class="mdi mdi-cancel"></i></button>
-            </form>
+            <x-row-action action="{{ route('indicators.disable', $indicator) }}" method="PATCH" label="{{ __('Disable') }}" icon="mdi-cancel" tone="danger" confirm="{{ __('Disable this indicator?') }}" redirect />
             @endif
-        </div>
+</x-row-actions>
+</div>
     </div>
     @empty
     <div class="tbl-empty"><i class="mdi mdi-chart-box-outline"></i><p>{{ __('No indicators yet.') }}</p></div>
@@ -189,19 +179,15 @@
                     } }}">{{ __(ucfirst($intervention->status)) }}</span>
                 </td>
                 <td>
+<x-row-actions>
                     @can('intervention.update')
-                    <a href="{{ route('interventions.edit', $intervention) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
+                    <x-row-action href="{{ route('interventions.edit', $intervention) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
                     @endcan
                     @can('intervention.delete')
-                    <form action="{{ route('interventions.destroy', $intervention) }}" method="POST" class="d-inline"
-                          data-confirm="{{ __('Delete intervention ":name"?', ['name' => $intervention->name]) }}">
-                        @csrf
-                        @method('DELETE')
-                        <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                        <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-                    </form>
+                    <x-row-action action="{{ route('interventions.destroy', $intervention) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete intervention ":name"?', ['name' => $intervention->name]) }}" redirect />
                     @endcan
-                </td>
+</x-row-actions>
+</td>
             </tr>
             @empty
             <tr><td colspan="4"><div class="tbl-empty"><i class="mdi mdi-rocket-launch-outline"></i><p>{{ __('No interventions yet.') }}</p></div></td></tr>
@@ -221,19 +207,15 @@
         </div>
         <div class="mob-card-meta"><span>{{ $intervention->indicators->pluck('name')->implode(', ') ?: '—' }}</span></div>
         <div class="mob-card-footer">
+<x-row-actions>
             @can('intervention.update')
-            <a href="{{ route('interventions.edit', $intervention) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
+            <x-row-action href="{{ route('interventions.edit', $intervention) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
             @endcan
             @can('intervention.delete')
-            <form action="{{ route('interventions.destroy', $intervention) }}" method="POST" class="d-inline"
-                  data-confirm="{{ __('Delete intervention ":name"?', ['name' => $intervention->name]) }}">
-                @csrf
-                @method('DELETE')
-                <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-            </form>
+            <x-row-action action="{{ route('interventions.destroy', $intervention) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete intervention ":name"?', ['name' => $intervention->name]) }}" redirect />
             @endcan
-        </div>
+</x-row-actions>
+</div>
     </div>
     @empty
     <div class="tbl-empty"><i class="mdi mdi-rocket-launch-outline"></i><p>{{ __('No interventions yet.') }}</p></div>

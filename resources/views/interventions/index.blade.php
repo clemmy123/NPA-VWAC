@@ -46,18 +46,15 @@
                     } }}">{{ __(ucfirst($intervention->status)) }}</span>
                 </td>
                 <td>
+<x-row-actions>
                     @can('intervention.update')
-                    <a href="{{ route('interventions.edit', $intervention) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
+                    <x-row-action href="{{ route('interventions.edit', $intervention) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
                     @endcan
                     @can('intervention.delete')
-                    <form action="{{ route('interventions.destroy', $intervention) }}" method="POST" class="d-inline"
-                          data-confirm="{{ __('Delete intervention ":name"?', ['name' => $intervention->name]) }}">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-                    </form>
+                    <x-row-action action="{{ route('interventions.destroy', $intervention) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete intervention ":name"?', ['name' => $intervention->name]) }}" />
                     @endcan
-                </td>
+</x-row-actions>
+</td>
             </tr>
             @empty
             <tr>
@@ -96,18 +93,15 @@
             <span><i class="mdi mdi-chart-box-outline"></i> {{ $intervention->indicators->count() }} {{ __('indicators') }}</span>
         </div>
         <div class="mob-card-footer">
+<x-row-actions>
             @can('intervention.update')
-            <a href="{{ route('interventions.edit', $intervention) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
+            <x-row-action href="{{ route('interventions.edit', $intervention) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
             @endcan
             @can('intervention.delete')
-            <form action="{{ route('interventions.destroy', $intervention) }}" method="POST" class="d-inline"
-                  data-confirm="{{ __('Delete intervention ":name"?', ['name' => $intervention->name]) }}">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-            </form>
+            <x-row-action action="{{ route('interventions.destroy', $intervention) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete intervention ":name"?', ['name' => $intervention->name]) }}" />
             @endcan
-        </div>
+</x-row-actions>
+</div>
     </div>
     @empty
     <div class="tbl-empty">

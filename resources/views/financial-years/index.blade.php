@@ -31,14 +31,11 @@
                 <td>@if ($financialYear->is_current)<span class="s-badge s-active">{{ __('Current') }}</span>@else —@endif</td>
                 <td><span class="s-badge {{ $financialYear->is_active ? 's-active' : 's-inactive' }}">{{ $financialYear->is_active ? __('Active') : __('Inactive') }}</span></td>
                 <td>
-                    <a href="{{ route('financial-years.edit', $financialYear) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
-                    <form action="{{ route('financial-years.destroy', $financialYear) }}" method="POST" class="d-inline"
-                          data-confirm="{{ __('Delete this financial year?') }}">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-                    </form>
-                </td>
+<x-row-actions>
+                    <x-row-action href="{{ route('financial-years.edit', $financialYear) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
+                    <x-row-action action="{{ route('financial-years.destroy', $financialYear) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete this financial year?') }}" />
+</x-row-actions>
+</td>
             </tr>
             @empty
             <tr>
@@ -70,14 +67,11 @@
             @if ($financialYear->is_current)<span class="s-badge s-active">{{ __('Current') }}</span>@endif
         </div>
         <div class="mob-card-footer">
-            <a href="{{ route('financial-years.edit', $financialYear) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
-            <form action="{{ route('financial-years.destroy', $financialYear) }}" method="POST" class="d-inline"
-                  data-confirm="{{ __('Delete this financial year?') }}">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-            </form>
-        </div>
+<x-row-actions>
+            <x-row-action href="{{ route('financial-years.edit', $financialYear) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
+            <x-row-action action="{{ route('financial-years.destroy', $financialYear) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete this financial year?') }}" />
+</x-row-actions>
+</div>
     </div>
     @empty
     <div class="tbl-empty">

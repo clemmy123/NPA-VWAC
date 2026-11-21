@@ -73,18 +73,17 @@
                 <td>{{ $user->auth_provider === 'local' ? __('Local') : __('Jumuishi SSO') }}</td>
                 <td><span class="s-badge {{ $user->status === 'active' ? 's-active' : 's-inactive' }}">{{ __(ucfirst($user->status)) }}</span></td>
                 <td>
+<x-row-actions>
                     @can('user.update')
-                    <a href="{{ route('users.edit', $user) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
-                    <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline"
-                          data-confirm="{{ $user->status === 'active' ? __('Deactivate this user?') : __('Reactivate this user?') }}">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn-icon {{ $user->status === 'active' ? 'danger' : '' }}" title="{{ $user->status === 'active' ? __('Deactivate') : __('Reactivate') }}">
-                            <i class="mdi {{ $user->status === 'active' ? 'mdi-account-off-outline' : 'mdi-account-check-outline' }}"></i>
-                        </button>
-                    </form>
+                    <x-row-action href="{{ route('users.edit', $user) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
+                    <x-row-action action="{{ route('users.destroy', $user) }}" method="DELETE"
+                        :label="$user->status === 'active' ? __('Deactivate') : __('Reactivate')"
+                        :icon="$user->status === 'active' ? 'mdi-account-off-outline' : 'mdi-account-check-outline'"
+                        :tone="$user->status === 'active' ? 'danger' : 'green'"
+                        :confirm="$user->status === 'active' ? __('Deactivate this user?') : __('Reactivate this user?')" />
                     @endcan
-                </td>
+</x-row-actions>
+</td>
             </tr>
             @empty
             <tr>
@@ -115,18 +114,17 @@
             <span><i class="mdi mdi-shield-account-outline"></i> {{ $user->roles->pluck('name')->join(', ') ?: '—' }}</span>
         </div>
         <div class="mob-card-footer">
+<x-row-actions>
             @can('user.update')
-            <a href="{{ route('users.edit', $user) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
-            <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline"
-                  data-confirm="{{ $user->status === 'active' ? __('Deactivate this user?') : __('Reactivate this user?') }}">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn-icon {{ $user->status === 'active' ? 'danger' : '' }}" title="{{ $user->status === 'active' ? __('Deactivate') : __('Reactivate') }}">
-                    <i class="mdi {{ $user->status === 'active' ? 'mdi-account-off-outline' : 'mdi-account-check-outline' }}"></i>
-                </button>
-            </form>
+            <x-row-action href="{{ route('users.edit', $user) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
+            <x-row-action action="{{ route('users.destroy', $user) }}" method="DELETE"
+                        :label="$user->status === 'active' ? __('Deactivate') : __('Reactivate')"
+                        :icon="$user->status === 'active' ? 'mdi-account-off-outline' : 'mdi-account-check-outline'"
+                        :tone="$user->status === 'active' ? 'danger' : 'green'"
+                        :confirm="$user->status === 'active' ? __('Deactivate this user?') : __('Reactivate this user?')" />
             @endcan
-        </div>
+</x-row-actions>
+</div>
     </div>
     @empty
     <div class="tbl-empty">

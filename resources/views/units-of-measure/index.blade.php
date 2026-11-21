@@ -30,14 +30,11 @@
                 <td>{{ $unitOfMeasure->symbol ?? '—' }}</td>
                 <td><span class="s-badge {{ $unitOfMeasure->is_active ? 's-active' : 's-inactive' }}">{{ $unitOfMeasure->is_active ? __('Active') : __('Inactive') }}</span></td>
                 <td>
-                    <a href="{{ route('units-of-measure.edit', $unitOfMeasure) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
-                    <form action="{{ route('units-of-measure.destroy', $unitOfMeasure) }}" method="POST" class="d-inline"
-                          data-confirm="{{ __('Delete this unit of measure?') }}">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-                    </form>
-                </td>
+<x-row-actions>
+                    <x-row-action href="{{ route('units-of-measure.edit', $unitOfMeasure) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
+                    <x-row-action action="{{ route('units-of-measure.destroy', $unitOfMeasure) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete this unit of measure?') }}" />
+</x-row-actions>
+</td>
             </tr>
             @empty
             <tr>
@@ -68,14 +65,11 @@
             @if ($unitOfMeasure->symbol)<span>{{ $unitOfMeasure->symbol }}</span>@endif
         </div>
         <div class="mob-card-footer">
-            <a href="{{ route('units-of-measure.edit', $unitOfMeasure) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
-            <form action="{{ route('units-of-measure.destroy', $unitOfMeasure) }}" method="POST" class="d-inline"
-                  data-confirm="{{ __('Delete this unit of measure?') }}">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-            </form>
-        </div>
+<x-row-actions>
+            <x-row-action href="{{ route('units-of-measure.edit', $unitOfMeasure) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
+            <x-row-action action="{{ route('units-of-measure.destroy', $unitOfMeasure) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete this unit of measure?') }}" />
+</x-row-actions>
+</div>
     </div>
     @empty
     <div class="tbl-empty">

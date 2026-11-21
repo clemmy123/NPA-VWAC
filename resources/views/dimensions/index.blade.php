@@ -30,14 +30,11 @@
                 <td>{{ $dimension->options_count }}</td>
                 <td><span class="s-badge {{ $dimension->is_active ? 's-active' : 's-inactive' }}">{{ $dimension->is_active ? __('Active') : __('Inactive') }}</span></td>
                 <td>
-                    <a href="{{ route('dimensions.edit', $dimension) }}" class="btn-icon" title="Edit / manage options"><i class="mdi mdi-pencil-outline"></i></a>
-                    <form action="{{ route('dimensions.destroy', $dimension) }}" method="POST" class="d-inline"
-                          data-confirm="{{ __('Delete this dimension and all its options?') }}">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-                    </form>
-                </td>
+<x-row-actions>
+                    <x-row-action href="{{ route('dimensions.edit', $dimension) }}" label="Edit / manage options" icon="mdi-pencil-outline" tone="amber" />
+                    <x-row-action action="{{ route('dimensions.destroy', $dimension) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete this dimension and all its options?') }}" />
+</x-row-actions>
+</td>
             </tr>
             @empty
             <tr>
@@ -68,14 +65,11 @@
             <span><i class="mdi mdi-format-list-bulleted"></i> {{ $dimension->options_count }} options</span>
         </div>
         <div class="mob-card-footer">
-            <a href="{{ route('dimensions.edit', $dimension) }}" class="btn-icon" title="Edit / manage options"><i class="mdi mdi-pencil-outline"></i></a>
-            <form action="{{ route('dimensions.destroy', $dimension) }}" method="POST" class="d-inline"
-                  data-confirm="{{ __('Delete this dimension and all its options?') }}">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-            </form>
-        </div>
+<x-row-actions>
+            <x-row-action href="{{ route('dimensions.edit', $dimension) }}" label="Edit / manage options" icon="mdi-pencil-outline" tone="amber" />
+            <x-row-action action="{{ route('dimensions.destroy', $dimension) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete this dimension and all its options?') }}" />
+</x-row-actions>
+</div>
     </div>
     @empty
     <div class="tbl-empty">

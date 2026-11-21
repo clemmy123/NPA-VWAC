@@ -51,14 +51,10 @@
                 <td>{{ $manager->name }}</td>
                 <td>{{ $manager->email }}</td>
                 <td>
-                    <form action="{{ route('projects.managers.destroy', [$project, $manager]) }}" method="POST" class="d-inline"
-                          data-confirm="{{ __('Remove ":name" as a manager of this project?', ['name' => $manager->name]) }}">
-                        @csrf
-                        @method('DELETE')
-                        <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                        <button type="submit" class="btn-icon danger" title="{{ __('Remove') }}"><i class="mdi mdi-close"></i></button>
-                    </form>
-                </td>
+<x-row-actions>
+                    <x-row-action action="{{ route('projects.managers.destroy', [$project, $manager]) }}" method="DELETE" label="{{ __('Remove') }}" icon="mdi-close" tone="danger" confirm="{{ __('Remove ":name" as a manager of this project?', ['name' => $manager->name]) }}" redirect />
+</x-row-actions>
+</td>
             </tr>
             @empty
             <tr><td colspan="3"><div class="tbl-empty"><i class="mdi mdi-account-outline"></i><p>{{ __('No project managers assigned yet.') }}</p></div></td></tr>
@@ -113,18 +109,15 @@
                     } }}">{{ __(ucfirst($thematicArea->status)) }}</span>
                 </td>
                 <td>
+<x-row-actions>
                     @can('thematic-area.update')
-                    <a href="{{ route('thematic-areas.edit', $thematicArea) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
+                    <x-row-action href="{{ route('thematic-areas.edit', $thematicArea) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
                     @endcan
                     @if ($thematicArea->status === 'active')
-                    <form action="{{ route('thematic-areas.disable', $thematicArea) }}" method="POST" class="d-inline" data-confirm="{{ __('Disable this thematic area?') }}">
-                        @csrf
-                        @method('PATCH')
-                        <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                        <button type="submit" class="btn-icon danger" title="{{ __('Disable') }}"><i class="mdi mdi-cancel"></i></button>
-                    </form>
+                    <x-row-action action="{{ route('thematic-areas.disable', $thematicArea) }}" method="PATCH" label="{{ __('Disable') }}" icon="mdi-cancel" tone="danger" confirm="{{ __('Disable this thematic area?') }}" redirect />
                     @endif
-                </td>
+</x-row-actions>
+</td>
             </tr>
             @empty
             <tr><td colspan="3"><div class="tbl-empty"><i class="mdi mdi-sitemap-outline"></i><p>{{ __('No thematic areas yet.') }}</p></div></td></tr>
@@ -143,18 +136,15 @@
             } }}">{{ __(ucfirst($thematicArea->status)) }}</span>
         </div>
         <div class="mob-card-footer">
+<x-row-actions>
             @can('thematic-area.update')
-            <a href="{{ route('thematic-areas.edit', $thematicArea) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
+            <x-row-action href="{{ route('thematic-areas.edit', $thematicArea) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
             @endcan
             @if ($thematicArea->status === 'active')
-            <form action="{{ route('thematic-areas.disable', $thematicArea) }}" method="POST" class="d-inline" data-confirm="{{ __('Disable this thematic area?') }}">
-                @csrf
-                @method('PATCH')
-                <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                <button type="submit" class="btn-icon danger" title="{{ __('Disable') }}"><i class="mdi mdi-cancel"></i></button>
-            </form>
+            <x-row-action action="{{ route('thematic-areas.disable', $thematicArea) }}" method="PATCH" label="{{ __('Disable') }}" icon="mdi-cancel" tone="danger" confirm="{{ __('Disable this thematic area?') }}" redirect />
             @endif
-        </div>
+</x-row-actions>
+</div>
     </div>
     @empty
     <div class="tbl-empty"><i class="mdi mdi-sitemap-outline"></i><p>{{ __('No thematic areas yet.') }}</p></div>

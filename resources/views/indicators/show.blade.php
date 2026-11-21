@@ -59,17 +59,13 @@
                 <td>{{ $baseline->baseline_date?->format('d M Y') ?? '—' }}</td>
                 <td>{{ $baseline->organization?->name ?? '—' }}</td>
                 <td>
+<x-row-actions>
                     @can('indicator.set-baseline')
-                    <a href="{{ route('indicator-baselines.edit', $baseline) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
-                    <form action="{{ route('indicator-baselines.destroy', $baseline) }}" method="POST" class="d-inline"
-                          data-confirm="{{ __('Delete this baseline?') }}">
-                        @csrf
-                        @method('DELETE')
-                        <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                        <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-                    </form>
+                    <x-row-action href="{{ route('indicator-baselines.edit', $baseline) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
+                    <x-row-action action="{{ route('indicator-baselines.destroy', $baseline) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete this baseline?') }}" redirect />
                     @endcan
-                </td>
+</x-row-actions>
+</td>
             </tr>
             @empty
             <tr><td colspan="5"><div class="tbl-empty"><i class="mdi mdi-target"></i><p>{{ __('No baselines yet.') }}</p></div></td></tr>
@@ -84,17 +80,13 @@
         <div class="mob-card-top"><span class="fw-600">{{ \App\Support\DisplayNumber::format($baseline->baseline_value) }}</span><span class="text-muted small">{{ $baseline->financialYear?->name ?? '—' }}</span></div>
         <div class="mob-card-meta"><span>{{ $baseline->organization?->name ?? '—' }}</span></div>
         <div class="mob-card-footer">
+<x-row-actions>
             @can('indicator.set-baseline')
-            <a href="{{ route('indicator-baselines.edit', $baseline) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
-            <form action="{{ route('indicator-baselines.destroy', $baseline) }}" method="POST" class="d-inline"
-                  data-confirm="{{ __('Delete this baseline?') }}">
-                @csrf
-                @method('DELETE')
-                <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-            </form>
+            <x-row-action href="{{ route('indicator-baselines.edit', $baseline) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
+            <x-row-action action="{{ route('indicator-baselines.destroy', $baseline) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete this baseline?') }}" redirect />
             @endcan
-        </div>
+</x-row-actions>
+</div>
     </div>
     @empty
     <div class="tbl-empty"><i class="mdi mdi-target"></i><p>{{ __('No baselines yet.') }}</p></div>
@@ -122,17 +114,13 @@
                 <td>{{ $target->reportingPeriod?->name ?? __('Whole year') }}</td>
                 <td>{{ $target->dimensionOption?->name ?? __('Aggregate') }}</td>
                 <td>
+<x-row-actions>
                     @can('indicator.set-target')
-                    <a href="{{ route('indicator-targets.edit', $target) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
-                    <form action="{{ route('indicator-targets.destroy', $target) }}" method="POST" class="d-inline"
-                          data-confirm="{{ __('Delete this target?') }}">
-                        @csrf
-                        @method('DELETE')
-                        <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                        <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-                    </form>
+                    <x-row-action href="{{ route('indicator-targets.edit', $target) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
+                    <x-row-action action="{{ route('indicator-targets.destroy', $target) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete this target?') }}" redirect />
                     @endcan
-                </td>
+</x-row-actions>
+</td>
             </tr>
             @empty
             <tr><td colspan="5"><div class="tbl-empty"><i class="mdi mdi-bullseye-arrow"></i><p>{{ __('No targets yet.') }}</p></div></td></tr>
@@ -147,17 +135,13 @@
         <div class="mob-card-top"><span class="fw-600">{{ \App\Support\DisplayNumber::format($target->target_value) }}</span><span class="text-muted small">{{ $target->financialYear?->name ?? '—' }}</span></div>
         <div class="mob-card-meta"><span>{{ $target->reportingPeriod?->name ?? __('Whole year') }}</span></div>
         <div class="mob-card-footer">
+<x-row-actions>
             @can('indicator.set-target')
-            <a href="{{ route('indicator-targets.edit', $target) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
-            <form action="{{ route('indicator-targets.destroy', $target) }}" method="POST" class="d-inline"
-                  data-confirm="{{ __('Delete this target?') }}">
-                @csrf
-                @method('DELETE')
-                <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-            </form>
+            <x-row-action href="{{ route('indicator-targets.edit', $target) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
+            <x-row-action action="{{ route('indicator-targets.destroy', $target) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete this target?') }}" redirect />
             @endcan
-        </div>
+</x-row-actions>
+</div>
     </div>
     @empty
     <div class="tbl-empty"><i class="mdi mdi-bullseye-arrow"></i><p>{{ __('No targets yet.') }}</p></div>
@@ -191,15 +175,11 @@
                 </td>
                 <td><span class="s-badge {{ $assignment->is_active ? 's-active' : 's-inactive' }}">{{ $assignment->is_active ? __('Active') : __('Inactive') }}</span></td>
                 <td>
-                    <a href="{{ route('indicator-data-assignments.edit', $assignment) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
-                    <form action="{{ route('indicator-data-assignments.destroy', $assignment) }}" method="POST" class="d-inline"
-                          data-confirm="{{ __('Delete this assignment?') }}">
-                        @csrf
-                        @method('DELETE')
-                        <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                        <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-                    </form>
-                </td>
+<x-row-actions>
+                    <x-row-action href="{{ route('indicator-data-assignments.edit', $assignment) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
+                    <x-row-action action="{{ route('indicator-data-assignments.destroy', $assignment) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete this assignment?') }}" redirect />
+</x-row-actions>
+</td>
             </tr>
             @empty
             <tr><td colspan="5"><div class="tbl-empty"><i class="mdi mdi-account-arrow-right-outline"></i><p>{{ __('No one assigned to report on this indicator yet.') }}</p></div></td></tr>
@@ -226,15 +206,11 @@
             </span>
         </div>
         <div class="mob-card-footer">
-            <a href="{{ route('indicator-data-assignments.edit', $assignment) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
-            <form action="{{ route('indicator-data-assignments.destroy', $assignment) }}" method="POST" class="d-inline"
-                  data-confirm="{{ __('Delete this assignment?') }}">
-                @csrf
-                @method('DELETE')
-                <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-            </form>
-        </div>
+<x-row-actions>
+            <x-row-action href="{{ route('indicator-data-assignments.edit', $assignment) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
+            <x-row-action action="{{ route('indicator-data-assignments.destroy', $assignment) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete this assignment?') }}" redirect />
+</x-row-actions>
+</div>
     </div>
     @empty
     <div class="tbl-empty"><i class="mdi mdi-account-arrow-right-outline"></i><p>{{ __('No one assigned to report on this indicator yet.') }}</p></div>

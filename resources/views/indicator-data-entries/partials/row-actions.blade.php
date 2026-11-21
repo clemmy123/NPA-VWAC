@@ -1,1 +1,3 @@
-<a href="{{ route('indicator-data-entries.show', $entry) }}" class="row-view-btn">{{ __('View') }}</a>
+<x-row-actions>
+    <x-row-action href="{{ route('indicator-data-entries.show', $entry) }}" label="{{ __('View') }}" icon="mdi-eye-outline" tone="sky" />
+</x-row-actions>

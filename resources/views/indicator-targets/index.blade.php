@@ -41,16 +41,13 @@
                 <td>{{ $target->dimensionOption?->name ?? __('Aggregate') }}</td>
                 <td>{{ \App\Support\DisplayNumber::format($target->target_value) }}</td>
                 <td>
+<x-row-actions>
                     @can('indicator.set-target')
-                    <a href="{{ route('indicator-targets.edit', $target) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
-                    <form action="{{ route('indicator-targets.destroy', $target) }}" method="POST" class="d-inline"
-                          data-confirm="{{ __('Delete this target?') }}">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-                    </form>
+                    <x-row-action href="{{ route('indicator-targets.edit', $target) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
+                    <x-row-action action="{{ route('indicator-targets.destroy', $target) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete this target?') }}" />
                     @endcan
-                </td>
+</x-row-actions>
+</td>
             </tr>
             @empty
             <tr>
@@ -84,16 +81,13 @@
             <span><i class="mdi mdi-shape-outline"></i> {{ $target->dimensionOption?->name ?? __('Aggregate') }}</span>
         </div>
         <div class="mob-card-footer">
+<x-row-actions>
             @can('indicator.set-target')
-            <a href="{{ route('indicator-targets.edit', $target) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
-            <form action="{{ route('indicator-targets.destroy', $target) }}" method="POST" class="d-inline"
-                  data-confirm="{{ __('Delete this target?') }}">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-            </form>
+            <x-row-action href="{{ route('indicator-targets.edit', $target) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
+            <x-row-action action="{{ route('indicator-targets.destroy', $target) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete this target?') }}" />
             @endcan
-        </div>
+</x-row-actions>
+</div>
     </div>
     @empty
     <div class="tbl-empty">

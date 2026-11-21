@@ -48,19 +48,16 @@
                     } }}">{{ __(ucfirst($project->status)) }}</span>
                 </td>
                 <td>
-                    <a href="{{ route('projects.show', $project) }}" class="btn-icon" title="{{ __('View') }}"><i class="mdi mdi-eye-outline"></i></a>
+<x-row-actions>
+                    <x-row-action href="{{ route('projects.show', $project) }}" label="{{ __('View') }}" icon="mdi-eye-outline" tone="sky" />
                     @can('project.update')
-                    <a href="{{ route('projects.edit', $project) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
+                    <x-row-action href="{{ route('projects.edit', $project) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
                     @endcan
                     @can('project.delete')
-                    <form action="{{ route('projects.destroy', $project) }}" method="POST" class="d-inline"
-                          data-confirm="{{ __('Delete project ":name"?', ['name' => $project->name]) }}">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-                    </form>
+                    <x-row-action action="{{ route('projects.destroy', $project) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete project ":name"?', ['name' => $project->name]) }}" />
                     @endcan
-                </td>
+</x-row-actions>
+</td>
             </tr>
             @empty
             <tr>
@@ -102,23 +99,16 @@
             <span><i class="mdi mdi-calendar-end"></i> {{ $project->end_date?->format('d M Y') ?? '—' }}</span>
         </div>
         <div class="mob-card-footer">
-            <a href="{{ route('projects.show', $project) }}" class="btn-icon" title="{{ __('View') }}">
-                <i class="mdi mdi-eye-outline"></i>
-            </a>
+<x-row-actions>
+            <x-row-action href="{{ route('projects.show', $project) }}" label="{{ __('View') }}" icon="mdi-eye-outline" tone="sky" />
             @can('project.update')
-            <a href="{{ route('projects.edit', $project) }}" class="btn-icon" title="{{ __('Edit') }}">
-                <i class="mdi mdi-pencil-outline"></i>
-            </a>
+            <x-row-action href="{{ route('projects.edit', $project) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
             @endcan
             @can('project.delete')
-            <form action="{{ route('projects.destroy', $project) }}" method="POST" class="d-inline"
-                  data-confirm="{{ __('Delete project ":name"?', ['name' => $project->name]) }}">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-            </form>
+            <x-row-action action="{{ route('projects.destroy', $project) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete project ":name"?', ['name' => $project->name]) }}" />
             @endcan
-        </div>
+</x-row-actions>
+</div>
     </div>
     @empty
     <div class="tbl-empty">

@@ -29,14 +29,11 @@
                 <td>{{ $organizationType->name }}</td>
                 <td><span class="s-badge {{ $organizationType->is_active ? 's-active' : 's-inactive' }}">{{ $organizationType->is_active ? __('Active') : __('Inactive') }}</span></td>
                 <td>
-                    <a href="{{ route('organization-types.edit', $organizationType) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
-                    <form action="{{ route('organization-types.destroy', $organizationType) }}" method="POST" class="d-inline"
-                          data-confirm="{{ __('Delete this organization type?') }}">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-                    </form>
-                </td>
+<x-row-actions>
+                    <x-row-action href="{{ route('organization-types.edit', $organizationType) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
+                    <x-row-action action="{{ route('organization-types.destroy', $organizationType) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete this organization type?') }}" />
+</x-row-actions>
+</td>
             </tr>
             @empty
             <tr>
@@ -66,14 +63,11 @@
             <span><i class="mdi mdi-pound"></i> {{ $organizationType->code }}</span>
         </div>
         <div class="mob-card-footer">
-            <a href="{{ route('organization-types.edit', $organizationType) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
-            <form action="{{ route('organization-types.destroy', $organizationType) }}" method="POST" class="d-inline"
-                  data-confirm="{{ __('Delete this organization type?') }}">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-            </form>
-        </div>
+<x-row-actions>
+            <x-row-action href="{{ route('organization-types.edit', $organizationType) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
+            <x-row-action action="{{ route('organization-types.destroy', $organizationType) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete this organization type?') }}" />
+</x-row-actions>
+</div>
     </div>
     @empty
     <div class="tbl-empty">

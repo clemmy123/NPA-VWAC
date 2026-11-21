@@ -31,14 +31,11 @@
                 <td>{{ __(ucfirst(str_replace('_', ' ', $reportingPeriod->period_type))) }}</td>
                 <td><span class="s-badge {{ $reportingPeriod->is_active ? 's-active' : 's-inactive' }}">{{ $reportingPeriod->is_active ? __('Active') : __('Inactive') }}</span></td>
                 <td>
-                    <a href="{{ route('reporting-periods.edit', $reportingPeriod) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
-                    <form action="{{ route('reporting-periods.destroy', $reportingPeriod) }}" method="POST" class="d-inline"
-                          data-confirm="{{ __('Delete this reporting period?') }}">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-                    </form>
-                </td>
+<x-row-actions>
+                    <x-row-action href="{{ route('reporting-periods.edit', $reportingPeriod) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
+                    <x-row-action action="{{ route('reporting-periods.destroy', $reportingPeriod) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete this reporting period?') }}" />
+</x-row-actions>
+</td>
             </tr>
             @empty
             <tr>
@@ -68,14 +65,11 @@
             <span><i class="mdi mdi-calendar-range-outline"></i> {{ $reportingPeriod->financialYear?->name ?? '—' }}</span>
         </div>
         <div class="mob-card-footer">
-            <a href="{{ route('reporting-periods.edit', $reportingPeriod) }}" class="btn-icon" title="{{ __('Edit') }}"><i class="mdi mdi-pencil-outline"></i></a>
-            <form action="{{ route('reporting-periods.destroy', $reportingPeriod) }}" method="POST" class="d-inline"
-                  data-confirm="{{ __('Delete this reporting period?') }}">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn-icon danger" title="{{ __('Delete') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-            </form>
-        </div>
+<x-row-actions>
+            <x-row-action href="{{ route('reporting-periods.edit', $reportingPeriod) }}" label="{{ __('Edit') }}" icon="mdi-pencil-outline" tone="amber" />
+            <x-row-action action="{{ route('reporting-periods.destroy', $reportingPeriod) }}" method="DELETE" label="{{ __('Delete') }}" icon="mdi-trash-can-outline" tone="danger" confirm="{{ __('Delete this reporting period?') }}" />
+</x-row-actions>
+</div>
     </div>
     @empty
     <div class="tbl-empty">
