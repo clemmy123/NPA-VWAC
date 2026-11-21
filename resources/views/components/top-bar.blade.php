@@ -43,7 +43,7 @@
                 <span class="d-none d-sm-flex flex-column ms-2" style="line-height:1.3; text-align:left;">
                     <span style="font-size:0.82rem; font-weight:600; color:var(--heading-dark);">{{ Auth::user()->name }}</span>
                     <span style="font-size:0.7rem; font-weight:400; color:var(--muted-mid);">
-                        {{ Auth::user()->getRoleNames()->first() ?? __('No role') }}
+                        {{ Auth::user()->activeRoleName() ? __(Auth::user()->activeRoleName()) : __('No role') }}
                     </span>
                 </span>
 
@@ -55,9 +55,26 @@
                 <div style="padding:10px 16px 10px; border-bottom:1px solid var(--divider-faint);">
                     <div style="font-size:0.82rem; font-weight:600; color:var(--heading-dark);">{{ Auth::user()->name }}</div>
                     <div style="font-size:0.72rem; color:var(--muted-mid); margin-top:1px;">
-                        {{ Auth::user()->getRoleNames()->first() }}
+                        {{ Auth::user()->activeRoleName() ? __(Auth::user()->activeRoleName()) : '' }}
                     </div>
                 </div>
+
+                @if (Auth::user()->heldRoleNames()->count() > 1)
+                <div class="role-switch">
+                    <div class="role-switch-title">{{ __('Work as') }}</div>
+                    <form method="POST" action="{{ route('active-role.update') }}">
+                        @csrf
+                        @foreach (Auth::user()->heldRoleNames() as $heldRole)
+                        <button type="submit" name="role" value="{{ $heldRole }}"
+                                class="role-switch-item {{ $heldRole === Auth::user()->activeRoleName() ? 'is-active' : '' }}">
+                            <i class="mdi {{ $heldRole === Auth::user()->activeRoleName() ? 'mdi-radiobox-marked' : 'mdi-radiobox-blank' }}"></i>
+                            <span>{{ __($heldRole) }}</span>
+                        </button>
+                        @endforeach
+                    </form>
+                </div>
+                <div class="dropdown-divider"></div>
+                @endif
 
                 @if (Auth::user()->auth_provider === 'local')
                 <a href="{{ route('local-password.edit') }}" class="dropdown-item" style="padding:9px 16px;">

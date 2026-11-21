@@ -836,5 +836,7 @@
     "Spent": "Iliyotumika",
     "Name (English)": "Jina (Kiingereza)",
     "Name (Swahili)": "Jina (Kiswahili)",
-    "Shown instead of the English name when the interface is in Swahili.": "Huonyeshwa badala ya jina la Kiingereza pale mfumo unapokuwa kwa Kiswahili."
+    "Shown instead of the English name when the interface is in Swahili.": "Huonyeshwa badala ya jina la Kiingereza pale mfumo unapokuwa kwa Kiswahili.",
+    "Work as": "Fanya kazi kama",
+    "You are now working as :role.": "Sasa unafanya kazi kama :role."
 }

@@ -7,10 +7,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
+    /** Session key holding the role ("hat") the user is currently working as. */
+    public const ACTIVE_ROLE_SESSION_KEY = 'active_role';
+
+    /** Hat used on sign-in when a user holds several roles and has not picked one. */
+    private const ROLE_PRIORITY = ['Super Admin', 'Project Manager', 'Thematic Manager', 'Data Approver', 'Data Entry User'];
+
     use HasFactory;
     use HasRoles;
     use Notifiable;
@@ -209,7 +217,8 @@ class User extends Authenticatable
         }
         if ($this->hasAnyRole(['Project Manager', 'Thematic Manager'])) {
             $areaIds = $this->visibleThematicAreaIds();
-            return Indicator::query()->where('status','active')
+
+            return Indicator::query()->where('status', 'active')
                 ->whereIn('thematic_area_id', $areaIds)->pluck('id')
                 ->map(fn ($id) => (int) $id)->all();
         }
@@ -228,5 +237,79 @@ class User extends Authenticatable
             ->pluck('indicator_id')
             ->map(fn ($id): int => (int) $id)
             ->all();
+    }
+
+    /**
+     * Every role the account holds (all of its hats).
+     *
+     * @return Collection<int, string>
+     */
+    public function heldRoleNames(): Collection
+    {
+        $this->loadMissing('roles');
+
+        return $this->roles->pluck('name')->values();
+    }
+
+    /**
+     * The one role the user is acting as right now. Permission and role checks
+     * (can(), @can, hasRole(), hasAnyRole(), role middleware) are evaluated against
+     * this role only, so each hat sees and does exactly what that role allows.
+     */
+    public function activeRoleName(): ?string
+    {
+        $held = $this->heldRoleNames();
+
+        if ($held->count() <= 1) {
+            return $held->first();
+        }
+
+        $chosen = session(self::ACTIVE_ROLE_SESSION_KEY);
+
+        if (is_string($chosen) && $held->contains($chosen)) {
+            return $chosen;
+        }
+
+        return collect(self::ROLE_PRIORITY)->first(fn (string $role): bool => $held->contains($role)) ?? $held->first();
+    }
+
+    /** Role check limited to the active role (Spatie's permission lookup goes through this too). */
+    public function hasRole($roles, ?string $guard = null): bool
+    {
+        $active = $this->activeRoleName();
+
+        return $active !== null && $this->roleNamesFrom($roles)->contains($active);
+    }
+
+    /**
+     * Normalise whatever Spatie passes around (name, "a|b", id, model, enum, or lists of them) to role names.
+     *
+     * @return Collection<int, string>
+     */
+    private function roleNamesFrom(mixed $roles): Collection
+    {
+        if ($roles instanceof \BackedEnum) {
+            $roles = $roles->value;
+        }
+
+        if ($roles instanceof Role) {
+            return collect([$roles->name]);
+        }
+
+        if (is_int($roles)) {
+            $this->loadMissing('roles');
+
+            return $this->roles->where('id', $roles)->pluck('name')->values();
+        }
+
+        if (is_string($roles)) {
+            return collect(str_contains($roles, '|') ? explode('|', $roles) : [$roles])->map(fn (string $name): string => trim($name));
+        }
+
+        if (is_iterable($roles)) {
+            return collect($roles)->flatMap(fn (mixed $role): Collection => $this->roleNamesFrom($role))->values();
+        }
+
+        return collect();
     }
 }

@@ -1,0 +1,32 @@
+/* Role switcher inside the user dropdown (only rendered for users holding several roles). */
+
+.role-switch { padding: 8px 8px 4px; }
+
+.role-switch-title {
+  padding: 0 8px 4px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted-icon);
+}
+
+.role-switch-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--heading-dark);
+  font-size: 0.84rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.role-switch-item i { font-size: 1.05rem; color: var(--muted-icon); }
+.role-switch-item:hover { background: var(--surface-muted); }
+.role-switch-item.is-active { color: var(--brand-blue); font-weight: 600; }
+.role-switch-item.is-active i { color: var(--brand-blue); }

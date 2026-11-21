@@ -153,8 +153,9 @@ class UserManagementTest extends TestCase
 
         $response->assertRedirect(route('users.index'));
         $user = User::where('email', 'dual.role@example.test')->firstOrFail();
-        $this->assertTrue($user->hasRole('Data Approver'));
-        $this->assertTrue($user->hasRole('Project Manager'));
+        // hasRole() only reflects the role being acted as; the account itself holds both.
+        $this->assertTrue($user->heldRoleNames()->contains('Data Approver'));
+        $this->assertTrue($user->heldRoleNames()->contains('Project Manager'));
         $this->assertCount(2, $user->roles);
     }
 
@@ -173,9 +174,9 @@ class UserManagementTest extends TestCase
         ])->assertRedirect(route('users.index'));
 
         $target->refresh();
-        $this->assertFalse($target->hasRole('Project Manager'));
-        $this->assertTrue($target->hasRole('Data Entry User'));
-        $this->assertTrue($target->hasRole('Thematic Manager'));
+        $this->assertFalse($target->heldRoleNames()->contains('Project Manager'));
+        $this->assertTrue($target->heldRoleNames()->contains('Data Entry User'));
+        $this->assertTrue($target->heldRoleNames()->contains('Thematic Manager'));
     }
 
     public function test_approval_location_is_ignored_for_non_approver_roles(): void

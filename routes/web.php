@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActiveRoleController;
 use App\Http\Controllers\AdminLocationController;
 use App\Http\Controllers\CollectionSheetController;
 use App\Http\Controllers\DashboardController;
@@ -110,6 +111,7 @@ Route::get('/reset-password/{token}', fn (string $token) => redirect()->away(
 
 Route::middleware(['auth', 'auth.session'])->group(function (): void {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/active-role', [ActiveRoleController::class, 'update'])->name('active-role.update');
 
     Route::get('admin-locations/{level}', [AdminLocationController::class, 'options'])
         ->name('admin-locations.options');
