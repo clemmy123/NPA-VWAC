@@ -83,20 +83,11 @@ if (app()->environment('local')) {
     })->name('dev-login');
 }
 
-Route::get('/login', [JumuishiSsoController::class, 'login'])->name('login');
+Route::get('/login', [JumuishiSsoController::class, 'login'])->middleware('guest')->name('login');
 Route::get('/jumuishi/sso/consume', [JumuishiSsoController::class, 'consume'])
     ->middleware('throttle:30,1')->name('jumuishi.sso.consume');
 Route::post('/logout', [JumuishiSsoController::class, 'logout'])->name('logout');
 
-// Local email/password login for non-SSO organization users (e.g. banks reporting
-// data directly) — kept entirely separate from the Jumuishi SSO flow above, which
-// is for government-staff single sign-on only.
-Route::get('/local-login', [LocalAuthController::class, 'create'])
-    ->middleware('guest')->name('local-login');
-Route::post('/local-login', [LocalAuthController::class, 'store'])
-    ->middleware(['guest', 'throttle:10,1'])->name('local-login.store');
-Route::post('/local-logout', [LocalAuthController::class, 'destroy'])
-    ->middleware('auth')->name('local-logout');
 Route::get('/local-password', [LocalAuthController::class, 'editPassword'])
     ->middleware(['auth', 'auth.session'])->name('local-password.edit');
 Route::put('/local-password', [LocalAuthController::class, 'updatePassword'])

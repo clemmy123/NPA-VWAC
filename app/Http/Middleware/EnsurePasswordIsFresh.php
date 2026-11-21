@@ -16,7 +16,6 @@ class EnsurePasswordIsFresh
     private const EXEMPT_ROUTES = [
         'local-password.edit',
         'local-password.update',
-        'local-logout',
         'logout',
     ];
 

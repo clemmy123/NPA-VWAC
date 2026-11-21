@@ -39,7 +39,7 @@
 @can('thematic-area.assign-manager')
 <div class="d-flex justify-content-between align-items-center mb-2">
     <h5 class="mb-0">{{ __('Thematic Area Coordinators') }}</h5>
-    <div class="d-flex gap-2">
+    <div class="d-flex" style="gap:10px;">
     @unless ($managers->contains('id', auth()->id()))
     <form method="POST" action="{{ route('thematic-areas.managers.store', $thematicArea) }}">
         @csrf

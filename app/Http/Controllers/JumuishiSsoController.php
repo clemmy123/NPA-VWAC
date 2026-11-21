@@ -102,8 +102,10 @@ class JumuishiSsoController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('local-login')
-            ->with('status', __('You have been signed out of this module.'));
+        // Land on the SSO sign-in (the local dev picker when running locally).
+        return app()->environment('local')
+            ? redirect()->route('dev-login')
+            : redirect()->away(JumuishiUrl::login());
     }
 
     private function issue(string $message, int $status): Response

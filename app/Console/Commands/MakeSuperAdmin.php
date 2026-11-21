@@ -50,7 +50,7 @@ class MakeSuperAdmin extends Command
 
         $user->assignRole('Super Admin');
 
-        $this->info("Super Admin \"{$user->name}\" <{$user->email}> created. They can sign in at /local-login.");
+        $this->info("Super Admin \"{$user->name}\" <{$user->email}> created. They sign in through Jumuishi SSO.");
 
         return self::SUCCESS;
     }

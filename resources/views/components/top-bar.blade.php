@@ -91,7 +91,7 @@
                 <div class="dropdown-divider"></div>
 
                 <div style="padding:2px 0;">
-                    <form method="POST" action="{{ Auth::user()->auth_provider === 'local' ? route('local-logout') : route('logout') }}">
+                    <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="dropdown-item w-100 text-start border-0 bg-transparent"
                                 style="padding:9px 16px; font-size:0.82rem; color:#ef4444; font-weight:500; cursor:pointer;">

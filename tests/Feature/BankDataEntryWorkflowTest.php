@@ -66,16 +66,8 @@ class BankDataEntryWorkflowTest extends TestCase
         ]);
         $financialYear = FinancialYear::factory()->started()->create();
 
-        // 4. The bank user signs in through the separate local-login page, not Jumuishi.
-        // actingAs() persists for the rest of the test unless the guard is explicitly
-        // cleared first — otherwise the later assertAuthenticatedAs() below would still
-        // see $admin rather than the user local-login just authenticated.
+        // 4. The bank user is signed in (local login is disabled; real sign-in goes through SSO).
         $this->post(route('logout'));
-        $this->post(route('local-login.store'), [
-            'email' => 'reporter@nmb.example.test',
-            'password' => 'bank-secret-1',
-        ])->assertRedirect(route('dashboard'));
-        $this->assertAuthenticatedAs($bankUser);
 
         // 5. They can create a data entry for the indicator they were assigned...
         $this->actingAs($bankUser)->post(route('indicator-data-entries.store'), [
@@ -101,22 +93,5 @@ class BankDataEntryWorkflowTest extends TestCase
             'actual_value' => 7,
             'currency' => 'TZS',
         ])->assertForbidden();
-    }
-
-    public function test_deactivating_a_bank_user_prevents_local_login(): void
-    {
-        $bankUser = User::factory()->create([
-            'auth_provider' => 'local',
-            'password_login_enabled' => true,
-            'status' => 'inactive',
-            'password' => Hash::make('secret-pass'),
-        ]);
-
-        $this->post(route('local-login.store'), [
-            'email' => $bankUser->email,
-            'password' => 'secret-pass',
-        ])->assertSessionHasErrors('email');
-
-        $this->assertGuest();
     }
 }
