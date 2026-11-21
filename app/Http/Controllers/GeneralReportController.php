@@ -21,6 +21,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -81,21 +82,57 @@ class GeneralReportController extends Controller
         ]);
     }
 
-    public function exportPdf(Request $request): Response
+    public function exportPdf(Request $request): Response|RedirectResponse
     {
-        $data = $this->reportData($request);
-        abort_unless($data['applied'], 422);
-        $rows = collect($data['rows'])->map(fn (array $row) => [
-            $row['indicator']->name, $row['indicator']->code, $row['indicator']->thematicArea?->localized_name,
-            $row['indicator']->unitOfMeasure?->name, $row['performance']['target_value'] ?? null,
-            $row['performance']['actual_value'] ?? null, $row['performance']['achievement_percent'] ?? null,
-        ])->all();
+        $request->validate([
+            'chart_image' => ['nullable', 'string', 'max:'.self::MAX_CHART_IMAGE_LENGTH, 'starts_with:data:image/png;base64,'],
+        ]);
+        $request->merge(['apply' => 1]);
+        $report = $this->reportData($request);
 
-        return Pdf::loadView('reports.exports.simple-pdf', [
-            'title' => 'MTAKUWWA General Report', 'context' => [$data['periodLabel'] ?? '—'],
-            'executiveSummary' => ['Indicators reported: '.count($rows)],
-            'sectionIntro' => ['Approved indicator performance for the selected period.'], 'tableRows' => $rows,
-        ])->setPaper('a4', 'landscape')->stream('mtakuuwa-general-report.pdf');
+        if (! $report['selectedFinancialYear'] || $report['analysis'] === null) {
+            return redirect()->route('reports.general', $request->only(['frequency', 'visualization']))
+                ->with('warning', __('There is no report data to export for these filters.'));
+        }
+
+        $pdf = Pdf::loadView('reports.pdf.general', $report + [
+            'chartImage' => $this->validChartImage($request->input('chart_image')),
+            'generatedAt' => now(),
+            'generatedBy' => $request->user()->name,
+            'coatImage' => 'data:image/png;base64,'.base64_encode((string) file_get_contents(public_path('app-assets/coat.png'))),
+        ])->setPaper('a4');
+
+        $pdf->render();
+        $canvas = $pdf->getDomPDF()->getCanvas();
+        $canvas->page_text(
+            $canvas->get_width() - 110,
+            $canvas->get_height() - 30,
+            __('Page :page of :total', ['page' => '{PAGE_NUM}', 'total' => '{PAGE_COUNT}']),
+            $pdf->getDomPDF()->getFontMetrics()->getFont('DejaVu Sans'),
+            8,
+            [0.39, 0.45, 0.55],
+        );
+
+        $filename = Str::slug(implode(' ', array_filter([
+            'mtakuuwa general report',
+            $report['frequency'],
+            $report['periodLabel'],
+            $report['visualizationType'],
+        ]))).'.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    private function validChartImage(?string $dataUri): ?string
+    {
+        if ($dataUri === null) {
+            return null;
+        }
+
+        $binary = base64_decode(substr($dataUri, strlen('data:image/png;base64,')), true);
+        $size = $binary === false ? false : @getimagesizefromstring($binary);
+
+        return $size !== false && $size['mime'] === 'image/png' ? $dataUri : null;
     }
 
     /** @return array<string, mixed> */
