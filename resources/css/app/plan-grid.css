@@ -370,3 +370,10 @@ body.pb-resizing { cursor: col-resize; user-select: none; }
 .pb-year-bar .select2-container .select2-selection--single { height: 34px; }
 .pb-year-bar .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 32px; font-size: 0.82rem; }
 .pb-year-bar .select2-container--default .select2-selection--single .select2-selection__arrow { height: 32px; }
+
+/* Required-field feedback when a plan cannot be opened for collection */
+.pb-cell.pb-invalid, .pb-acts.pb-invalid, .pb-invalid.pb-cell { border-color: var(--danger-text) !important; background: #fff5f5 !important; box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.12); }
+.pb-acts.pb-invalid { border: 1px solid var(--danger-text); border-radius: 8px; min-height: 30px; padding: 2px; }
+.pb-row-error { white-space: normal; max-width: 250px; margin-top: 6px; font-size: 0.74rem; font-weight: 600; color: var(--danger-text); }
+.pb-error-summary { margin: 0 0 12px; padding: 12px 16px; border: 1px solid #f5c2c0; border-left: 4px solid var(--danger-text); border-radius: 10px; background: #fff5f5; color: var(--danger-text); font-size: 0.84rem; }
+.pb-error-summary ul { margin: 6px 0 0; padding-left: 18px; color: var(--heading-dark); }

@@ -135,7 +135,9 @@ class PlanGridTest extends TestCase
         $this->actingAs($this->manager)
             ->postJson(route('plan-builder.plans.submit', $this->area), ['financial_year_id' => $this->year->id])
             ->assertUnprocessable()
-            ->assertJsonPath('message', fn (string $message) => str_contains($message, 'Incomplete row') && ! str_contains($message, 'Complete row:'));
+            ->assertJsonCount(1, 'rows')
+            ->assertJsonPath('rows.0.name', 'Incomplete row')
+            ->assertJsonPath('rows.0.missing_keys', ['baseline', 'lead']);
 
         $this->assertSame('draft', IndicatorPlan::query()->where('indicator_id', $complete->id)->value('status'));
 
@@ -149,7 +151,7 @@ class PlanGridTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.submitted', 2);
 
-        $this->assertSame('pending_institution', IndicatorPlan::query()->where('indicator_id', $complete->id)->value('status'));
+        $this->assertSame('approved', IndicatorPlan::query()->where('indicator_id', $complete->id)->value('status'));
     }
 
     public function test_budget_is_not_required_when_the_indicator_has_no_budget_implication(): void

@@ -15,6 +15,7 @@ use App\Services\IndicatorReviewService;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
 class MtakuuwaRequirementsWorkflowTest extends TestCase
@@ -38,7 +39,8 @@ class MtakuuwaRequirementsWorkflowTest extends TestCase
         $area->users()->attach($thematic->id, ['is_active' => true]);
         $institution = User::factory()->create(['organization_id' => $organization->id]);
         $institution->assignRole('Data Approver');
-        return compact('organization','area','year','indicator','thematic','institution');
+
+        return compact('organization', 'area', 'year', 'indicator', 'thematic', 'institution');
     }
 
     private function draftPlan(array $f): IndicatorPlan
@@ -57,23 +59,18 @@ class MtakuuwaRequirementsWorkflowTest extends TestCase
         ], $f['thematic']);
     }
 
-    public function test_coordinator_can_plan_and_institution_confirms_before_thematic_approval(): void
+    public function test_completing_the_plan_opens_it_for_collection_without_an_institution_step(): void
     {
         $f = $this->fixture();
         $plan = $this->draftPlan($f);
         $service = app(IndicatorPlanService::class);
         $this->assertSame('draft', $plan->status);
         $plan = $service->transition($plan, $f['thematic'], 'submit', null);
-        $this->assertSame('pending_institution', $plan->status);
-        $plan = $service->transition($plan, $f['institution'], 'confirm', null);
-        $this->assertSame('pending_thematic', $plan->status);
-        // A second authorized thematic officer must approve (separation of duties).
-        $second = User::factory()->create();
-        $second->assignRole('Thematic Manager');
-        $f['area']->users()->attach($second->id, ['is_active' => true]);
-        $plan = $service->transition($plan, $second, 'approve', null);
         $this->assertSame('approved', $plan->status);
-        $this->assertEquals(5500000, (float)$plan->domestic_budget + (float)$plan->external_budget);
+        $this->assertEquals(5500000, (float) $plan->domestic_budget + (float) $plan->external_budget);
+
+        $plan = $service->transition($plan, $f['thematic'], 'unlock', null);
+        $this->assertSame('returned', $plan->status);
     }
 
     public function test_unapproved_annual_plan_blocks_new_collection(): void
@@ -93,11 +90,6 @@ class MtakuuwaRequirementsWorkflowTest extends TestCase
         $f = $this->fixture();
         $service = app(IndicatorPlanService::class);
         $plan = $service->transition($this->draftPlan($f), $f['thematic'], 'submit', null);
-        $plan = $service->transition($plan, $f['institution'], 'confirm', null);
-        $reviewer = User::factory()->create();
-        $reviewer->assignRole('Thematic Manager');
-        $f['area']->users()->attach($reviewer->id, ['is_active' => true]);
-        $plan = $service->transition($plan, $reviewer, 'approve', null);
         $entry = app(IndicatorDataEntryService::class)->create([
             'indicator_id' => $f['indicator']->id,
             'financial_year_id' => $f['year']->id,
@@ -106,7 +98,7 @@ class MtakuuwaRequirementsWorkflowTest extends TestCase
             'actual_value' => 20,
         ], [], [], [], $f['thematic']);
         $this->assertSame($plan->id, $entry->indicator_plan_id);
-        $this->assertEquals(5500000, (float)$entry->budget_allocated);
+        $this->assertEquals(5500000, (float) $entry->budget_allocated);
         $this->assertSame('Train district social welfare officers', $entry->plan_snapshot['planned_activity']);
         $this->expectException(ValidationException::class);
         $this->draftPlan($f);
@@ -120,7 +112,7 @@ class MtakuuwaRequirementsWorkflowTest extends TestCase
         ]);
         $outsider = User::factory()->create(['organization_id' => Organization::factory()->create()->id]);
         $outsider->assignRole('Data Approver');
-        $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
+        $this->expectException(HttpException::class);
         app(IndicatorReviewService::class)->confirmInstitution($entry, $outsider);
     }
 }

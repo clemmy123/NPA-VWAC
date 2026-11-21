@@ -120,7 +120,7 @@
     </td>
 
     <td class="pb-col-status">
-        <span class="s-badge {{ $statusClass }} pb-status">{{ $planStatus ? __(ucfirst(str_replace('_', ' ', $planStatus))) : __('Unplanned') }}</span>
+        <span class="s-badge {{ $statusClass }} pb-status">{{ match ($planStatus) { null => __('Unplanned'), 'approved' => __('Open for collection'), 'returned' => __('Reopened'), default => __(ucfirst(str_replace('_', ' ', $planStatus))) } }}</span>
         <span class="pb-missing {{ ($missing ?? []) ? '' : 'd-none' }}" title="{{ __('Still missing:') }} {{ implode(', ', $missing ?? []) }}"><i class="mdi mdi-alert-circle-outline"></i></span>
     </td>
     <td class="pb-col-actions">

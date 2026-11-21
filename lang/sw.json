@@ -843,5 +843,20 @@
     "Collects data": "Hukusanya data",
     "Stop collecting data": "Acha kukusanya data",
     "Allow collecting data": "Ruhusu kukusanya data",
-    "Can collect data for this thematic area": "Anaweza kukusanya data kwa Thematic Area hii"
+    "Can collect data for this thematic area": "Anaweza kukusanya data kwa Thematic Area hii",
+    "Plan documents": "Nyaraka za mpango",
+    "Reopen for editing": "Fungua tena kuhariri",
+    "Open for data collection": "Fungua kwa ukusanyaji wa data",
+    "The plan is now open for data collection.": "Mpango sasa uko wazi kwa ukusanyaji wa data.",
+    "The plan cannot be opened for data collection yet.": "Mpango bado haujaweza kufunguliwa kwa ukusanyaji wa data.",
+    "Required:": "Inahitajika:",
+    ":count indicator is not complete yet — the highlighted fields are required.|:count indicators are not complete yet — the highlighted fields are required.": "Kiashiria :count bado hakijakamilika — sehemu zilizoangaziwa zinahitajika.|Viashiria :count bado havijakamilika — sehemu zilizoangaziwa zinahitajika.",
+    "Open for collection": "Wazi kwa ukusanyaji",
+    "Reopened": "Imefunguliwa tena",
+    "Not open for collection": "Haujafunguliwa kwa ukusanyaji",
+    "Nothing can be reported on yet — an indicator becomes available for data collection once its annual plan is opened for collection. Complete the plan in the Plan Builder and press \"Open for data collection\".": "Bado hakuna cha kuripoti — kiashiria kinapatikana kwa ukusanyaji wa data mara mpango wake wa mwaka unapofunguliwa. Kamilisha mpango katika Kijenzi cha Mpango kisha bonyeza \"Fungua kwa ukusanyaji wa data\".",
+    "No indicator here is open for collection for this financial year yet, so there is nothing to fill in. Complete the plan in the Plan Builder and press \"Open for data collection\".": "Hakuna kiashiria hapa kilichofunguliwa kwa ukusanyaji kwa mwaka huu wa fedha, hivyo hakuna cha kujaza. Kamilisha mpango katika Kijenzi cha Mpango kisha bonyeza \"Fungua kwa ukusanyaji wa data\".",
+    "Pick a thematic area to report on — the plan is laid out for you, you only fill in what was implemented.": "Chagua Thematic Area ya kuripoti — mpango umepangwa kwa ajili yako, unajaza tu kilichotekelezwa.",
+    ":ready of :total indicators are open for collection": "Viashiria :ready kati ya :total vimefunguliwa kwa ukusanyaji",
+    "The plan must be opened for data collection first.": "Mpango lazima ufunguliwe kwa ukusanyaji wa data kwanza."
 }

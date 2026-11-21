@@ -14,7 +14,7 @@
         default => 's-default',
     };
     $statusLabel = match (true) {
-        $plan === null => __('Plan not approved'),
+        $plan === null => __('Not open for collection'),
         $indicator->requires_location && ! $entry && $plan => __('Choose a location'),
         $entryStatus === null => __('Not started'),
         default => __(ucfirst(str_replace('_', ' ', $entryStatus))),

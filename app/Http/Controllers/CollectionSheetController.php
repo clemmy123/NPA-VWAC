@@ -342,7 +342,7 @@ class CollectionSheetController extends Controller
         $plan = IndicatorPlan::query()->where('indicator_id', $indicator->id)
             ->where('financial_year_id', $financialYear->id)->where('status', 'approved')->first();
         if (! $plan) {
-            throw ValidationException::withMessages(['plan' => __('An approved plan is required before data collection.')]);
+            throw ValidationException::withMessages(['plan' => __('The plan must be opened for data collection first.')]);
         }
 
         $locationId = $request->filled('location_id') ? $request->integer('location_id') : null;

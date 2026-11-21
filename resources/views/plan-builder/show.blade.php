@@ -7,6 +7,9 @@
     foreach (['draft', 'pending_institution', 'pending_thematic', 'approved', 'returned'] as $planStatus) {
         $statusLabels[$planStatus] = __(ucfirst(str_replace('_', ' ', $planStatus)));
     }
+    $statusLabels['approved'] = __('Open for collection');
+    $statusLabels['returned'] = __('Reopened');
+    $hasOpenRows = $plans->contains(fn ($plan) => $plan->status === 'approved');
 @endphp
 <div class="page-header">
     <div class="pb-header-title">
@@ -21,10 +24,13 @@
     </div>
     <div class="pb-header-actions">
         @if ($planFinancialYear)
-        <a class="btn btn-outline-dark btn-sm" href="{{ route('indicator-plans.index', [$thematicArea, 'financial_year_id' => $planFinancialYear->id]) }}">{{ __('Review, documents & approval') }}</a>
+        <a class="btn btn-outline-dark btn-sm" href="{{ route('indicator-plans.index', [$thematicArea, 'financial_year_id' => $planFinancialYear->id]) }}">{{ __('Plan documents') }}</a>
         @endif
         @if ($canPlan && $planFinancialYear)
-        <button type="button" class="btn btn-primary btn-sm" id="pbSubmitPlan">{{ __('Submit plan for confirmation') }}</button>
+        @if ($hasOpenRows)
+        <button type="button" class="btn btn-outline-dark btn-sm" id="pbUnlockPlan">{{ __('Reopen for editing') }}</button>
+        @endif
+        <button type="button" class="btn btn-primary btn-sm" id="pbSubmitPlan">{{ __('Open for data collection') }}</button>
         @endif
     </div>
 </div>
@@ -39,6 +45,8 @@
     <textarea id="pbDescInput" class="pb-desc-input" rows="1" placeholder="{{ __('Add a description…') }}"
               {{ $canUpdateThematicArea ? '' : 'readonly' }}>{{ $thematicArea->description }}</textarea>
 </div>
+
+<div class="pb-error-summary d-none" id="pbErrorSummary" role="alert"></div>
 
 <form method="GET" class="pb-year-bar">
     <label for="pbPlanYear">{{ __('Plan financial year') }}</label>
@@ -126,6 +134,7 @@
     const interventionUrl = (id) => interventionsUrl + '/' + id;
     const planUrl = (id) => @json(url('plan-builder/'.$thematicArea->id.'/indicators')) + '/' + id + '/plan';
     const submitUrl = @json(route('plan-builder.plans.submit', $thematicArea));
+    const unlockUrl = @json(route('plan-builder.plans.unlock', $thematicArea));
     const thematicAreaUrl = @json(route('thematic-areas.update', $thematicArea));
 
     const body = document.getElementById('pbIndicatorBody');
@@ -165,7 +174,9 @@
             if (data && data.errors) {
                 message = Object.values(data.errors).flat().join(' ');
             }
-            throw new Error(message);
+            const error = new Error(message);
+            error.data = data;
+            throw error;
         }
         return data ?? {};
     }
@@ -513,16 +524,91 @@
         });
     }
 
-    /* ---------- submit whole plan ---------- */
+    /* ---------- open the plan for data collection ---------- */
+    const FIELD_SELECTORS = {
+        interventions: ['.pb-acts'],
+        baseline: ['.pb-baseline-year', '.pb-baseline'],
+        target: ['.pb-target'],
+        budget: ['.pb-domestic', '.pb-external'],
+        lead: ['.pb-lead'],
+    };
+    const summaryBox = document.getElementById('pbErrorSummary');
+
+    function clearInvalid(tr) {
+        tr.querySelectorAll('.pb-invalid').forEach((el) => el.classList.remove('pb-invalid'));
+        const note = tr.querySelector('.pb-row-error');
+        if (note) note.remove();
+    }
+
+    function clearAllInvalid() {
+        body.querySelectorAll('.pb-row').forEach(clearInvalid);
+        summaryBox.classList.add('d-none');
+    }
+
+    function markInvalid(rows) {
+        clearAllInvalid();
+        let first = null;
+        rows.forEach((row) => {
+            const tr = body.querySelector('.pb-row[data-id="' + row.indicator_id + '"]');
+            if (!tr) return;
+            first = first || tr;
+            row.missing_keys.forEach((key) => {
+                (FIELD_SELECTORS[key] || []).forEach((selector) => {
+                    tr.querySelectorAll(selector).forEach((el) => {
+                        const empty = el.matches('.pb-acts') ? !el.children.length : !el.value;
+                        if (empty && !el.disabled) el.classList.add('pb-invalid');
+                    });
+                });
+            });
+            const note = document.createElement('div');
+            note.className = 'pb-row-error';
+            note.textContent = @json(__('Required:')) + ' ' + row.missing.join(', ');
+            tr.querySelector('.pb-col-indicator').appendChild(note);
+        });
+        summaryBox.innerHTML = '<strong></strong><ul></ul>';
+        summaryBox.querySelector('strong').textContent = @json(__('The plan cannot be opened for data collection yet.'));
+        const list = summaryBox.querySelector('ul');
+        rows.forEach((row) => {
+            const li = document.createElement('li');
+            li.textContent = row.name + ' — ' + row.missing.join(', ');
+            list.appendChild(li);
+        });
+        summaryBox.classList.remove('d-none');
+        if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    body.addEventListener('input', (event) => event.target.classList.remove('pb-invalid'));
+    body.addEventListener('change', (event) => event.target.classList.remove('pb-invalid'));
+
     const submitBtn = document.getElementById('pbSubmitPlan');
     if (submitBtn) {
         submitBtn.addEventListener('click', async () => {
             submitBtn.disabled = true;
-            const res = await tracked(() => api(submitUrl, 'POST', { financial_year_id: FINANCIAL_YEAR_ID }));
-            submitBtn.disabled = false;
-            if (res) {
-                window.showToast && window.showToast('success', @json(__('Plan submitted for institutional confirmation.')));
+            clearAllInvalid();
+            try {
+                await api(submitUrl, 'POST', { financial_year_id: FINANCIAL_YEAR_ID });
+                window.showToast && window.showToast('success', @json(__('The plan is now open for data collection.')));
                 setTimeout(() => window.location.reload(), 800);
+            } catch (e) {
+                if (e.data && e.data.rows) {
+                    markInvalid(e.data.rows);
+                } else {
+                    window.showToast && window.showToast('danger', e.message);
+                }
+                submitBtn.disabled = false;
+            }
+        });
+    }
+
+    const unlockBtn = document.getElementById('pbUnlockPlan');
+    if (unlockBtn) {
+        unlockBtn.addEventListener('click', async () => {
+            unlockBtn.disabled = true;
+            const res = await tracked(() => api(unlockUrl, 'POST', { financial_year_id: FINANCIAL_YEAR_ID }));
+            if (res) {
+                window.location.reload();
+            } else {
+                unlockBtn.disabled = false;
             }
         });
     }

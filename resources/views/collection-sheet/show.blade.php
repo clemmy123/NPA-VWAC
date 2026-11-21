@@ -58,7 +58,7 @@
 <div class="alert alert-warning mb-3">{{ __('This period has not started yet — data can only be entered once it opens.') }}</div>
 @endif
 @if ($rows->isNotEmpty() && $rows->every(fn ($row) => $row['plan'] === null))
-<div class="alert alert-info mb-3">{{ __('No indicator here has an approved plan for this financial year yet, so there is nothing to fill in. Plans are approved in the Plan Builder: submit the plan, the institution confirms it, then the thematic area coordinator approves it.') }}</div>
+<div class="alert alert-info mb-3">{{ __('No indicator here is open for collection for this financial year yet, so there is nothing to fill in. Complete the plan in the Plan Builder and press "Open for data collection".') }}</div>
 @endif
 @if ($hiddenCount > 0)
 <div class="alert alert-info mb-3">{{ trans_choice(':count indicator reports on a different frequency — pick another reporting period to see it.|:count indicators report on a different frequency — pick another reporting period to see them.', $hiddenCount, ['count' => $hiddenCount]) }}</div>

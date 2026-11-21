@@ -55,11 +55,22 @@ class IndicatorPlanService
             switch ($action) {
                 case 'submit':
                     $this->authorizeThematic($actor, (int) $plan->indicator->thematic_area_id);
-                    $this->expectStatus($plan, ['draft', 'returned']);
+                    $this->expectStatus($plan, ['draft', 'returned', 'pending_institution', 'pending_thematic']);
                     if ($missing = $this->missingFields($plan)) {
                         throw ValidationException::withMessages(['plan' => __('Incomplete plan: :fields.', ['fields' => implode(', ', $missing)])]);
                     }
-                    $changes += ['status' => 'pending_institution', 'submitted_by' => $actor->id, 'submitted_at' => now(), 'confirmed_by' => null, 'confirmed_at' => null];
+                    // No institutional/coordinator chain: completing the plan opens it for data collection.
+                    $changes += [
+                        'status' => 'approved', 'submitted_by' => $actor->id, 'submitted_at' => now(),
+                        'confirmed_by' => null, 'confirmed_at' => null,
+                        'approved_by' => $actor->id, 'approved_at' => now(),
+                    ];
+                    $this->recordTargetAndBaseline($plan, $actor);
+                    break;
+                case 'unlock':
+                    $this->authorizeThematic($actor, (int) $plan->indicator->thematic_area_id);
+                    $this->expectStatus($plan, ['approved']);
+                    $changes += ['status' => 'returned', 'approved_by' => null, 'approved_at' => null];
                     break;
                 case 'confirm':
                     $this->authorizeInstitution($actor, (int) $plan->lead_organization_id, (int) $plan->submitted_by);
@@ -73,28 +84,7 @@ class IndicatorPlanService
                         throw new AuthorizationException('A submitter cannot grant final approval of their own plan.');
                     }
                     $changes += ['status' => 'approved', 'approved_by' => $actor->id, 'approved_at' => now()];
-                    // Keep existing dashboard/reporting targets and baselines consistent
-                    // with the newly approved annual implementation plan.
-                    IndicatorTarget::query()->updateOrCreate([
-                        'indicator_id' => $plan->indicator_id,
-                        'financial_year_id' => $plan->financial_year_id,
-                        'reporting_period_id' => null,
-                        'dimension_option_id' => null,
-                    ], [
-                        'target_value' => $plan->annual_target,
-                        'created_by' => $actor->id,
-                    ]);
-                    if ($plan->baseline_value !== null) {
-                        IndicatorBaseline::query()->updateOrCreate([
-                            'indicator_id' => $plan->indicator_id,
-                            'financial_year_id' => $plan->baseline_financial_year_id ?? $plan->financial_year_id,
-                        ], [
-                            'baseline_value' => $plan->baseline_value,
-                            'baseline_date' => $plan->baseline_year ? $plan->baseline_year.'-07-01' : null,
-                            'organization_id' => $plan->lead_organization_id,
-                            'created_by' => $actor->id,
-                        ]);
-                    }
+                    $this->recordTargetAndBaseline($plan, $actor);
                     break;
                 case 'return':
                     if ($plan->status === 'pending_institution') {
@@ -117,6 +107,33 @@ class IndicatorPlanService
         });
     }
 
+    /** Keep dashboard/reporting targets and baselines consistent with a plan that is open for collection. */
+    private function recordTargetAndBaseline(IndicatorPlan $plan, User $actor): void
+    {
+        // Keep existing dashboard/reporting targets and baselines consistent
+        // with the newly approved annual implementation plan.
+        IndicatorTarget::query()->updateOrCreate([
+            'indicator_id' => $plan->indicator_id,
+            'financial_year_id' => $plan->financial_year_id,
+            'reporting_period_id' => null,
+            'dimension_option_id' => null,
+        ], [
+            'target_value' => $plan->annual_target,
+            'created_by' => $actor->id,
+        ]);
+        if ($plan->baseline_value !== null) {
+            IndicatorBaseline::query()->updateOrCreate([
+                'indicator_id' => $plan->indicator_id,
+                'financial_year_id' => $plan->baseline_financial_year_id ?? $plan->financial_year_id,
+            ], [
+                'baseline_value' => $plan->baseline_value,
+                'baseline_date' => $plan->baseline_year ? $plan->baseline_year.'-07-01' : null,
+                'organization_id' => $plan->lead_organization_id,
+                'created_by' => $actor->id,
+            ]);
+        }
+    }
+
     /**
      * Everything an indicator's plan row must carry before it can be
      * submitted. Draft autosave is deliberately lenient; this is the gate.
@@ -125,23 +142,34 @@ class IndicatorPlanService
      */
     public function missingFields(IndicatorPlan $plan): array
     {
+        return array_values($this->missingFieldKeys($plan));
+    }
+
+    /**
+     * Same check keyed by field (interventions, baseline, target, budget, lead)
+     * so the Plan Builder can mark the exact cells that need filling.
+     *
+     * @return array<string, string> field key => human label
+     */
+    public function missingFieldKeys(IndicatorPlan $plan): array
+    {
         $indicator = $plan->indicator()->withCount('interventions')->first();
         $missing = [];
 
         if ($indicator->requires_activity && $indicator->interventions_count === 0) {
-            $missing[] = __('at least one intervention');
+            $missing['interventions'] = __('at least one intervention');
         }
         if ($plan->baseline_value === null || ($plan->baseline_year === null && $plan->baseline_financial_year_id === null)) {
-            $missing[] = __('baseline year and value');
+            $missing['baseline'] = __('baseline year and value');
         }
         if ($plan->annual_target === null) {
-            $missing[] = __('target');
+            $missing['target'] = __('target');
         }
         if ($indicator->has_budget_implication && ($plan->domestic_budget === null || $plan->external_budget === null)) {
-            $missing[] = __('domestic and external budget');
+            $missing['budget'] = __('domestic and external budget');
         }
         if ($plan->lead_organization_id === null) {
-            $missing[] = __('lead institution');
+            $missing['lead'] = __('lead institution');
         }
 
         return $missing;
