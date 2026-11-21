@@ -55,22 +55,11 @@ class IndicatorPlanService
             switch ($action) {
                 case 'submit':
                     $this->authorizeThematic($actor, (int) $plan->indicator->thematic_area_id);
-                    $this->expectStatus($plan, ['draft', 'returned', 'pending_institution', 'pending_thematic']);
+                    $this->expectStatus($plan, ['draft', 'returned']);
                     if ($missing = $this->missingFields($plan)) {
                         throw ValidationException::withMessages(['plan' => __('Incomplete plan: :fields.', ['fields' => implode(', ', $missing)])]);
                     }
-                    // No institutional/coordinator chain: completing the plan opens it for data collection.
-                    $changes += [
-                        'status' => 'approved', 'submitted_by' => $actor->id, 'submitted_at' => now(),
-                        'confirmed_by' => null, 'confirmed_at' => null,
-                        'approved_by' => $actor->id, 'approved_at' => now(),
-                    ];
-                    $this->recordTargetAndBaseline($plan, $actor);
-                    break;
-                case 'unlock':
-                    $this->authorizeThematic($actor, (int) $plan->indicator->thematic_area_id);
-                    $this->expectStatus($plan, ['approved']);
-                    $changes += ['status' => 'returned', 'approved_by' => null, 'approved_at' => null];
+                    $changes += ['status' => 'pending_institution', 'submitted_by' => $actor->id, 'submitted_at' => now(), 'confirmed_by' => null, 'confirmed_at' => null];
                     break;
                 case 'confirm':
                     $this->authorizeInstitution($actor, (int) $plan->lead_organization_id, (int) $plan->submitted_by);

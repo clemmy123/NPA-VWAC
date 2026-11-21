@@ -151,7 +151,7 @@ class PlanGridTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.submitted', 2);
 
-        $this->assertSame('approved', IndicatorPlan::query()->where('indicator_id', $complete->id)->value('status'));
+        $this->assertSame('pending_institution', IndicatorPlan::query()->where('indicator_id', $complete->id)->value('status'));
     }
 
     public function test_budget_is_not_required_when_the_indicator_has_no_budget_implication(): void

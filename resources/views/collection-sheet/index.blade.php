@@ -18,7 +18,7 @@
 <p class="text-muted mb-3">{{ __('Pick a thematic area to report on — the plan is laid out for you, you only fill in what was implemented.') }}</p>
 
 @if ($thematicAreas->isNotEmpty() && $thematicAreas->sum('approved_plan_count') === 0)
-<div class="alert alert-info mb-3">{{ __('Nothing can be reported on yet — an indicator becomes available for data collection once its annual plan is opened for collection. Complete the plan in the Plan Builder and press "Open for data collection".') }}</div>
+<div class="alert alert-info mb-3">{{ __('Nothing can be reported on yet — an indicator opens for data collection once its annual plan is approved. In the Plan Builder: submit the plan, the lead institution confirms it, then the thematic area coordinator approves it.') }}</div>
 @endif
 
 <div class="plan-builder-grid">
@@ -33,7 +33,7 @@
         <div class="plan-pick-name">{{ $thematicArea->localized_name }}</div>
         <div class="plan-pick-meta">
             <div class="plan-pick-progress"><span style="width: {{ $pct }}%"></span></div>
-            <span>{{ __(':ready of :total indicators are open for collection', ['ready' => $thematicArea->approved_plan_count, 'total' => $thematicArea->collectable_count]) }}</span>
+            <span>{{ __(':ready of :total indicators have an approved plan', ['ready' => $thematicArea->approved_plan_count, 'total' => $thematicArea->collectable_count]) }}</span>
         </div>
     </a>
     @endforeach

@@ -63,8 +63,8 @@
         @csrf
         <input type="hidden" name="financial_year_id" value="{{ $financialYearId }}">
         <input type="text" name="comment" class="form-control form-control-sm pr-reason" maxlength="2000" placeholder="{{ __('Reason (required to return)') }}">
-        @if ($canConfirmAny)<button name="action" value="confirm" class="btn btn-success btn-sm"><i class="mdi mdi-check"></i> {{ __('Confirm ownership') }}</button>@endif
-        @if ($canApproveAny)<button name="action" value="approve" class="btn btn-primary btn-sm"><i class="mdi mdi-check-all"></i> {{ __('Approve') }}</button>@endif
+        @if ($canConfirmAny)<button name="action" value="confirm" class="btn btn-success btn-sm"><i class="mdi mdi-check"></i> {{ __('Confirm as institution') }}</button>@endif
+        @if ($canApproveAny)<button name="action" value="approve" class="btn btn-primary btn-sm"><i class="mdi mdi-check-all"></i> {{ __('Approve for data collection') }}</button>@endif
         @if ($canReturnAny)<button name="action" value="return" class="btn btn-outline-danger btn-sm"><i class="mdi mdi-undo-variant"></i> {{ __('Return') }}</button>@endif
     </form>
 </div>

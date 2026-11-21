@@ -173,10 +173,10 @@ class PlanBuilderController extends Controller
     }
 
     /**
-     * Open every row of the grid for data collection in one go.
-     * All-or-nothing: if any row is incomplete nothing changes and each
-     * incomplete row is returned with the exact fields it still needs, so the
-     * grid can mark them.
+     * Submit every draft/returned row of the grid for institutional
+     * confirmation in one go. All-or-nothing: if any row is incomplete,
+     * nothing is submitted and each incomplete row is returned with the exact
+     * fields it still needs, so the grid can mark them.
      */
     public function submitPlans(Request $request, ThematicArea $thematicArea): JsonResponse
     {
@@ -197,7 +197,7 @@ class PlanBuilderController extends Controller
         foreach ($indicators as $indicator) {
             $plan = $existing->get($indicator->id) ?? new IndicatorPlan(['indicator_id' => $indicator->id]);
 
-            if ($plan->exists && $plan->status === 'approved') {
+            if ($plan->exists && ! in_array($plan->status, ['draft', 'returned'], true)) {
                 continue;
             }
             if ($keys = $this->plans->missingFieldKeys($plan)) {
@@ -229,26 +229,6 @@ class PlanBuilderController extends Controller
         }
 
         return response()->json(['data' => ['submitted' => count($submittable)]]);
-    }
-
-    /** Reopen every approved row of the grid for editing (it stops accepting data until opened again). */
-    public function unlockPlans(Request $request, ThematicArea $thematicArea): JsonResponse
-    {
-        $this->plans->authorizeThematic($request->user(), $thematicArea->id);
-
-        $data = $request->validate(['financial_year_id' => ['required', 'integer', 'exists:financial_years,id']]);
-
-        $plans = IndicatorPlan::query()
-            ->whereHas('indicator', fn ($query) => $query->where('thematic_area_id', $thematicArea->id))
-            ->where('financial_year_id', $data['financial_year_id'])
-            ->where('status', 'approved')
-            ->get();
-
-        foreach ($plans as $plan) {
-            $this->plans->transition($plan, $request->user(), 'unlock', null);
-        }
-
-        return response()->json(['data' => ['unlocked' => $plans->count()]]);
     }
 
     private function currentFinancialYear(): ?FinancialYear

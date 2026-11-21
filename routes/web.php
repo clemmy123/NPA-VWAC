@@ -153,8 +153,6 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
         ->middleware('can:thematic-area.view')->name('plan-builder.plans.save');
     Route::post('plan-builder/{thematic_area}/submit', [PlanBuilderController::class, 'submitPlans'])
         ->middleware('can:thematic-area.view')->name('plan-builder.plans.submit');
-    Route::post('plan-builder/{thematic_area}/unlock', [PlanBuilderController::class, 'unlockPlans'])
-        ->middleware('can:thematic-area.view')->name('plan-builder.plans.unlock');
     Route::get('plan-builder/{thematic_area}', [PlanBuilderController::class, 'show'])
         ->middleware('can:thematic-area.view')->name('plan-builder.show');
 

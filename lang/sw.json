@@ -858,5 +858,17 @@
     "No indicator here is open for collection for this financial year yet, so there is nothing to fill in. Complete the plan in the Plan Builder and press \"Open for data collection\".": "Hakuna kiashiria hapa kilichofunguliwa kwa ukusanyaji kwa mwaka huu wa fedha, hivyo hakuna cha kujaza. Kamilisha mpango katika Kijenzi cha Mpango kisha bonyeza \"Fungua kwa ukusanyaji wa data\".",
     "Pick a thematic area to report on — the plan is laid out for you, you only fill in what was implemented.": "Chagua Thematic Area ya kuripoti — mpango umepangwa kwa ajili yako, unajaza tu kilichotekelezwa.",
     ":ready of :total indicators are open for collection": "Viashiria :ready kati ya :total vimefunguliwa kwa ukusanyaji",
-    "The plan must be opened for data collection first.": "Mpango lazima ufunguliwe kwa ukusanyaji wa data kwanza."
+    "The plan must be opened for data collection first.": "Mpango lazima ufunguliwe kwa ukusanyaji wa data kwanza.",
+    "Submit plan for approval": "Wasilisha mpango kwa idhini",
+    "Awaiting institution confirmation": "Inasubiri uthibitisho wa taasisi",
+    "Awaiting coordinator approval": "Inasubiri idhini ya mratibu",
+    "Approved — open for collection": "Imeidhinishwa — wazi kwa ukusanyaji",
+    "Returned for changes": "Imerudishwa kwa marekebisho",
+    "Plan not approved yet": "Mpango haujaidhinishwa bado",
+    "Plan submitted. The lead institution confirms it, then the thematic area coordinator approves it.": "Mpango umewasilishwa. Taasisi kiongozi inauthibitisha, kisha mratibu wa Thematic Area anauidhinisha.",
+    "The plan cannot be submitted yet.": "Mpango bado haujaweza kuwasilishwa.",
+    "Nothing can be reported on yet — an indicator opens for data collection once its annual plan is approved. In the Plan Builder: submit the plan, the lead institution confirms it, then the thematic area coordinator approves it.": "Bado hakuna cha kuripoti — kiashiria kinafunguliwa kwa ukusanyaji wa data mara mpango wake wa mwaka unapoidhinishwa. Katika Kijenzi cha Mpango: wasilisha mpango, taasisi kiongozi inauthibitisha, kisha mratibu wa Thematic Area anauidhinisha.",
+    "No indicator here has an approved plan for this financial year yet, so there is nothing to fill in. In the Plan Builder: submit the plan, the lead institution confirms it, then the thematic area coordinator approves it.": "Hakuna kiashiria hapa chenye mpango ulioidhinishwa kwa mwaka huu wa fedha, hivyo hakuna cha kujaza. Katika Kijenzi cha Mpango: wasilisha mpango, taasisi kiongozi inauthibitisha, kisha mratibu wa Thematic Area anauidhinisha.",
+    "Confirm as institution": "Thibitisha kama taasisi",
+    "Approve for data collection": "Idhinisha kwa ukusanyaji wa data"
 }

@@ -7,9 +7,13 @@
     foreach (['draft', 'pending_institution', 'pending_thematic', 'approved', 'returned'] as $planStatus) {
         $statusLabels[$planStatus] = __(ucfirst(str_replace('_', ' ', $planStatus)));
     }
-    $statusLabels['approved'] = __('Open for collection');
-    $statusLabels['returned'] = __('Reopened');
-    $hasOpenRows = $plans->contains(fn ($plan) => $plan->status === 'approved');
+    $statusLabels = [
+        'draft' => __('Draft'),
+        'pending_institution' => __('Awaiting institution confirmation'),
+        'pending_thematic' => __('Awaiting coordinator approval'),
+        'approved' => __('Approved — open for collection'),
+        'returned' => __('Returned for changes'),
+    ];
 @endphp
 <div class="page-header">
     <div class="pb-header-title">
@@ -24,13 +28,10 @@
     </div>
     <div class="pb-header-actions">
         @if ($planFinancialYear)
-        <a class="btn btn-outline-dark btn-sm" href="{{ route('indicator-plans.index', [$thematicArea, 'financial_year_id' => $planFinancialYear->id]) }}">{{ __('Plan documents') }}</a>
+        <a class="btn btn-outline-dark btn-sm" href="{{ route('indicator-plans.index', [$thematicArea, 'financial_year_id' => $planFinancialYear->id]) }}">{{ __('Review, documents & approval') }}</a>
         @endif
         @if ($canPlan && $planFinancialYear)
-        @if ($hasOpenRows)
-        <button type="button" class="btn btn-outline-dark btn-sm" id="pbUnlockPlan">{{ __('Reopen for editing') }}</button>
-        @endif
-        <button type="button" class="btn btn-primary btn-sm" id="pbSubmitPlan">{{ __('Open for data collection') }}</button>
+        <button type="button" class="btn btn-primary btn-sm" id="pbSubmitPlan">{{ __('Submit plan for approval') }}</button>
         @endif
     </div>
 </div>
@@ -134,7 +135,6 @@
     const interventionUrl = (id) => interventionsUrl + '/' + id;
     const planUrl = (id) => @json(url('plan-builder/'.$thematicArea->id.'/indicators')) + '/' + id + '/plan';
     const submitUrl = @json(route('plan-builder.plans.submit', $thematicArea));
-    const unlockUrl = @json(route('plan-builder.plans.unlock', $thematicArea));
     const thematicAreaUrl = @json(route('thematic-areas.update', $thematicArea));
 
     const body = document.getElementById('pbIndicatorBody');
@@ -566,7 +566,7 @@
             tr.querySelector('.pb-col-indicator').appendChild(note);
         });
         summaryBox.innerHTML = '<strong></strong><ul></ul>';
-        summaryBox.querySelector('strong').textContent = @json(__('The plan cannot be opened for data collection yet.'));
+        summaryBox.querySelector('strong').textContent = @json(__('The plan cannot be submitted yet.'));
         const list = summaryBox.querySelector('ul');
         rows.forEach((row) => {
             const li = document.createElement('li');
@@ -587,7 +587,7 @@
             clearAllInvalid();
             try {
                 await api(submitUrl, 'POST', { financial_year_id: FINANCIAL_YEAR_ID });
-                window.showToast && window.showToast('success', @json(__('The plan is now open for data collection.')));
+                window.showToast && window.showToast('success', @json(__('Plan submitted. The lead institution confirms it, then the thematic area coordinator approves it.')));
                 setTimeout(() => window.location.reload(), 800);
             } catch (e) {
                 if (e.data && e.data.rows) {
@@ -596,19 +596,6 @@
                     window.showToast && window.showToast('danger', e.message);
                 }
                 submitBtn.disabled = false;
-            }
-        });
-    }
-
-    const unlockBtn = document.getElementById('pbUnlockPlan');
-    if (unlockBtn) {
-        unlockBtn.addEventListener('click', async () => {
-            unlockBtn.disabled = true;
-            const res = await tracked(() => api(unlockUrl, 'POST', { financial_year_id: FINANCIAL_YEAR_ID }));
-            if (res) {
-                window.location.reload();
-            } else {
-                unlockBtn.disabled = false;
             }
         });
     }

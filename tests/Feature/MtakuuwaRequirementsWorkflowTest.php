@@ -59,18 +59,23 @@ class MtakuuwaRequirementsWorkflowTest extends TestCase
         ], $f['thematic']);
     }
 
-    public function test_completing_the_plan_opens_it_for_collection_without_an_institution_step(): void
+    public function test_coordinator_can_plan_and_institution_confirms_before_thematic_approval(): void
     {
         $f = $this->fixture();
         $plan = $this->draftPlan($f);
         $service = app(IndicatorPlanService::class);
         $this->assertSame('draft', $plan->status);
         $plan = $service->transition($plan, $f['thematic'], 'submit', null);
+        $this->assertSame('pending_institution', $plan->status);
+        $plan = $service->transition($plan, $f['institution'], 'confirm', null);
+        $this->assertSame('pending_thematic', $plan->status);
+        // A second authorized thematic officer must approve (separation of duties).
+        $second = User::factory()->create();
+        $second->assignRole('Thematic Manager');
+        $f['area']->users()->attach($second->id, ['is_active' => true]);
+        $plan = $service->transition($plan, $second, 'approve', null);
         $this->assertSame('approved', $plan->status);
         $this->assertEquals(5500000, (float) $plan->domestic_budget + (float) $plan->external_budget);
-
-        $plan = $service->transition($plan, $f['thematic'], 'unlock', null);
-        $this->assertSame('returned', $plan->status);
     }
 
     public function test_unapproved_annual_plan_blocks_new_collection(): void
@@ -90,6 +95,11 @@ class MtakuuwaRequirementsWorkflowTest extends TestCase
         $f = $this->fixture();
         $service = app(IndicatorPlanService::class);
         $plan = $service->transition($this->draftPlan($f), $f['thematic'], 'submit', null);
+        $plan = $service->transition($plan, $f['institution'], 'confirm', null);
+        $reviewer = User::factory()->create();
+        $reviewer->assignRole('Thematic Manager');
+        $f['area']->users()->attach($reviewer->id, ['is_active' => true]);
+        $plan = $service->transition($plan, $reviewer, 'approve', null);
         $entry = app(IndicatorDataEntryService::class)->create([
             'indicator_id' => $f['indicator']->id,
             'financial_year_id' => $f['year']->id,
@@ -109,10 +119,79 @@ class MtakuuwaRequirementsWorkflowTest extends TestCase
         $f = $this->fixture();
         $entry = IndicatorDataEntry::factory()->submitted()->create([
             'indicator_id' => $f['indicator']->id, 'organization_id' => $f['organization']->id,
+            'financial_year_id' => $f['year']->id,
         ]);
         $outsider = User::factory()->create(['organization_id' => Organization::factory()->create()->id]);
         $outsider->assignRole('Data Approver');
         $this->expectException(HttpException::class);
         app(IndicatorReviewService::class)->confirmInstitution($entry, $outsider);
+    }
+
+    public function test_full_approval_flow_over_http_opens_the_indicator_for_collection(): void
+    {
+        $f = $this->fixture();
+        $plan = $this->draftPlan($f);
+        $f['indicator']->interventions()->create(['name' => 'Train officers', 'thematic_area_id' => $f['area']->id]);
+
+        // 1. The thematic manager submits from the Plan Builder.
+        $this->actingAs($f['thematic'])
+            ->postJson(route('plan-builder.plans.submit', $f['area']), ['financial_year_id' => $f['year']->id])
+            ->assertOk()->assertJsonPath('data.submitted', 1);
+        $this->assertSame('pending_institution', $plan->fresh()->status);
+
+        // 2. Still not collectable.
+        $this->assertNull($plan->fresh()->approved_at);
+
+        // 3. The lead institution confirms through the review page.
+        $this->actingAs($f['institution'])
+            ->post(route('indicator-plans.bulk-action', $f['area']), ['action' => 'confirm', 'financial_year_id' => $f['year']->id])
+            ->assertRedirect();
+        $this->assertSame('pending_thematic', $plan->fresh()->status);
+
+        // 4. The submitter cannot approve their own plan...
+        $this->actingAs($f['thematic'])
+            ->post(route('indicator-plans.bulk-action', $f['area']), ['action' => 'approve', 'financial_year_id' => $f['year']->id]);
+        $this->assertSame('pending_thematic', $plan->fresh()->status);
+
+        // 5. ...a second coordinator does.
+        $second = User::factory()->create();
+        $second->assignRole('Thematic Manager');
+        $f['area']->users()->attach($second->id, ['is_active' => true]);
+        $this->actingAs($second)
+            ->post(route('indicator-plans.bulk-action', $f['area']), ['action' => 'approve', 'financial_year_id' => $f['year']->id])
+            ->assertRedirect();
+
+        $plan = $plan->fresh();
+        $this->assertSame('approved', $plan->status);
+        $this->assertDatabaseHas('indicator_targets', ['indicator_id' => $f['indicator']->id, 'financial_year_id' => $f['year']->id, 'target_value' => 100]);
+
+        // 6. Collection now works.
+        $entry = app(IndicatorDataEntryService::class)->create([
+            'indicator_id' => $f['indicator']->id,
+            'financial_year_id' => $f['year']->id,
+            'entry_date' => now()->toDateString(),
+            'organization_id' => $f['organization']->id,
+            'actual_value' => 20,
+        ], [], [], [], $f['thematic']);
+        $this->assertSame($plan->id, $entry->indicator_plan_id);
+    }
+
+    public function test_a_returned_plan_needs_a_reason_and_can_be_resubmitted(): void
+    {
+        $f = $this->fixture();
+        $plan = $this->draftPlan($f);
+        $service = app(IndicatorPlanService::class);
+        $plan = $service->transition($plan, $f['thematic'], 'submit', null);
+
+        try {
+            $service->transition($plan, $f['institution'], 'return', null);
+            $this->fail('A return without a reason should be refused.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('comment', $e->errors());
+        }
+
+        $plan = $service->transition($plan, $f['institution'], 'return', 'Target looks too low');
+        $this->assertSame('returned', $plan->status);
+        $this->assertSame('pending_institution', $service->transition($plan, $f['thematic'], 'submit', null)->status);
     }
 }
