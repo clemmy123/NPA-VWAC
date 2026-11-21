@@ -219,14 +219,15 @@ select.pb-cell { cursor: pointer; padding-right: 22px; text-overflow: ellipsis; 
 /* ---- partners multiselect ---- */
 .pb-table td .select2-container { min-width: 200px; }
 .pb-table td .select2-container--default .select2-selection--multiple {
-  border: 1px solid transparent;
-  border-radius: 0;
+  border: 1px solid transparent !important;
+  border-radius: 0 !important;
   min-height: 36px;
-  background: transparent;
+  padding: 0 0 2px;
+  background: transparent !important;
 }
 .pb-table td .select2-container--default.select2-container--focus .select2-selection--multiple,
-.pb-table td .select2-container--default .select2-selection--multiple:hover { border-color: var(--accent); background: var(--surface); }
-.pb-table td .select2-container--default .select2-selection--multiple .select2-selection__choice { font-size: 0.72rem; margin-top: 6px; }
+.pb-table td .select2-container--default .select2-selection--multiple:hover { border-color: var(--accent) !important; background: var(--surface) !important; }
+.pb-table td .select2-container--default .select2-selection--multiple .select2-selection__choice { font-size: 0.72rem; }
 
 /* ---- status ---- */
 .pb-missing { color: var(--warning-text); margin-left: 4px; cursor: help; vertical-align: middle; }

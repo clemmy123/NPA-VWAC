@@ -20,4 +20,7 @@
 @import './app/dashboard.css';
 @import './app/plan-grid.css';
 @import './app/collection-sheet.css';
+@import './app/plan-review.css';
+@import './app/inbox.css';
+@import './app/users.css';
 @import './app/chat-fab.css';

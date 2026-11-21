@@ -17,8 +17,43 @@
     @endcan
 </div>
 
+<form method="GET" action="{{ route('users.index') }}" class="filter-card report-filters" id="users-filters">
+    <div class="rf-field rf-search">
+        <label for="user_search">{{ __('Search') }}</label>
+        <input type="search" id="user_search" name="search" class="form-control" value="{{ request('search') }}" placeholder="{{ __('Name or email…') }}">
+    </div>
+    <div class="rf-field">
+        <label for="user_role">{{ __('Role') }}</label>
+        <select name="role" id="user_role" class="form-control">
+            <option value="">{{ __('All roles') }}</option>
+            @foreach ($roles as $role)<option value="{{ $role }}" @selected(request('role') === $role)>{{ __($role) }}</option>@endforeach
+        </select>
+    </div>
+    <div class="rf-field">
+        <label for="user_org">{{ __('Organization') }}</label>
+        <select name="organization_id" id="user_org" class="form-control">
+            <option value="">{{ __('All organizations') }}</option>
+            @foreach ($organizations as $organization)<option value="{{ $organization->id }}" @selected((int) request('organization_id') === $organization->id)>{{ $organization->name }}</option>@endforeach
+        </select>
+    </div>
+    <div class="rf-field">
+        <label for="user_status">{{ __('Status') }}</label>
+        <select name="status" id="user_status" class="form-control">
+            <option value="">{{ __('All statuses') }}</option>
+            <option value="active" @selected(request('status') === 'active')>{{ __('Active') }}</option>
+            <option value="inactive" @selected(request('status') === 'inactive')>{{ __('Inactive') }}</option>
+        </select>
+    </div>
+    <div class="rf-field rf-actions">
+        <button class="btn btn-dark btn-sm"><i class="mdi mdi-magnify"></i> {{ __('Filter') }}</button>
+        @if (request()->hasAny(['search', 'role', 'organization_id', 'status']))
+        <a href="{{ route('users.index') }}" class="btn btn-outline-dark btn-sm">{{ __('Clear') }}</a>
+        @endif
+    </div>
+</form>
+
 <div class="table-card d-none d-md-block">
-    <table class="table mb-0">
+    <table class="table mb-0 users-table">
         <thead>
             <tr><th>#</th><th>{{ __('Name') }}</th><th>{{ __('Email') }}</th><th>{{ __('Organization') }}</th><th>{{ __('Role') }}</th><th>{{ __('Sign-in') }}</th><th>{{ __('Status') }}</th><th>{{ __('Actions') }}</th></tr>
         </thead>
@@ -26,10 +61,15 @@
             @forelse ($users as $user)
             <tr>
                 <td>{{ ($users->firstItem() ?? 1) + $loop->index }}</td>
-                <td>{{ $user->name }}</td>
+                <td>
+                    <div class="usr-cell">
+                        <span class="usr-avatar">{{ \Illuminate\Support\Str::of($user->name)->explode(' ')->filter()->take(2)->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))->join('') }}</span>
+                        <span class="usr-name">{{ $user->name }}</span>
+                    </div>
+                </td>
                 <td>{{ $user->email }}</td>
                 <td>{{ $user->organization?->name ?? '—' }}</td>
-                <td>{{ $user->roles->pluck('name')->join(', ') ?: '—' }}</td>
+                <td>@forelse ($user->roles as $role)<span class="usr-role usr-role-{{ \Illuminate\Support\Str::slug($role->name) }}">{{ __($role->name) }}</span>@empty — @endforelse</td>
                 <td>{{ $user->auth_provider === 'local' ? __('Local') : __('Jumuishi SSO') }}</td>
                 <td><span class="s-badge {{ $user->status === 'active' ? 's-active' : 's-inactive' }}">{{ __(ucfirst($user->status)) }}</span></td>
                 <td>
@@ -99,3 +139,7 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+@include('reports.partials.filter-selects-script', ['formId' => 'users-filters', 'autoSubmit' => true])
+@endpush

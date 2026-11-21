@@ -7,12 +7,14 @@ use App\Models\IndicatorPlan;
 use App\Models\Organization;
 use App\Models\ThematicArea;
 use App\Services\IndicatorPlanService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /** Annual planning worksheet and its authorization-aware review actions. */
 class IndicatorPlanController extends Controller
@@ -24,7 +26,12 @@ class IndicatorPlanController extends Controller
         $user = $request->user();
         abort_unless($user->hasRole('Super Admin') || in_array($thematicArea->id, $user->visibleThematicAreaIds(), true), 403);
         $financialYearId = $request->integer('financial_year_id') ?: FinancialYear::query()->where('is_current', true)->value('id');
-        $indicators = $thematicArea->indicators()->with(['plans' => fn ($query) => $query->where('financial_year_id', $financialYearId), 'plans.leadOrganization'])->orderBy('name')->get();
+        $indicators = $thematicArea->indicators()
+            ->with([
+                'plans' => fn ($query) => $query->where('financial_year_id', $financialYearId),
+                'plans.leadOrganization', 'plans.media', 'unitOfMeasure', 'interventions',
+            ])
+            ->orderBy('name')->get();
 
         return view('indicator-plans.index', [
             'thematicArea' => $thematicArea,
@@ -67,6 +74,38 @@ class IndicatorPlanController extends Controller
 
         return redirect()->route('indicator-plans.index', [$indicatorPlan->indicator->thematicArea, 'financial_year_id' => $indicatorPlan->financial_year_id])
             ->with('success', __('Plan workflow updated.'));
+    }
+
+    /** Apply one workflow action to every plan in the area/year it is valid for; skips the ones the user may not act on. */
+    public function bulkAction(Request $request, ThematicArea $thematicArea): RedirectResponse
+    {
+        $data = $request->validate([
+            'action' => ['required', Rule::in(['confirm', 'approve', 'return'])],
+            'financial_year_id' => ['required', 'integer', 'exists:financial_years,id'],
+            'comment' => ['nullable', 'string', 'max:2000'],
+        ]);
+        $from = ['confirm' => ['pending_institution'], 'approve' => ['pending_thematic'], 'return' => ['pending_institution', 'pending_thematic']][$data['action']];
+
+        $plans = IndicatorPlan::query()
+            ->whereHas('indicator', fn ($query) => $query->where('thematic_area_id', $thematicArea->id))
+            ->where('financial_year_id', $data['financial_year_id'])
+            ->whereIn('status', $from)
+            ->get();
+
+        $done = 0;
+        foreach ($plans as $plan) {
+            try {
+                $this->plans->transition($plan, $request->user(), $data['action'], $data['comment'] ?? null);
+                $done++;
+            } catch (AuthorizationException|HttpException) {
+                continue;
+            }
+        }
+
+        return redirect()->route('indicator-plans.index', [$thematicArea, 'financial_year_id' => $data['financial_year_id']])
+            ->with($done > 0 ? 'success' : 'error', $done > 0
+                ? trans_choice(':count plan updated.|:count plans updated.', $done, ['count' => $done])
+                : __('None of the plans can be actioned by you right now.'));
     }
 
     public function uploadDocument(Request $request, IndicatorPlan $indicatorPlan): RedirectResponse

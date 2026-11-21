@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\ResolvesReportPeriod;
 use App\Models\FinancialYear;
 use App\Models\Indicator;
 use App\Models\IndicatorDataEntry;
+use App\Models\IndicatorPlan;
 use App\Models\Organization;
 use App\Services\IndicatorPerformanceService;
 use App\Support\AdminLocationLevel;
@@ -92,6 +93,7 @@ class DashboardController extends Controller
         }
 
         return view('dashboard', [
+            'overview' => $this->overview($indicators, $financialYear),
             'projects' => $projects,
             'thematicAreas' => $thematicAreas,
             'indicators' => $indicators,
@@ -103,6 +105,36 @@ class DashboardController extends Controller
             'breakdown' => $breakdown,
             'progressPercent' => $progressPercent,
         ]);
+    }
+
+    /**
+     * Headline numbers across every indicator the user can see for the financial year.
+     *
+     * @param  Collection<int, Indicator>  $indicators
+     * @return array{indicators: int, planned: int, awaiting_plan: int, awaiting_data: int, approved_entries: int, budget_planned: float, budget_released: float, budget_spent: float}
+     */
+    private function overview(Collection $indicators, ?FinancialYear $financialYear): array
+    {
+        $ids = $indicators->pluck('id');
+        $plans = $financialYear
+            ? IndicatorPlan::query()->whereIn('indicator_id', $ids)->where('financial_year_id', $financialYear->id)->get()
+            : collect();
+        $entries = $financialYear
+            ? IndicatorDataEntry::query()->whereIn('indicator_id', $ids)->where('financial_year_id', $financialYear->id)->get()
+            : collect();
+        $approvedEntries = $entries->where('status', 'approved');
+        $approvedPlans = $plans->where('status', 'approved');
+
+        return [
+            'indicators' => $ids->count(),
+            'planned' => $approvedPlans->count(),
+            'awaiting_plan' => $plans->whereIn('status', ['pending_institution', 'pending_thematic'])->count(),
+            'awaiting_data' => $entries->whereIn('status', ['submitted', 'pending_approval'])->count(),
+            'approved_entries' => $approvedEntries->count(),
+            'budget_planned' => (float) $approvedPlans->sum(fn ($plan) => (float) $plan->domestic_budget + (float) $plan->external_budget),
+            'budget_released' => (float) $approvedEntries->sum(fn ($entry) => (float) $entry->domestic_released + (float) $entry->external_released),
+            'budget_spent' => (float) $approvedEntries->sum(fn ($entry) => (float) $entry->domestic_spent + (float) $entry->external_spent),
+        ];
     }
 
     /**

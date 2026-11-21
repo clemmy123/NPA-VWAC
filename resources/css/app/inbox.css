@@ -1,0 +1,31 @@
+/* ==========================================================================
+   Institution Ownership Inbox — one card per item awaiting confirmation.
+   ========================================================================== */
+
+.ib-section { margin-bottom: 24px; }
+.ib-section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.ib-section-head h5 { margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--heading-dark); display: flex; align-items: center; gap: 8px; }
+.ib-section-head h5 i { color: var(--brand-blue); font-size: 1.15rem; }
+
+.ib-card { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 16px 20px; margin-bottom: 10px; }
+.ib-card-main { min-width: 0; flex: 1; }
+.ib-meta { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted-icon); }
+.ib-title { font-size: 0.98rem; font-weight: 600; color: var(--heading-dark); margin: 2px 0 8px; }
+.ib-facts { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.82rem; color: var(--muted-mid); }
+.ib-facts i { color: var(--muted-icon); margin-right: 3px; }
+.ib-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.ib-chips span { background: var(--accent-bg); color: var(--accent-text); border-radius: var(--radius-pill); padding: 2px 10px; font-size: 0.76rem; }
+.ib-doc { display: inline-block; margin: 8px 14px 0 0; font-size: 0.82rem; }
+
+.ib-actions { display: flex; flex-direction: column; align-items: stretch; gap: 8px; width: 230px; flex-shrink: 0; }
+.ib-actions .btn { width: 100%; }
+.ib-actions form { margin: 0; }
+
+.ib-return summary { list-style: none; cursor: pointer; text-align: center; }
+.ib-return summary::-webkit-details-marker { display: none; }
+.ib-return form { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+
+@media (max-width: 767px) {
+  .ib-card { flex-direction: column; }
+  .ib-actions { width: 100%; }
+}

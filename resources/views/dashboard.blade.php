@@ -12,15 +12,44 @@
         </nav>
     </div>
     @can('indicator-data.create')
-    <a href="{{ route('indicator-data-entries.index') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-clipboard-plus-outline"></i> {{ __('Collect Data') }}</a>
+    <a href="{{ route('collection-sheet.index') }}" class="btn btn-dark btn-sm"><i class="mdi mdi-clipboard-check-outline"></i> {{ __('Collect Data') }}</a>
     @endcan
 </div>
 
 @if ($projects->isEmpty())
-<div class="chart-card">
-    <p class="mb-0 text-muted">{{ __('No plans are visible to you yet.') }}</p>
+<div class="chart-card tbl-empty">
+    <i class="mdi mdi-view-dashboard-outline"></i>
+    <p>{{ __('No plans are visible to you yet.') }}</p>
+    <p class="small">{{ __('Once a thematic area is assigned to you and its plan is approved, progress shows up here.') }}</p>
+    @can('thematic-area.view')<a href="{{ route('plan-builder.index') }}" class="btn btn-dark btn-sm">{{ __('Open Plan Builder') }}</a>@endcan
 </div>
 @else
+<div class="dash-kpis">
+    <a href="{{ route('plan-builder.index') }}" class="dash-kpi is-purple">
+        <span class="dash-kpi-icon"><i class="mdi mdi-file-check-outline"></i></span>
+        <div><div class="dash-kpi-value">{{ $overview['planned'] }}<small>/{{ $overview['indicators'] }}</small></div><div class="dash-kpi-label">{{ __('Indicators with approved plan') }}</div></div>
+    </a>
+    <a href="{{ route('plan-builder.index') }}" class="dash-kpi is-amber">
+        <span class="dash-kpi-icon"><i class="mdi mdi-timer-sand"></i></span>
+        <div><div class="dash-kpi-value">{{ $overview['awaiting_plan'] }}</div><div class="dash-kpi-label">{{ __('Plans awaiting review') }}</div></div>
+    </a>
+    <a href="{{ route('indicator-data-entries.index') }}" class="dash-kpi is-pink">
+        <span class="dash-kpi-icon"><i class="mdi mdi-inbox-arrow-down"></i></span>
+        <div><div class="dash-kpi-value">{{ $overview['awaiting_data'] }}</div><div class="dash-kpi-label">{{ __('Reports awaiting review') }}</div></div>
+    </a>
+    <div class="dash-kpi is-green">
+        <span class="dash-kpi-icon"><i class="mdi mdi-check-decagram"></i></span>
+        <div><div class="dash-kpi-value">{{ $overview['approved_entries'] }}</div><div class="dash-kpi-label">{{ __('Approved reports') }}</div></div>
+    </div>
+    <div class="dash-kpi is-blue dash-kpi-wide">
+        <span class="dash-kpi-icon"><i class="mdi mdi-cash-multiple"></i></span>
+        <div>
+            <div class="dash-kpi-value">TZS {{ number_format($overview['budget_spent']) }}<small> {{ __('spent') }}</small></div>
+            <div class="dash-kpi-label">{{ __('of :released released · :planned planned', ['released' => number_format($overview['budget_released']), 'planned' => number_format($overview['budget_planned'])]) }}</div>
+        </div>
+    </div>
+</div>
+
 <form method="GET" action="{{ route('dashboard') }}" class="filter-card report-filters" id="dashboard-filters">
     <div class="rf-field">
         <label for="project_id">{{ __('Plan') }}</label>

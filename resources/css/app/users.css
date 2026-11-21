@@ -1,0 +1,49 @@
+/* ==========================================================================
+   Users list — avatar cell, role badges, search field in the filter bar.
+   ========================================================================== */
+
+.usr-cell { display: flex; align-items: center; gap: 10px; }
+.usr-name { font-weight: 600; color: var(--heading-dark); }
+
+.usr-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--brand-blue);
+  color: var(--surface);
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.usr-role {
+  display: inline-block;
+  border-radius: var(--radius-pill);
+  padding: 2px 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-right: 4px;
+  background: var(--default-bg);
+  color: var(--default-text);
+}
+
+.usr-role-super-admin { background: var(--danger-bg); color: var(--danger-text); }
+.usr-role-project-manager { background: var(--purple-bg); color: var(--purple-text); }
+.usr-role-thematic-manager { background: var(--tone-teal-bg); color: var(--tone-teal-text); }
+.usr-role-data-entry-user { background: var(--success-bg); color: var(--success-text); }
+.usr-role-data-approver { background: var(--warning-bg); color: var(--warning-text); }
+
+.report-filters .rf-search .form-control { min-width: 220px; }
+.report-filters .rf-actions { display: flex; align-items: flex-end; gap: 8px; }
+
+.users-table th:nth-child(1) { width: 4%; }
+.users-table th:nth-child(2) { width: 18%; }
+.users-table th:nth-child(3) { width: 19%; }
+.users-table th:nth-child(4) { width: 12%; }
+.users-table th:nth-child(5) { width: 16%; }
+.users-table th:nth-child(6) { width: 12%; }
+.users-table th:nth-child(7) { width: 8%; }
+.users-table th:nth-child(8) { width: 11%; }

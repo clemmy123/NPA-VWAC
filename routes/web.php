@@ -151,6 +151,8 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
     Route::delete('annual-plans/{indicatorPlan}/documents/{media}', [IndicatorPlanController::class, 'deleteDocument'])
         ->middleware('can:indicator.set-target')->name('indicator-plans.documents.delete');
 
+    Route::post('annual-plans/{thematicArea}/review', [IndicatorPlanController::class, 'bulkAction'])
+        ->middleware('auth')->name('indicator-plans.bulk-action');
     Route::post('annual-plans/review/{indicatorPlan}', [IndicatorPlanController::class, 'action'])
         ->middleware('auth')->name('indicator-plans.action');
 

@@ -50,12 +50,12 @@
 
     <div class="col-md-6 mb-3">
         <label for="roles" class="form-label">{{ __('Roles') }}</label>
-        <select name="roles[]" id="roles" class="form-control @error('roles') is-invalid @error('roles.*') is-invalid @enderror @enderror" multiple size="5" required>
+        <select name="roles[]" id="roles" class="form-control @error('roles') is-invalid @error('roles.*') is-invalid @enderror @enderror" multiple required>
             @foreach ($roles as $availableRole)
-            <option value="{{ $availableRole->name }}" @selected(in_array($availableRole->name, $currentRoles, true))>{{ $availableRole->name }}</option>
+            <option value="{{ $availableRole->name }}" @selected(in_array($availableRole->name, $currentRoles, true))>{{ __($availableRole->name) }}</option>
             @endforeach
         </select>
-        <small class="text-muted">{{ __('Hold Ctrl/Cmd (or Shift) to select more than one role.') }}</small>
+        <small class="text-muted">{{ __('Pick one or more roles.') }}</small>
         @error('roles')<div class="invalid-feedback">{{ $message }}</div>@enderror
         @error('roles.*')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
@@ -207,6 +207,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+
+    if (window.jQuery && jQuery.fn.select2) {
+        jQuery(role).select2({
+            width: '100%',
+            placeholder: @json(__('Select roles…')),
+            closeOnSelect: false,
+            dropdownParent: jQuery(role).closest('.mb-3'),
+        });
+    }
 
     if (window.jQuery) {
 

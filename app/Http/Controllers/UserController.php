@@ -25,10 +25,18 @@ class UserController extends Controller
                     ->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%"));
             })
+            ->when($request->string('role')->toString(), fn ($query, $role) => $query->whereHas('roles', fn ($roles) => $roles->where('name', $role)))
+            ->when($request->integer('organization_id'), fn ($query, $organizationId) => $query->where('organization_id', $organizationId))
+            ->when(in_array($request->string('status')->toString(), ['active', 'inactive'], true), fn ($query) => $query->where('status', $request->string('status')->toString()))
             ->orderBy('name')
-            ->paginate($request->integer('per_page', 15));
+            ->paginate($request->integer('per_page', 15))
+            ->withQueryString();
 
-        return view('users.index', ['users' => $users]);
+        return view('users.index', [
+            'users' => $users,
+            'roles' => Role::query()->orderBy('name')->pluck('name'),
+            'organizations' => Organization::query()->orderBy('name')->get(['id', 'name']),
+        ]);
     }
 
     public function create(): View
